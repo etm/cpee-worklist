@@ -1,0 +1,51 @@
+<html>
+<meta charset="UTF-8"> 
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+$(document).ready(function(){
+$.fn.serializeObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
+  $("#submitform").submit(function(e){
+    e.preventDefault();
+    result = $("#submitform").serializeObject();
+    console.log( JSON.stringify( result ) );
+  });
+});
+
+</script>
+</head>
+<body>
+<form id="submitform">
+<input type=text name=name value=name id="name" />
+<input type=text name=versnr value=versnr id="versnr" />
+<input type=text name=mail value=mail id="mail" />
+<input type=text name=garage value=garage id="garage" />
+<input type=text name=schadenssumme value=schadenssumme id="schadenssumme" />
+<input type=radio name="choose" id="radiook" value="ok" /> OK
+<input type=radio name="choose" id="radionok" value="nok" /> Nicht OK
+<input type=submit value=absenden />
+</form>
+
+
+<div id="div-worklist">
+<table>
+<
+</body>
+</html>

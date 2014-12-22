@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<meta charset="UTF-8"> 
+<html>
+<head>
+<script src="goku.js"></script<script src="goku.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+var FORM_A = "a";
+var FORM_F = "b";
+var TIMEOUT = 500;
+
+var user = "";
+var json = "";
+
+$.fn.serializeObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
+function ajaxCall() {
+  $.ajax(
+  { 
+    url:"callbacks?user="+user,
+    dataType:"json",
+    success: function(result)
+    {
+      updateTable(result);
+    },
+    error: function() {
+      setTimeout(function(){ ajaxCall(); }, TIMEOUT);
+    }
+  });
+};
+
+function longpoll(){
+  console.log("Starting poll...");
+  $.ajax({
+    url: "callbackspoll?user="+user,
+    dataType: "json",
+    success: function(result) {
+      updateTable(result);
+    },
+    complete: function() {
+      console.log("...completed");
+      longpoll();
+    }
+  });
+};
+
+
+function updateTable(list){
+  json = list;
+
+  $("#worklist tr").remove();
+  for(i=0; i<list.length; ++i){
+    $("#worklist").append(
+    "<tr><td>Task " +
+    list[i].form +
+    "</td>" +
+    "<td><input name='but' type=button id='" + 
+    list[i].id +
+    "' onClick='buttonClick(" + 
+    list[i].id +
+    ")' value='accept job' />" +
+    "</td></tr>");
+  }
+}
+
+function ajaxDelete(id){
+  $.ajax({
+    url: "callbacks/"+id,
+    type: "DELETE"
+  });
+};
+
+function showWorklist(){
+  $("#div-login").hide();
+  $("#div-form").hide();
+  $("#div-worklist").show();
+};
+
+function buttonClick(id){
+  url = "";
+  form = "";
+  
+  for(i = 0; i<json.length; ++i) {
+    if(json[i].id == id) {
+      url = json[i].url;
+      form = json[i].form;
+    }
+  }
+ 
+  $("#cpeeurl").val(url);
+  $("#cpeeid").val(id);
+  
+  $.ajax({
+    url: form,
+    type: "GET",
+    dataType: "html",
+    success: function(result) {
+      $("#div-worklist").hide();
+      $("#div-form").show();
+      $("#submitform").empty();
+      $("#submitform").append(result);
+    },
+    error: function(){
+      alert("Could not load UI: "+form);
+    }
+  });
+};
+
+$(document).ready(function(){
+   
+  $("#div-login").show();
+  $("#div-form").hide();
+  $("#div-worklist").hide();
+  
+  $("#login").click(function()
+  {
+    user = $("#username").val();
+    $.ajax(
+    { 
+      url:"callbacks?user="+user,
+      dataType:"json",
+      success: function(result)
+      {
+        showWorklist();
+        updateTable(result);
+        longpoll();
+      },
+      error: function() {
+        alert("Benutzername/Passwort falsch");
+      }
+    });
+  });
+  
+  $("#submitform").submit(function(e){
+    e.preventDefault();
+    var url = $("#cpeeurl").val();
+    var id = $("#cpeeid").val();
+    var data = JSON.stringify( $("#submitform").serializeObject() ); 
+    
+    $.ajax({
+      url: url,
+      type: "PUT",
+      dataType:"json",
+      contentType: "application/json",
+      data: data,
+      crossDomain: true, 
+      complete: function(result)
+      {
+        ajaxDelete(id);
+        showWorklist();
+      }
+    });
+  });
+
+});
+  
+</script>
+</head>
+
+<body>
+<div id="div-login">
+  <select id="username">
+    <option value="admin">admin</option>
+    <option value="worker">worker</option>
+    <option value="clerk">clerk</option>
+    <option value="batman">batman</option>
+    <option value="superman">superman</option>
+  </select>
+  <button id="login"> Login </button>
+</div>
+
+<div id="div-worklist">
+  Worklist:
+  <table id="worklist">
+  </table>
+</div>
+
+<div id="div-form">
+  <form id="submitform">
+    <input type=hidden />
+  </form>
+  <form id="hiddenform">
+    <input type=hidden id="cpeeurl" />
+    <input type=hidden id="cpeeid" />
+  </form>
+</div>
+
+<div id="goku" style="position:relative;" onMouseOver="Weg()">
+<img src="goku.png" alt="goku">
+</div>
+
+</body>
+</html>
