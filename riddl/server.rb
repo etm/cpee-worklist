@@ -30,8 +30,8 @@ end  #}}}
 
 class  Delbacks < Riddl::Implementation #{{{
   def response
-    if $callbacks.any? { |c| c["id"] == @p[0].value }
-      $callbacks = $callbacks.reject { |c| c["id"] == @p[0].value }
+    if $callbacks.any? { |c| c["id"] == @r[1] }
+      $callbacks = $callbacks.reject { |c| c["id"] == @r[1]}
       @status = 200
     else
       @status = 418
@@ -57,7 +57,9 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
     end
     on resource 'callbacks' do
       run Callbacks if post 'callback_in'
-      run Delbacks if delete 'str'
+      on resource do
+        run Delbacks if delete
+      end
     end
   end
 end.loop!

@@ -25,7 +25,9 @@
     </resource>
     <resource relative="callbacks">
       <post in="callback_in"/>
-      <delete in="str"/>
+      <resource>
+        <delete/>
+      </resource>
     </resource>
   </resource>
 </description>
