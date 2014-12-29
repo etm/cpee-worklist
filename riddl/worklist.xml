@@ -12,7 +12,9 @@
       <parameter name="*" type="string"/>
     </zeroOrMore>
   </message>
-
+  <message name="str">
+    <parameter name="data" type="string"/>
+  </message>
 
   <resource>
     <get in="*" out="stuff"/>
@@ -23,6 +25,7 @@
     </resource>
     <resource relative="callbacks">
       <post in="callback_in"/>
+      <delete in="str"/>
     </resource>
   </resource>
 </description>

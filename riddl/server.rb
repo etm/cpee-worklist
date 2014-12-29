@@ -28,6 +28,17 @@ class  Callbacks < Riddl::Implementation #{{{
   end
 end  #}}} 
 
+class  Delbacks < Riddl::Implementation #{{{
+  def response
+    if $callbacks.any? { |c| c["id"] == @p[0].value }
+      $callbacks = $callbacks.reject { |c| c["id"] == @p[0].value }
+      @status = 200
+    else
+      @status = 418
+    end
+  end
+end  #}}} 
+
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
   accessible_description true
   cross_site_xhr true
@@ -46,6 +57,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
     end
     on resource 'callbacks' do
       run Callbacks if post 'callback_in'
+      run Delbacks if delete 'str'
     end
   end
 end.loop!
