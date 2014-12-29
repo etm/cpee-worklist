@@ -10,21 +10,10 @@ require 'riddl/utils/fileserve'
 require 'riddl/utils/downloadify'
 require 'riddl/utils/turtle'
 
-class  Startup < Riddl::Implementation #{{{
-  def response
-    Riddl::Parameter::Complex.new "data","text/html", File.open('./public/worklist.html')
-  end
-end  #}}} 
-
-class  ShowCSS < Riddl::Implementation #{{{
-  def response
-    Riddl::Parameter::Complex.new "data","text/css", File.open('./public/smart-green.css')
-  end
-end  #}}} 
-
 class  Callbacks < Riddl::Implementation #{{{
   def response
    pp @p
+   result = {"url" => @h['CPEE_CALLBACK'], "form" => @p[0].value, "role" => @p[1].value} 
    @headers << Riddl::Header.new('CPEE_CALLBACK','true')
    @status = 200
   end
@@ -35,9 +24,11 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
   cross_site_xhr true
 
   on resource do
-    run Startup if get '*'
-    on resource 'smart-green.css' do
-      run ShowCSS if get '*'
+    run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
+    on resource 'resources' do
+      on resource do
+        run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources' if get '*'
+      end  
     end
     on resource 'callbacks' do
       run Callbacks if post 'callback_in'

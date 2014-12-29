@@ -1,19 +1,25 @@
 <description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-  <message name="html">
-    <parameter name="data" mimetype="text/html"/>
-  </message>
-  <message name="css">
-    <parameter name="data" mimetype="text/css"/>
+  <message name="stuff">
+    <choice>
+      <parameter name="file" mimetype="text/css"/>
+      <parameter name="file" mimetype="text/html"/>
+    </choice>
   </message>
   <message name="callback_in">
     <parameter name="form" type="string"/>
     <parameter name="role" type="string"/>
+    <zeroOrMore>
+      <parameter name="*" type="string"/>
+    </zeroOrMore>
   </message>
 
+
   <resource>
-    <get in="*" out="html"/>
-    <resource relative="smart-green.css">
-      <get in="*" out="css"/>
+    <get in="*" out="stuff"/>
+    <resource relative="resources">
+      <resource>
+        <get in="*" out="stuff"/>
+      </resource>
     </resource>
     <resource relative="callbacks">
       <post in="callback_in"/>
