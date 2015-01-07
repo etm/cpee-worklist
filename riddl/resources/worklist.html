@@ -38,7 +38,7 @@ $.fn.serializeObject = function()
   });
 };*/
 
-function longpoll(){
+/*function longpoll(){
   console.log("Starting poll...");
   $.ajax({
     url: "callbackspoll?user="+user,
@@ -52,7 +52,7 @@ function longpoll(){
     }
   });
 };
-
+*/
 
 function updateTable(list){
   json = list;
@@ -67,9 +67,9 @@ function updateTable(list){
         "</span></td>" +
         "<td><button name='but' id='" + 
         list[i].id +
-        "' onClick='buttonClick(" + 
+        "' onClick='buttonClick(\"" + 
         list[i].id +
-        ")'> Task annehmen</button>" +
+        "\")'> Task annehmen</button>" +
         "</td></tr>"
       );
   }
@@ -109,6 +109,7 @@ function buttonClick(id){
     url: form,
     type: "GET",
     success: function(result) {
+      var schaden = "9000";
       $("#div-worklist").hide();
       $("#div-form").show();
       $("#submitform").empty();
@@ -142,7 +143,7 @@ function assignUser(id) {
 function unassignUser() {
   id = $("#cpeeid").val();
   $.ajax({
-    url: "unworking?id="+id,
+    url: "unworking?data="+id,
     type: "GET"
   });
   showWorklist();
@@ -167,7 +168,7 @@ $(document).ready(function(){
         $("#reloadbutton").html("Logout "+user);
         showWorklist();
         updateTable(result);
-        longpoll();
+ //       longpoll();
       },
       error: function() {
         alert("Benutzername/Passwort falsch");

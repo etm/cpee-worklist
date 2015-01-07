@@ -10,32 +10,58 @@ require 'riddl/utils/fileserve'
 require 'riddl/utils/downloadify'
 require 'riddl/utils/turtle'
 
-at_exit do
-  File.open(File.dirname(__FILE__) + '/data/callbacks.sav','w') do |file|
-    JSON.dump($callbacks,file)
-  end
-end
 
-class  Callbacks < Riddl::Implementation #{{{
+class Callbacks < Riddl::Implementation #{{{
   def response
-    result = {"url" => @h['CPEE_CALLBACK'], "form" => @p[0].value, "role" => @p[1].value, "id" => @h['CPEE_CALLBACK'].split('/').last}
-    for i in 2..(@p.length-1)
-      result["param#{i}"] = @p[i].value
-    end
-    $callbacks[$callbacks.length] = result
+    pp "HEADER"
+    pp @h
+    pp "PARAMS"
+    pp @p
+    @a[0] << @p.map{|p| [p.name,p.value]}.to_h.merge({
+      "url" => @h['CPEE_CALLBACK'], 
+      "id"  => @h['CPEE_CALLBACK'].split('/').last
+    })
     @headers << Riddl::Header.new('CPEE_CALLBACK','true')
-    @status = 200
+  end
+end #}}} 
+
+class Delbacks < Riddl::Implementation #{{{
+  def response
+    index = @a[0].index{ |e| e["id"] == @r.last }
+    if index 
+      @a[0].delete_at(index)
+    else 
+      @status = 404
+    end
   end
 end  #}}} 
 
-class  Delbacks < Riddl::Implementation #{{{
+class  Show_List < Riddl::Implementation #{{{
   def response
-    if $callbacks.any? { |c| c["id"] == @r[1] }
-      $callbacks = $callbacks.reject { |c| c["id"] == @r[1]}
-      @status = 200
+    if File.open(File.dirname(__FILE__) + '/data/user/worker.txt').each_line.any?{|line| line.include? @p[0].value }                      
+      Riddl::Parameter::Complex.new "data", "application/json" ,JSON.generate(@a[0].select { |c| c["role"] == "worker"})
+    elsif File.open(File.dirname(__FILE__) + '/data/user/clerk.txt').each_line.any?{|line| line.include? @p[0].value }
+      Riddl::Parameter::Complex.new "data", "application/json" ,JSON.generate(@a[0].select { |c| c["role"] == "clerk" })
+    elsif File.open(File.dirname(__FILE__) + '/data/user/admin.txt').each_line.any?{|line| line.include? @p[0].value }
+      Riddl::Parameter::Complex.new "data", "application/json" , JSON.generate(@a[0])
     else
-      @status = 418
+      return 401
     end
+
+  end
+end   #}}} 
+
+class Take_Work < Riddl::Implementation #{{{
+  def response
+    index = @a[0].index{ |c| c["id"] == @p[1].value }                                                 
+    @a[0][index]["worker"] = @p[0].value if index
+  end
+end  #}}} 
+
+class Put_Away < Riddl::Implementation #{{{
+  def response
+    index = @a[0].index{ |c| c["id"] == @p[0].value }                                                 
+    @a[0][index]["worker"] = "" if index
   end
 end  #}}} 
 
@@ -43,23 +69,30 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
   accessible_description true
   cross_site_xhr true
   
-  $callbacks = []    #Global Variable, all callbacks in memory
-  File.open(File.dirname(__FILE__) + '/data/callbacks.sav','r') do |file|
-    $callbacks = JSON.parse!(file.read) rescue []
-  end if File.exist?(File.dirname(__FILE__) + '/data/callbacks.sav')
-  pp $callbacks
+  callbacks = []   
+  at_exit do #{{{
+    File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(callbacks)
+  end #}}}
+  callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
   on resource do
     run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
-    on resource 'resources' do
+    on resource 'resources' do #{{{
       on resource do
         run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources' if get '*'
       end  
-    end
-    on resource 'callbacks' do
-      run Callbacks if post 'callback_in'
-      on resource do
-        run Delbacks if delete
-      end
-    end
+    end #}}}
+    on resource 'callbacks' do #{{{
+      run Callbacks,callbacks if post 'callback_in'
+      run Show_List,callbacks if get '*'
+      on resource do #{{{
+        run Delbacks,callbacks if delete
+      end #}}}
+    end #}}}
+    on resource 'working' do #{{{
+      run Take_Work,callbacks if get 'start_work'
+    end #}}}
+    on resource 'unworking' do #{{{
+      run Put_Away,callbacks if get 'str'
+    end #}}}
   end
 end.loop!
