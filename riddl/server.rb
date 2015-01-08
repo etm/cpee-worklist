@@ -10,13 +10,26 @@ require 'riddl/utils/fileserve'
 require 'riddl/utils/downloadify'
 require 'riddl/utils/turtle'
 
+$sockets = []
+
+class Echo < Riddl::WebSocketImplementation #{{{
+  def onopen
+    $sockets << self
+    p "Connection established" # you need to pronounce it in french
+  end
+
+  def onmessage(data)
+    p "Recieved Something like this"
+    pp data
+  end
+  def onclose
+    $sockets.delete(self)
+    p "Connection closed"
+  end
+end #}}}
 
 class Callbacks < Riddl::Implementation #{{{
   def response
-    pp "HEADER"
-    pp @h
-    pp "PARAMS"
-    pp @p
     @a[0] << @p.map{|p| [p.name,p.value]}.to_h.merge({
       "url" => @h['CPEE_CALLBACK'], 
       "id"  => @h['CPEE_CALLBACK'].split('/').last
@@ -65,7 +78,7 @@ class Put_Away < Riddl::Implementation #{{{
   end
 end  #}}} 
 
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
+Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
   cross_site_xhr true
   
@@ -75,6 +88,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299) do
   end #}}}
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
   on resource do
+    run Echo if websocket
     run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
     on resource 'resources' do #{{{
       on resource do

@@ -3,6 +3,7 @@
     <choice>
       <parameter name="file" mimetype="text/css"/>
       <parameter name="file" mimetype="text/html"/>
+      <parameter name="file" mimetype="image/png"/>
     </choice>
   </message>
   <message name="callback_in">
@@ -24,6 +25,7 @@
   </message>
 
   <resource>
+    <websocket/>
     <get in="*" out="stuff"/>
     <resource relative="working">
       <get in="start_work"/>
