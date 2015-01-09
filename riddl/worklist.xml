@@ -1,48 +1,68 @@
 <description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-  <message name="stuff">
-    <choice>
-      <parameter name="file" mimetype="text/css"/>
-      <parameter name="file" mimetype="text/html"/>
-      <parameter name="file" mimetype="image/png"/>
-    </choice>
-  </message>
-  <message name="callback_in">
+  <message name="activity"> <!--{{{-->
+    <parameter name="orgmodel" type="string"/>
+    <parameter name="domain" type="string"/>
     <parameter name="form" type="string"/>
-    <parameter name="role" type="string"/>
+    <choice>
+      <parameter name="unit" type="string"/>
+      <parameter name="role" type="string"/>
+      <group>
+        <parameter name="unit" type="string"/>
+        <parameter name="role" type="string"/>
+      </group>
+    </choice>  
     <zeroOrMore>
       <parameter name="*" type="string"/>
     </zeroOrMore>
-  </message>
-  <message name="str">
-    <parameter name="data" type="string"/>
-  </message>
-  <message name="json">
-    <parameter name="data" mimetype="application/json"/>
-  </message>
-  <message name="start_work">
-    <parameter name="user" type="string"/>
+  </message> <!--}}}-->
+
+  <message name="session">
     <parameter name="id" type="string"/>
+    <optional>
+      <parameter name="url" type="string"/>
+    </optional>
+  </message>
+  <message name="take">
+    <parameter name="operation" fixed="take"/>
+  </message>
+  <message name="giveback">
+    <parameter name="operation" fixed="giveback"/>
+  </message>
+  <message name="details">
+    <parameter name="callbackurl" type="string"/>
+    <parameter name="formurl" type="string"/>
+    <parameter name="parameters" type="string"/>
+  </message>
+
+  <message name="domains">
+    <parameter name="return" mimetype="xml/string"/>
+  </message>
+  <message name="users">
+    <parameter name="return" mimetype="xml/string"/>
+  </message>
+  <message name="tasks">
+    <parameter name="return" mimetype="xml/string"/>
   </message>
 
   <resource>
-    <websocket/>
-    <get in="*" out="stuff"/>
-    <resource relative="working">
-      <get in="start_work"/>
-    </resource>
-    <resource relative="unworking">
-      <get in="str"/>
-    </resource>
-    <resource relative="resources">
-      <resource>
-        <get in="*" out="stuff"/>
-      </resource>
-    </resource>
-    <resource relative="callbacks">
-      <post in="callback_in"/>
-      <get in="*" out="json"/>
-      <resource>
-        <delete/>
+    <post in="activity"/>
+    <get out="domains"/>
+    <resource> <!-- domain -->
+      <get out="users"/>
+      <resource> <!-- user -->
+        <post in="session"/>
+        <resource relative="tasks">
+          <get out="tasks"/>
+          <resource> <!-- task -->
+            <get out="details"/>
+            <put in="take"/>
+            <put in="giveback"/>
+            <delete/>
+          </resource>
+        </resource>
+        <resource relative="updates">
+          <websocket/>
+        </resource>
       </resource>
     </resource>
   </resource>

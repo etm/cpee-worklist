@@ -1,0 +1,49 @@
+<description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <message name="stuff"> <!--{{{-->
+    <choice>
+      <parameter name="file" mimetype="text/css"/>
+      <parameter name="file" mimetype="text/html"/>
+      <parameter name="file" mimetype="image/png"/>
+    </choice>
+  </message> <!--}}}-->
+  <message name="callback_in"> <!--{{{-->
+    <parameter name="form" type="string"/>
+    <parameter name="role" type="string"/>
+    <zeroOrMore>
+      <parameter name="*" type="string"/>
+    </zeroOrMore>
+  </message> <!--}}}-->
+  <message name="str">
+    <parameter name="data" type="string"/>
+  </message>
+  <message name="json">
+    <parameter name="data" mimetype="application/json"/>
+  </message>
+  <message name="start_work"> <!--{{{-->
+    <parameter name="user" type="string"/>
+    <parameter name="id" type="string"/>
+  </message> <!--}}}-->
+
+  <resource>
+    <websocket/>
+    <get in="*" out="stuff"/>
+    <resource relative="working">
+      <get in="start_work"/>
+    </resource>
+    <resource relative="unworking">
+      <get in="str"/>
+    </resource>
+    <resource relative="resources"> <!--{{{-->
+      <resource>
+        <get in="*" out="stuff"/>
+      </resource>
+    </resource> <!--}}}-->
+    <resource relative="callbacks">
+      <post in="callback_in"/>
+      <get in="*" out="json"/>
+      <resource>
+        <delete/>
+      </resource>
+    </resource>
+  </resource>
+</description>

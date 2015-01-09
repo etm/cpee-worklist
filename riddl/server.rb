@@ -18,22 +18,27 @@ class Echo < Riddl::WebSocketImplementation #{{{
     p "Connection established" # you need to pronounce it in french
   end
 
-  def onmessage(data)
-    p "Recieved Something like this"
-    pp data
-  end
   def onclose
     $sockets.delete(self)
     p "Connection closed"
   end
-end #}}}
+end #}}} 
 
 class Callbacks < Riddl::Implementation #{{{
   def response
-    @a[0] << @p.map{|p| [p.name,p.value]}.to_h.merge({
-      "url" => @h['CPEE_CALLBACK'], 
-      "id"  => @h['CPEE_CALLBACK'].split('/').last
-    })
+    p @h
+    @a << (activity = {})
+    activity['url'] = @h['CPEE_CALLBACK']
+    activity['id']  = @h['CPEE_CALLBACK'].split('/').last
+    activity['orgmodel'] = @h[ 'CPEE_ATTR_' + @p.shift.value.uppercase]
+    activity['domain'] = @p.shift.value
+    activity['form'] = @p.shift.value
+    activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
+    activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
+    activity['parameters'] = JSON.generate(@p)
+
+    p activity 
+
     @headers << Riddl::Header.new('CPEE_CALLBACK','true')
   end
 end #}}} 
@@ -68,6 +73,7 @@ class Take_Work < Riddl::Implementation #{{{
   def response
     index = @a[0].index{ |c| c["id"] == @p[1].value }                                                 
     @a[0][index]["worker"] = @p[0].value if index
+    $sockets.each{ |s| s.send("Tu was, Motherfucker")}
   end
 end  #}}} 
 
@@ -77,6 +83,7 @@ class Put_Away < Riddl::Implementation #{{{
     @a[0][index]["worker"] = "" if index
   end
 end  #}}} 
+
 
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
@@ -88,6 +95,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   end #}}}
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
   on resource do
+    run Callbacks,callbacks if post 'activity'
     run Echo if websocket
     run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
     on resource 'resources' do #{{{
@@ -96,7 +104,6 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
       end  
     end #}}}
     on resource 'callbacks' do #{{{
-      run Callbacks,callbacks if post 'callback_in'
       run Show_List,callbacks if get '*'
       on resource do #{{{
         run Delbacks,callbacks if delete

@@ -38,6 +38,26 @@ $.fn.serializeObject = function()
   });
 };*/
 
+function init_websocket() {
+  var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+  ws = new Socket("ws://localhost:9299/");
+
+  ws.onopen = function() {
+    console.log("onopen");
+  };
+  ws.onmessage = function(e) {
+    $.ajax({
+      url: "callbackspoll?data="+user,
+      dataType: "json",
+      success: function(result) {
+        updateTable(result);
+      }
+    });
+  };
+  ws.onclose = function() {
+    console.log("onclose");
+  };
+}
 /*function longpoll(){
   console.log("Starting poll...");
   $.ajax({
@@ -58,7 +78,7 @@ function updateTable(list){
   json = list;
 
   $("#worklist").empty();
-  for(i=0; i<list.length; ++i){i
+  for(i=0; i<list.length; ++i){
     if(typeof list[i].worker === 'undefined' || list[i].worker == "" || list[i].worker == user)
       $("#worklist").append(
         "<tr><td><span>Inst. "+list[i].id+"</span></td>"+
@@ -150,7 +170,8 @@ function unassignUser() {
 }
 
 $(document).ready(function(){
-  
+ 
+  init_websocket(); 
   $("#div-login").show();
   $("#reloadbutton").hide();
   $("#div-form").hide();
