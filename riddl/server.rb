@@ -27,17 +27,15 @@ end #}}}
 class Callbacks < Riddl::Implementation #{{{
   def response
     p @h
-    @a << (activity = {})
+    @a[0] << (activity = {}) 
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
-    activity['orgmodel'] = @h[ 'CPEE_ATTR_' + @p.shift.value.uppercase]
+    activity['orgmodel'] = @h[ 'CPEE_ATTR_' + @p.shift.value.upcase]
     activity['domain'] = @p.shift.value
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
     activity['parameters'] = JSON.generate(@p)
-
-    p activity 
 
     @headers << Riddl::Header.new('CPEE_CALLBACK','true')
   end
@@ -84,6 +82,27 @@ class Put_Away < Riddl::Implementation #{{{
   end
 end  #}}} 
 
+class Show_Domains < Riddl::Implementation #{{{
+  def response
+    out = XML::Smart.string('<domains/>')
+    @a[0].each { |e| e['domain'] }.uniq.each { |e| out.root.add('domain', :name=> e)}
+    pp out.to_s
+    Riddl::Parameter::Complex.new("return","xml/string", out.to_s)
+  end
+end  #}}}  
+
+class Show_Domain_Users < Riddl::Implementation #{{{
+  def response
+    out = XML::Smart.string('<users/>')
+    @a[0].map{ |e| e['orgmodel'] }.uniq.each do |e|
+      x = XML::Smart.open(e)
+      pp x.find('organisation')
+    end
+    @a[0].each { |e| out.root.add('domain', :name => e['domain'])}
+    Riddl::Parameter::Complex.new("return","xml/string", out.to_s)
+  end
+end  #}}} 
+
 
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
@@ -96,6 +115,10 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
   on resource do
     run Callbacks,callbacks if post 'activity'
+    run Show_Domains,callbacks if get '*' 
+    on resource do
+      run Show_Domain_Users,callbacks if get '*'
+    end
     run Echo if websocket
     run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
     on resource 'resources' do #{{{

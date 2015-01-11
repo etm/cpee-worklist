@@ -38,15 +38,15 @@
     <parameter name="return" mimetype="xml/string"/>
   </message>
   <message name="users">
-    <parameter name="return" mimetype="xml/string"/>
+    <parameter name="return" mimetype="text/xml"/>
   </message>
   <message name="tasks">
-    <parameter name="return" mimetype="xml/string"/>
+    <parameter name="return" mimetype="text/xml"/>
   </message>
 
   <resource>
     <post in="activity"/>
-    <get out="domains"/>
+    <get in="*" out="domains"/>
     <resource> <!-- domain -->
       <get out="users"/>
       <resource> <!-- user -->
