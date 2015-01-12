@@ -1,69 +1,18 @@
-<description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-  <message name="activity"> <!--{{{-->
-    <parameter name="orgmodel" type="string"/>
-    <parameter name="domain" type="string"/>
-    <parameter name="form" type="string"/>
-    <choice>
-      <parameter name="unit" type="string"/>
-      <parameter name="role" type="string"/>
-      <group>
-        <parameter name="unit" type="string"/>
-        <parameter name="role" type="string"/>
-      </group>
-    </choice>  
-    <zeroOrMore>
-      <parameter name="*" type="string"/>
-    </zeroOrMore>
-  </message> <!--}}}-->
+<declaration xmlns="http://riddl.org/ns/declaration/1.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <interface name="main">
+    <xi:include href="wlengine.xml"/>
+  </interface>
+  <interface name="events">                                                                                                                                                                                 
+    <xi:include href="http://www.riddl.org/ns/common-patterns/notifications-producer/1.0/producer.xml"/>
+  </interface>
 
-  <message name="session">
-    <parameter name="id" type="string"/>
-    <optional>
-      <parameter name="url" type="string"/>
-    </optional>
-  </message>
-  <message name="take">
-    <parameter name="operation" fixed="take"/>
-  </message>
-  <message name="giveback">
-    <parameter name="operation" fixed="giveback"/>
-  </message>
-  <message name="details">
-    <parameter name="callbackurl" type="string"/>
-    <parameter name="formurl" type="string"/>
-    <parameter name="parameters" type="string"/>
-  </message>
+  <facade>
+    <tile>
+      <layer name="main"/>
+      <layer name="events">
+        <apply-to>/{}/{}</apply-to>
+      </layer>
+    </tile>
+  </facade>
+</declaration>
 
-  <message name="domains">
-    <parameter name="return" mimetype="xml/string"/>
-  </message>
-  <message name="users">
-    <parameter name="return" mimetype="text/xml"/>
-  </message>
-  <message name="tasks">
-    <parameter name="return" mimetype="text/xml"/>
-  </message>
-
-  <resource>
-    <post in="activity"/>
-    <get in="*" out="domains"/>
-    <resource> <!-- domain -->
-      <get out="users"/>
-      <resource> <!-- user -->
-        <post in="session"/>
-        <resource relative="tasks">
-          <get out="tasks"/>
-          <resource> <!-- task -->
-            <get out="details"/>
-            <put in="take"/>
-            <put in="giveback"/>
-            <delete/>
-          </resource>
-        </resource>
-        <resource relative="updates">
-          <websocket/>
-        </resource>
-      </resource>
-    </resource>
-  </resource>
-</description>

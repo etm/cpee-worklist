@@ -5,10 +5,7 @@ require 'rubygems'
 require 'riddl/server'
 require 'riddl/client'
 require 'riddl/utils/notifications_producer'
-require 'riddl/utils/properties'
 require 'riddl/utils/fileserve'
-require 'riddl/utils/downloadify'
-require 'riddl/utils/turtle'
 
 $sockets = []
 
@@ -85,21 +82,25 @@ end  #}}}
 class Show_Domains < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<domains/>')
-    @a[0].each { |e| e['domain'] }.uniq.each { |e| out.root.add('domain', :name=> e)}
-    pp out.to_s
-    Riddl::Parameter::Complex.new("return","xml/string", out.to_s)
+    @a[0].map { |e| e['domain'] }.uniq.each { |x| out.root.add('domain', :name=> x)}
+    x = Riddl::Parameter::Complex.new("return","text/xml") do
+      out.to_s
+    end
+    x
   end
 end  #}}}  
 
 class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
-    @a[0].map{ |e| e['orgmodel'] }.uniq.each do |e|
-      x = XML::Smart.open(e)
-      pp x.find('organisation')
+    @a[0].map{ |e| e['orgmodel'] if e['domain']==@r.last }.uniq.each do |e| 
+      next if e == nil
+      doc = XML::Smart.open(e)
+      doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
     end
-    @a[0].each { |e| out.root.add('domain', :name => e['domain'])}
-    Riddl::Parameter::Complex.new("return","xml/string", out.to_s)
+    pp out.to_s
+    [ Riddl::Parameter::Complex.new("return","text/xml", out.to_s) ]
   end
 end  #}}} 
 
@@ -113,14 +114,15 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
     File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(callbacks)
   end #}}}
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
-  on resource do
+
+  interface 'main' do
     run Callbacks,callbacks if post 'activity'
-    run Show_Domains,callbacks if get '*' 
+    run Show_Domains,callbacks if get
     on resource do
-      run Show_Domain_Users,callbacks if get '*'
+      run Show_Domain_Users,callbacks if get
     end
     run Echo if websocket
-    run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
+    # run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
     on resource 'resources' do #{{{
       on resource do
         run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources' if get '*'
@@ -139,4 +141,13 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
       run Put_Away,callbacks if get 'str'
     end #}}}
   end
+
+  interface 'notifications' do |r|
+    doamin = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1].to_i
+    user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2].to_i
+    p user
+    p domain
+    # use Riddl::Utils::Notifications::Producer::implementation(controller[id].notifications, NotificationsHandler.new(controller[id]), opts[:mode])
+  end
+
 end.loop!
