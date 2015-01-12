@@ -93,7 +93,7 @@ end  #}}}
 class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
-    @a[0].map{ |e| e['orgmodel'] if e['domain']==@r.last }.uniq.each do |e| 
+    @a[0].map{ |e| e['orgmodel'] if e['domain']==@r.last.gsub('%20',' ')}.uniq.each do |e| 
       next if e == nil
       doc = XML::Smart.open(e)
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
@@ -103,6 +103,26 @@ class Show_Domain_Users < Riddl::Implementation #{{{
     [ Riddl::Parameter::Complex.new("return","text/xml", out.to_s) ]
   end
 end  #}}} 
+
+class Show_Tasks < Riddl::Implementation #{{{
+  def response
+    out = XML::Smart.string('<tasks/>')
+    tasks = []
+    @a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq.each do |e| 
+      next if e == nil
+      doc = XML::Smart.open(e)
+      doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel| 
+        @a[0].each{ |cb| tasks << cb['id'] if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] = '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0)}
+      end
+    end
+    tasks.uniq.each{|e| next if e==nil;out.root.add("task", :id => e)}
+    x = Riddl::Parameter::Complex.new("return","text/xml") do
+      out.to_s
+    end
+    x
+  end
+end  #}}}  
 
 
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
@@ -120,8 +140,13 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
     run Show_Domains,callbacks if get
     on resource do
       run Show_Domain_Users,callbacks if get
+      on resource do
+        on resource 'tasks' do
+          run Show_Tasks,callbacks if get
+        end
+      end
     end
-    run Echo if websocket
+    # run Echo if websocket
     # run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
     on resource 'resources' do #{{{
       on resource do
