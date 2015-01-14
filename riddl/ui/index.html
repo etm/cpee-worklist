@@ -1,0 +1,179 @@
+<!--
+  This file is part of CPEE.
+
+  CPEE is free software: you can redistribute it and/or modify it under the terms
+  of the GNU General Public License as published by the Free Software Foundation,
+  either version 3 of the License, or (at your option) any later version.
+
+  CPEE is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  CPEE (file COPYING in the main directory).  If not, see
+  <http://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>CPEE Cockpit</title>
+
+    <!-- libs, do not modify -->
+
+    <script type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.browser.js"></script>
+    <script type="text/javascript" src="lib/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="lib/util.js"></script>
+    <script type="text/javascript" src="lib/printf.js"></script>
+    <script type="text/javascript" src="lib/strftime.min.js"></script>
+    <script type="text/javascript" src="lib/parsequery.js"></script>
+    <script type="text/javascript" src="lib/underscore.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.caret.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.cookie.js"></script>
+    <script type="text/javascript" src="lib/jquery.redraw.js"></script>
+
+    <script type="text/javascript" src="lib/custommenu.js"></script>
+    <script type="text/javascript" src="lib/ui.js"></script>
+
+    <link rel="stylesheet" href="lib/custommenu.css" type="text/css"/>
+    <link rel="stylesheet" href="lib/ui.css" type="text/css"/>
+
+    <!-- custom stuff, play arround  -->
+
+    <script type="text/javascript" src="js/ui.js"></script>
+    <script type="text/javascript" src="js/details.js"></script>
+    <script type="text/javascript" src="js/parameters.js"></script>
+    <link rel="stylesheet" href="css/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="css/ui.css" type="text/css"/>
+    
+    <!-- Flos Stuff -->
+    
+    <script type="text/javascript" src="js/worklist.js"></script>
+  </head>
+  <body data-defaultport="9299">
+    <!-- The following six are templates that get used during ui generation, change them carefully -->
+    <table id="dat_template_pair" class='hidden'> <!--{{{-->
+      <tr class="pair">
+        <!-- NOT NEEDED <td class='del'><a href='' tabindex='-1' title='Delete Item (Ctrl-D)'>✖</a></td> -->
+        <td class='pname'><input pattern="[a-f0-9]{32}" placeholder='fill in name...' type='text' class='pair_name' value=''/></td>
+        <td class='sep'>⇒</td>
+        <td class='pvalue'><input placeholder='fill in value...' class='pair_value' value=''/></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_sizer" class='hidden'> <!--{{{-->
+      <tr class='sizer'>
+        <td class='del'></td>
+        <td class='pname'></td>
+        <td class='sep'></td>
+        <td class='value'></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_input" class='hidden'> <!--{{{-->
+      <tr>
+        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
+        <td class='sep'>⇒</td>
+        <td class='value'><input type="text" class="prop_value" value=""/></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_readonly" class='hidden'> <!--{{{-->
+      <tr>
+        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
+        <td class='sep'>⇒</td>
+        <td class='value'><input type="text" readonly='readonly' class="prop_value" value=""/></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_area" class='hidden'> <!--{{{-->
+      <tr>
+        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
+        <td class='sep'>⇒</td>
+        <td class='value'><textarea rows='3' class="prop_value"></textarea></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_header" class='hidden'> <!--{{{-->
+      <tr class='header'>
+        <td colspan='4'><strong class="header_value"></strong> <button title='Ctrl-N while editing entry'>New</button></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_line" class='hidden'> <!--{{{-->
+      <tr>
+        <td class='cname' colspan='2'></td>
+        <td class='sep'>⇒</td>
+        <td class='value'><em class="line_main"></em><em>:</em> <span class='line_text'></span></td>
+      </tr>
+    </table> <!--}}}-->
+    <table id="prop_template_select" class='hidden'> <!--{{{-->
+      <tr>
+        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
+        <td class='sep'>⇒</td>
+        <td class='value'><select class="prop_value"></select></td>
+      </tr>
+    </table> <!--}}}-->
+
+    <div class="tabbed" id="worklist">
+      <table class="tabbar">
+        <tr>
+          <td class="tab switch"                            ><h1></h1></td>
+          <td class="tab"           id="tablogin"       ><h1>Login</h1></td>
+          <td class="tab inactive " id="taborganisation" ><h1>Organisation</h1></td>
+          <td class="tab inactive " id="tabconfigure"  ><h1>Configure</h1></td>
+          <td class="tabbehind"><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></td>
+        </tr>
+        <tr class="border hidden"><td colspan="5"></td></tr>
+      </table>
+      <div class="tabbelow">
+        <div id="arealogin"> <!--{{{-->
+          <form>
+            <table class='layout'>
+            <tr>
+              <td>Domain:</td>
+              <td><input name="domain-name" type="text" value=""/></td>
+            </tr>
+            <tr>
+              <td>User ID:</td>
+              <td><input name="user-name" type="text" value=""/></td>
+              <td><input name="getListBt" type="submit" value="get Worklist"/></td>
+            </tr>
+            </table>
+          </form>
+        </div> <!--}}}-->
+
+        <div id="areaconfigure" class="inactive"> <!--{{{-->
+          <table class='layout'>
+          <tr>
+            <td>Base URL:</td>
+            <td><input name="base-url" type="text" value=""/></td>
+          </tr>
+          <tr>
+            <td>User URL:</td>
+            <td><input name="instance-url" type="text" value=""/></td>
+          </tr>
+          </table>
+        </div> <!--}}}-->
+      </div>
+    </div>
+
+    <div class="tabbed rest hidden" id='main'>
+      <table class="tabbar">
+        <tr>
+          <td class="tab switch"                       ><h1></h1></td>
+          <td class="tab"          id="tabdataelements"><h1>Tasks</h1></td>
+          <td class="tab inactive" id="tabendpoints"   ><h1>Endpoints</h1></td>
+          <td class="tabbehind"><button title='Ctrl-N while editing entry'>New</button><button title='Ctrl-S while editing entry'>Save</button></td>
+        </tr>
+        <tr class="border hidden"><td colspan="4"></td></tr>
+      </table>
+      <div class="tabbelow">
+        <div id="areadataelements"> <!--{{{-->
+          <table id="dat_dataelements"></table>
+        </div> <!--}}}-->
+        <div id="areaendpoints" class='inactive'> <!--{{{-->
+          <table id="dat_endpoints"></table>
+        </div> <!--}}}-->
+        <span id='handle1' class="ui-resizable-handle ui-resizable-s">drag to resize</span>
+      </div>
+    </div>
+
+  </body>
+</html>

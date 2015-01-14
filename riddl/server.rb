@@ -59,12 +59,15 @@ class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
     @a[0].map{ |e| e['orgmodel'] if e['domain']==@r.last.gsub('%20',' ')}.uniq.each do |e| 
-      next if e == nil
+      if e == nil
+        @status = 404
+        next
+      end
       doc = XML::Smart.open(e)
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
     end
-    [ Riddl::Parameter::Complex.new("return","text/xml", out.to_s) ]
+    Riddl::Parameter::Complex.new("return","text/xml", out.to_s) 
   end
 end  #}}} 
 
@@ -73,7 +76,7 @@ class Show_Tasks < Riddl:: Implementation #{{{
     out = XML::Smart.string('<tasks/>')
     tasks = []
 
-    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq).each{ |rel| @a[0].each{ |cb| tasks << cb['id'] if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] = '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) }}
+    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq).each{ |rel| @a[0].each{ |cb| tasks << cb['id'] if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) }}
     tasks.uniq.each{|e| next if e==nil;out.root.add("task", :id => e)}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
