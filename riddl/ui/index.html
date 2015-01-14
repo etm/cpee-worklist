@@ -59,7 +59,8 @@
         <!-- NOT NEEDED <td class='del'><a href='' tabindex='-1' title='Delete Item (Ctrl-D)'>✖</a></td> -->
         <td class='pname'><input pattern="[a-f0-9]{32}" placeholder='fill in name...' type='text' class='pair_name' value=''/></td>
         <td class='sep'>⇒</td>
-        <td class='pvalue'><input placeholder='fill in value...' class='pair_value' value=''/></td>
+        <td class='ptake'><button class='pair_take' value=''>Take</button></td>
+        <td class='pgiveback'><button class='pair_giveback' value='' >Give Back</button></td>
       </tr>
     </table> <!--}}}-->
     <table id="prop_template_sizer" class='hidden'> <!--{{{-->
@@ -123,7 +124,7 @@
         <tr class="border hidden"><td colspan="5"></td></tr>
       </table>
       <div class="tabbelow">
-        <div id="arealogin"> <!--{{{-->
+        <div id="arealogin"> <!--{ {{-->
           <form>
             <table class='layout'>
             <tr>
@@ -171,7 +172,6 @@
         <div id="areaendpoints" class='inactive'> <!--{{{-->
           <table id="dat_endpoints"></table>
         </div> <!--}}}-->
-        <span id='handle1' class="ui-resizable-handle ui-resizable-s">drag to resize</span>
       </div>
     </div>
 

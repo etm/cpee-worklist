@@ -74,10 +74,17 @@ end  #}}}
 class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
-    tasks = []
+    tasks = {}
 
-    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq).each{ |rel| @a[0].each{ |cb| tasks << cb['id'] if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) }}
-    tasks.uniq.each{|e| next if e==nil;out.root.add("task", :id => e)}
+    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq).each do |rel| 
+      @a[0].each do |cb| 
+        if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
+          tasks["#{cb['id']}"] = cb['user']
+        end
+      end
+    end
+    pp tasks
+    tasks.each{|k,v| out.root.add("task", :id => k, :uid => v)}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
     end
@@ -96,7 +103,7 @@ class Take_Task < Riddl::Implementation #{{{
   end
 end  #}}} 
 
-class Return_task < Riddl::Implementation #{{{
+class Return_Task < Riddl::Implementation #{{{
   def response
     index = @a[0].index{ |c| c["id"] == @r.last }
     if index && (@a[0][index]['user'] == @r[-3])

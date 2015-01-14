@@ -99,21 +99,28 @@ function check_subscription() { // {{{
 
 function get_worklist() {// {{{
   var info = "bla";
+  var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
   console.log("SUCCESS");
   if (info != null) {
     $.ajax({
       type: "GET", 
-      url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks',
+      url: url,
       dataType: "xml",
       success: function(res){
-        // $("input[name=instance-url]").val((base + "//" + res + "/").replace(/\/+/g,"/").replace(/:\//,"://"));
         $(".tabbed.hidden").removeClass("hidden");
         var ctv = $("#dat_dataelements");
         ctv.empty();
         $(res).find('task').each(function(){
           var node = $("#dat_template_pair tr").clone(true);
-          $('.pair_name',node).val($(this).attr('id'));
-          $('.pair_value',node).val("Task nehmen");
+          var id = $(this).attr('id');
+          $('.pair_name',node).val(id);
+          $('.pair_take',node).click(function(){ take_work(url + '/' + id,$('.pair_take',node),$('.pair_giveback',node),1); });
+          $('.pair_giveback',node).click(function(){ take_work(url + '/' + id,$('.pair_giveback',node),$('.pair_take',node),0); });
+          if ($(this).attr('uid')=='*') {
+            $('.pair_giveback',node).prop('disabled', true);
+          } else {
+            $('.pair_take',node).prop('disabled', true);
+          }
           ctv.append(node);
         });
       },  
@@ -124,6 +131,25 @@ function get_worklist() {// {{{
   } 
 }// }}}
   
+function take_work(url,butt,butt2,give_or_take){
+  var op = give_or_take == 1 ? "take" : "giveback";
+  $.ajax({
+    type: "PUT",
+    url: url,
+    data:"operation="+op ,
+    success: function(){
+      $(butt).prop('disabled',true);
+      $(butt2).prop('disabled',false);
+      console.log("SUCCESS");
+    },
+    error: function(a,b,c){
+      alert("Put didn't work");
+    }
+  });
+
+
+
+}
 function monitor_instance(load) {// {{{
   var url = $("input[name=instance-url]").val();
 

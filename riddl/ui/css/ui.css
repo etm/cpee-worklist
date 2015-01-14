@@ -112,9 +112,10 @@ button.highlight { background-color: #cc0000; }
   width: 100%;
 }
 #dat_dataelements button                  { border: 1pt solid buttonshadow; padding: 0; }
-#dat_dataelements td:nth-child(1)         { width: 4em; font-size: 1.3em; font-weight: bold;}
-#dat_dataelements td:nth-child(2)         { width: 8em; }
-#dat_dataelements td:nth-child(3)         { width: 1em; }
+#dat_dataelements td:nth-child(1)         { width: 8em; font-size: 1.3em; font-weight: bold;}
+#dat_dataelements td:nth-child(2)         { width: 4em; }
+#dat_dataelements td:nth-child(3)         { width: 15em; }
+#dat_dataelements td:nth-child(4)         { width: 15em; }
 #dat_dataelements tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
 #dat_dataelements tr:nth-child(odd) input { background-color: ButtonFace; }
 #dat_dataelements input                   { border: 0 none; padding: 0; margin: 0; }
