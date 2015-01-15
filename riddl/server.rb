@@ -18,6 +18,11 @@ def get_rel(orgmodels) #{{{
     rels
 end #}}}
 
+def write_cb(cb) #{{{
+  thr = Thread.new { File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(cb) }
+  thr.join
+end #}}}
+
 class Callbacks < Riddl::Implementation #{{{
   def response
     @a[0] << (activity = {}) 
@@ -30,6 +35,7 @@ class Callbacks < Riddl::Implementation #{{{
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
     activity['parameters'] = JSON.generate(@p)
+    write_cb(@a[0])
     @headers << Riddl::Header.new('CPEE_CALLBACK','true')
   end
 end #}}} 
@@ -39,6 +45,7 @@ class Delbacks < Riddl::Implementation #{{{
     index = @a[0].index{ |e| e["id"] == @r.last }
     if index 
       @a[0].delete_at(index)
+      write_cb(@a[0])
     else 
       @status = 404
     end
@@ -97,6 +104,7 @@ class Take_Task < Riddl::Implementation #{{{
     index = @a[0].index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0][index]["user"] = @r[-3]
+      write_cb(@a[0])
     else
       @status = 404
     end
@@ -108,6 +116,7 @@ class Return_Task < Riddl::Implementation #{{{
     index = @a[0].index{ |c| c["id"] == @r.last }
     if index && (@a[0][index]['user'] == @r[-3])
       @a[0][index]["user"] = '*'
+      write_cb(@a[0])
     else
       @stauts = 404
     end
@@ -130,9 +139,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   cross_site_xhr true
   callbacks = []   
   at_exit do #{{{
-    puts 'aaaaa'
     File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(callbacks)
-    exit!
   end #}}}
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
 
