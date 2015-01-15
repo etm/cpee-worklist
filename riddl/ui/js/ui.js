@@ -3,6 +3,8 @@ $(document).ready(function() {
     $('body').children().remove();
     $('body').append('Sorry, only Firefox >= 20.0 and Chrom(e|ium) >= 17 for now.');
   }  
+  // Bei mir gibt es keine checkbox atm..... 
+  $.cookie('cpee_iagree','yes');
   if (!($.cookie('cpee_iagree'))) {
     var skip = false;
 
