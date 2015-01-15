@@ -38,7 +38,7 @@
 
   <message name="domains">
     <parameter name="return" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
-      <xi:include href="xxxx.rng"/>
+     <!--  <xi:include href="xxxx.rng"/> -->
     </parameter>            
   </message>
   <message name="users">
@@ -46,6 +46,12 @@
   </message>
   <message name="tasks">
     <parameter name="return" mimetype="text/xml"/>
+  </message>
+  <message name="json_details">
+    <parameter name="operation" fixed="json"/>
+  </message>
+  <message name="json">
+    <parameter name="data" mimetype="application/json"/>
   </message>
 
   <resource>
@@ -58,6 +64,7 @@
           <get out="tasks"/>
           <resource> <!-- task -->
             <get out="details"/>
+            <get in="json_details" out="json"/>
             <put in="take"/>
             <put in="giveback"/>
             <delete/>

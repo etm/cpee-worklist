@@ -134,6 +134,17 @@ class Task_Details < Riddl::Implementation #{{{
   end
 end  #}}} 
 
+class JSON_Task_Details < Riddl::Implementation #{{{
+  def response
+    index = @a[0].index{ |c| c["id"] == @r.last } 
+    if index 
+      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0][index]['url'], 'form' => @a[0][index]['form'], 'parameters' => @a[0][index]['parameters']})
+    else
+      @status = 404
+    end
+  end
+end  #}}} 
+
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
   cross_site_xhr true
@@ -152,6 +163,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
         on resource 'tasks' do
           run Show_Tasks,callbacks if get
           on resource do
+            run JSON_Task_Details,callbacks if get 'json_details'
             run Task_Details,callbacks if get
             run Take_Task,callbacks if put 'take'
             run Return_Task,callbacks if put 'giveback'
