@@ -19,10 +19,9 @@ body {
 #container{width:100%;}
 #check { 
   position:fixed;
-  top: 30%;
-  left: 30%;
-  height: 18em;
-  width:30em;
+  left: 37%;
+  height: 15em;
+  width: 30em;
   margin-top: -9em;
   margin-left: -15em;
   border: 1px solid #ccc;
@@ -37,5 +36,8 @@ body {
   width:10em;
 }
 .rbt {
+  margin-left: 1em;
+}
+.p_text {
   margin-left: 1em;
 }

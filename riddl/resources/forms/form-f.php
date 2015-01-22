@@ -57,9 +57,9 @@
             exit(0);
         } //}}}
 
-        $bla = json_decode($_POST['parameters']);
-        echo '<p> Die Schadenssummer beträgt ' . $bla[0]->value . ' Euro</p>';
-        echo '<p> Laut unserem Techniker ist dieses Auto ' . $bla[1]->value . '. </p>';
+        $bla = isset($_POST['parameters']) ? json_decode($_POST['parameters']) : null;
+        echo '<p class="p_text"> Die Schadenssummer beträgt ' . (empty($bla) ? "unbekannt" : $bla[0]->value) . ' Euro</p>';
+        echo '<p class="p_text"> Laut unserem Techniker ist dieses Auto ' . (empty($bla) ? "nicht bekannt" : $bla[1]->value) . '. </p>';
       ?>
       <table>
         <tr>
@@ -69,7 +69,7 @@
           </td>
           <td>
             <?php
-              echo "<input type= 'button' onclick = 'do_it(\"" . $_POST['url'] . "\",\"" . $_POST['wlurl'] . "\",\"" . $_POST['baseurl'] . "\")' id=\"butt\" value=\"absenden\"/"
+              echo "<input type= 'button' onclick = 'do_it(\"" . (isset($_POST['url']) ? $_POST['url']:"null") . "\",\"" . (isset($_POST['wlurl']) ? $_POST['wlurl'] : "null") . "\",\"" . (isset($_POST['baseurl']) ? $_POST['baseurl']:"null") . "\")' id=\"butt\" value=\"absenden\"/"
             ?>
           </td>
         </tr>
