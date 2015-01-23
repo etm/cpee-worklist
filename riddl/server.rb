@@ -7,6 +7,8 @@ require 'riddl/client'
 require 'riddl/utils/notifications_producer'
 require 'riddl/utils/fileserve'
 
+$socket = []
+
 def get_rel(orgmodels) #{{{
     rels = []
     orgmodels.each do |e|
@@ -34,6 +36,13 @@ class Callbacks < Riddl::Implementation #{{{
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
+    @a[1][activity['domain']] ||= {} 
+    #Read xml file user = |xxx|
+    @a[1][activity['domain']][xxx] =  Riddl::Utils::Notifications::Producer::Backend.new(
+        File.dirname(__FILE__) + '/topics.xml',
+        File.dirname(__FILE__) + '/notifications/'
+    )
+
     activity['parameters'] = JSON.generate(@p)
     write_cb(@a[0])
     @headers << Riddl::Header.new('CPEE_CALLBACK','true')
@@ -134,6 +143,12 @@ class Task_Details < Riddl::Implementation #{{{
   end
 end  #}}} 
 
+class Login < Riddl::Implementation #{{{
+  def response
+    pp @p[0]
+  end
+end  #}}} 
+
 class JSON_Task_Details < Riddl::Implementation #{{{
   def response
     index = @a[0].index{ |c| c["id"] == @r.last } 
@@ -145,10 +160,39 @@ class JSON_Task_Details < Riddl::Implementation #{{{
   end
 end  #}}} 
 
+class Bla < Riddl::Implementation  #{{{
+  def response 
+    domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1].to_i
+    user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2].to_i
+    p user
+    p domain
+  end
+end #}}}
+
+class Echo < Riddl::WebSocketImplementation #{{{
+  def onopen
+    $socket << self
+    puts "Connection established"
+  end
+
+  def onmessage(data)
+    printf("Received: %p\n", data)
+    send data
+    printf("Sent: %p\n", data)
+  end
+
+  def onclose
+    $socket.delete(self)
+    puts "Connection closed"
+  end
+
+end #}}}
+
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
   cross_site_xhr true
   callbacks = []   
+  notifications = {}
   at_exit do #{{{
     File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(callbacks)
   end #}}}
@@ -160,6 +204,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
     on resource do
       run Show_Domain_Users,callbacks if get
       on resource do
+        run Login if post 'session'
         on resource 'tasks' do
           run Show_Tasks,callbacks if get
           on resource do
@@ -181,11 +226,11 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   end
 
   interface 'notifications' do |r|
-    domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1].to_i
-    user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2].to_i
-    p user
+    domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
+    user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2]
+    pp user
     p domain
-    # use Riddl::Utils::Notifications::Producer::implementation(controller[id].notifications, NotificationsHandler.new(controller[id]), opts[:mode])
+    use Riddl::Utils::Notifications::Producer::implementation(notifications[domain][user], NotificationsHandler.new(nil))
   end
 
 end.loop!
