@@ -10,14 +10,14 @@ require 'riddl/utils/fileserve'
 $socket = []
 
 def get_rel(orgmodels) #{{{
-    rels = []
-    orgmodels.each do |e|
-      next if e == nil
-      doc = XML::Smart.open(e)
-      doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-      doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each{ |rel| rels << rel }
-    end
-    rels
+  rels = []
+  orgmodels.each do |e|
+    next if e == nil
+    doc = XML::Smart.open(e)
+    doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+    doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each{ |rel| rels << rel }
+  end
+  rels
 end #}}}
 
 def write_cb(cb) #{{{
@@ -74,7 +74,7 @@ end  #}}}
 class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
-    @a[0].map{ |e| e['orgmodel'] if e['domain']==@r.last.gsub('%20',' ')}.uniq.each do |e| 
+    @a[0].map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r.last)}.uniq.each do |e| 
       if e == nil
         @status = 404
         next
@@ -92,7 +92,7 @@ class Show_Tasks < Riddl:: Implementation #{{{
     out = XML::Smart.string('<tasks/>')
     tasks = {}
 
-    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==@r[-3].gsub('%20',' ')}.uniq).each do |rel| 
+    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
       @a[0].each do |cb| 
         if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
           tasks["#{cb['id']}"] = cb['user']
@@ -198,6 +198,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   end #}}}
   callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
 
+
   interface 'main' do
     run Callbacks,callbacks if post 'activity'
     run Show_Domains,callbacks if get
@@ -225,7 +226,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
     end #}}}
   end
 
-  interface 'notifications' do |r|
+  interface 'events' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2]
     pp user
