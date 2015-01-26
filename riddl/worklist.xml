@@ -10,9 +10,8 @@
     <tile>
       <layer name="main"/>
       <layer name="events">
-        <apply-to>/{}/{}</apply-to>
+        <apply-to>/{}</apply-to>
       </layer>
     </tile>
   </facade>
 </declaration>
-
