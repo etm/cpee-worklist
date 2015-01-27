@@ -11,50 +11,18 @@ var save = {};
     save['details'] = undefined;
 var node_state = {};
 var base_url;
-var sub_more = 'topic'  + '=' + 'running' + '&' +// {{{
-               'events' + '=' + 'activity_calling,activity_manipulating,activity_failed,activity_done' + '&' +
-               'topic'  + '=' + 'running' + '&' +
-               'votes'  + '=' + 'syncing_after' + '&' +
-               'topic'  + '=' + 'properties/description' + '&' +
-               'events' + '=' + 'change,error' + '&' +
-               'topic'  + '=' + 'properties/position' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/state' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/dataelements' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/endpoints' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/transformation' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/handlerwrapper' + '&' +
-               'events' + '=' + 'result' + '&' +
-               'topic'  + '=' + 'properties/handlers' + '&' +
-               'events' + '=' + 'change';// }}}
-var sub_less = 'topic'  + '=' + 'running' + '&' +// {{{
-               'events' + '=' + 'activity_calling,activity_manipulating,activity_failed,activity_done' + '&' +
-               'topic'  + '=' + 'properties/position' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/description' + '&' +
-               'events' + '=' + 'change,error' + '&' +
-               'topic'  + '=' + 'properties/state' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/dataelements' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/endpoints' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/transformation' + '&' +
-               'events' + '=' + 'change' + '&' +
-               'topic'  + '=' + 'properties/handlerwrapper' + '&' +
-               'events' + '=' + 'result' + '&' +
-               'topic'  + '=' + 'properties/handlers' + '&' +
-               'events' + '=' + 'change';// }}}
 
-$(document).ready(function() {// {{{
+$(document).ready(function() {// {{{  
   base_url= document.URL;
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){ get_worklist(); event.preventDefault(); });
   $("button[name=instance]").click(function(){ monitor_instance(false); });
+  if($.cookie("user") && $.cookie("domain")){
+    $("input[name=domain-name]").val($.cookie("domain"));
+    $("input[name=user-name]").val($.cookie("user"));
+    get_worklist();
+    console.log("cookiemonster");
+  }
 });// }}}
 
 function check_subscription() { // {{{
@@ -90,6 +58,11 @@ function check_subscription() { // {{{
 
 function get_worklist() {// {{{
   var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
+  // Set cookies
+  $.cookie("user",$("input[name=user-name]").val());
+  $.cookie("domain",$("input[name=domain-name]").val());
+  // Finished Cookies
+
   console.log("SUCCESS");
   $.ajax({
     type: "GET", 
@@ -167,6 +140,7 @@ function do_work(url) { //{{{
 
 function monitor_instance(load) {// {{{
   var url = $("input[name=instance-url]").val();
+
 
   $('.tabbehind button').hide();
   $('#dat_details').empty();

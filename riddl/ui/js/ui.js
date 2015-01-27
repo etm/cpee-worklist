@@ -5,6 +5,7 @@ $(document).ready(function() {
   }  
   // Bei mir gibt es keine checkbox atm..... 
   $.cookie('cpee_iagree','yes');
+  console.log(document.cookie);
   if (!($.cookie('cpee_iagree'))) {
     var skip = false;
 
