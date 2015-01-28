@@ -18,7 +18,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>CPEE Cockpit</title>
+    <title>Worklist</title>
 
     <!-- libs, do not modify -->
 
@@ -49,77 +49,29 @@
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
     
     <!-- Flos Stuff -->
-    
     <script type="text/javascript" src="js/worklist.js"></script>
   </head>
   <body data-defaultport="9299">
     <!-- The following six are templates that get used during ui generation, change them carefully -->
-    <table id="dat_template_pair" class='hidden'> <!--{{{-->
-      <tr class="pair">
-        <!-- NOT NEEDED <td class='del'><a href='' tabindex='-1' title='Delete Item (Ctrl-D)'>✖</a></td> -->
-        <td class='pname'><input pattern="[a-f0-9]{32}" placeholder='fill in name...' type='text' class='pair_name' value=''/></td>
+    <table id="dat_template_tasks" class='hidden'> <!--{{{-->
+      <tr class="task">
+        <td class='name'></td>
         <td class='sep'>⇒</td>
-        <td class='ptake'><button class='pair_take' value=''>Take</button></td>
-        <td class='pgiveback'><button class='pair_giveback' value='' >Give Back</button></td>
-        <td class='pdo'><button class='pair_do' value='' >Do it!</button></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_sizer" class='hidden'> <!--{{{-->
-      <tr class='sizer'>
-        <td class='del'></td>
-        <td class='pname'></td>
-        <td class='sep'></td>
-        <td class='value'></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_input" class='hidden'> <!--{{{-->
-      <tr>
-        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
-        <td class='sep'>⇒</td>
-        <td class='value'><input type="text" class="prop_value" value=""/></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_readonly" class='hidden'> <!--{{{-->
-      <tr>
-        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
-        <td class='sep'>⇒</td>
-        <td class='value'><input type="text" readonly='readonly' class="prop_value" value=""/></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_area" class='hidden'> <!--{{{-->
-      <tr>
-        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
-        <td class='sep'>⇒</td>
-        <td class='value'><textarea rows='3' class="prop_value"></textarea></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_header" class='hidden'> <!--{{{-->
-      <tr class='header'>
-        <td colspan='4'><strong class="header_value"></strong> <button title='Ctrl-N while editing entry'>New</button></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_line" class='hidden'> <!--{{{-->
-      <tr>
-        <td class='cname' colspan='2'></td>
-        <td class='sep'>⇒</td>
-        <td class='value'><em class="line_main"></em><em>:</em> <span class='line_text'></span></td>
-      </tr>
-    </table> <!--}}}-->
-    <table id="prop_template_select" class='hidden'> <!--{{{-->
-      <tr>
-        <td class='cname' colspan='2'><strong class="prop_name"></strong></td>
-        <td class='sep'>⇒</td>
-        <td class='value'><select class="prop_value"></select></td>
+        <td class='buttons'>
+          <button class='task_take' value=''>Take</button>
+          <button class='task_giveback' value=''>Give Back</button>
+          <button class='task_do' value=''>Do it!</button>
+        </td>
       </tr>
     </table> <!--}}}-->
 
     <div class="tabbed" id="worklist">
       <table class="tabbar">
         <tr>
-          <td class="tab switch"                            ><h1></h1></td>
+          <td class="tab switch"                        ><h1></h1></td>
           <td class="tab"           id="tablogin"       ><h1>Login</h1></td>
-          <td class="tab inactive " id="taborganisation" ><h1>Organisation</h1></td>
-          <td class="tab inactive " id="tabconfigure"  ><h1>Configure</h1></td>
+          <td class="tab inactive " id="taborganisation"><h1>Organisation</h1></td>
+          <td class="tab inactive " id="tabconfigure"   ><h1>Configure</h1></td>
           <td class="tabbehind"><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></td>
         </tr>
         <tr class="border hidden"><td colspan="5"></td></tr>
@@ -149,7 +101,7 @@
           </tr>
           <tr>
             <td>User URL:</td>
-            <td><input name="instance-url" type="text" value=""/></td>
+            <td><input name="user-url" type="text" value=""/></td>
           </tr>
           </table>
         </div> <!--}}}-->
@@ -159,19 +111,15 @@
     <div class="tabbed rest hidden" id='main'>
       <table class="tabbar">
         <tr>
-          <td class="tab switch"                       ><h1></h1></td>
-          <td class="tab"          id="tabdataelements"><h1>Tasks</h1></td>
-          <td class="tab inactive" id="tabendpoints"   ><h1>Endpoints</h1></td>
-          <td class="tabbehind"><button title='Ctrl-N while editing entry'>New</button><button title='Ctrl-S while editing entry'>Save</button></td>
+          <td class="tabbefore"                ></td>
+          <td class="tab"          id="tabtask"><h1>Tasks</h1></td>
+          <td class="tabbehind"                ></td>
         </tr>
         <tr class="border hidden"><td colspan="4"></td></tr>
       </table>
       <div class="tabbelow">
-        <div id="areadataelements"> <!--{{{-->
-          <table id="dat_dataelements"></table>
-        </div> <!--}}}-->
-        <div id="areaendpoints" class='inactive'> <!--{{{-->
-          <table id="dat_endpoints"></table>
+        <div id="areatask"> <!--{{{-->
+          <table id="dat_tasks"></table>
         </div> <!--}}}-->
       </div>
     </div>

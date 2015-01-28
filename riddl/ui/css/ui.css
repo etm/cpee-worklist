@@ -48,44 +48,8 @@ button.highlight { background-color: #cc0000; }
 
 #parameters .tabbelow { height: 9em; min-height: 1.7em; }
 
-#areadataelements { height: 100%; overflow-x: hidden; overflow-y: scroll; }
-#areaendpoints    { height: 100%; overflow: auto; }
-
-#areainstance input[type=file]         { display: none; }
-#areainstance div.section              { display: table-cell; vertical-align: middle; }
-#areainstance div.section:nth-child(1) {                                      padding: 0 0.5em 0 0; }
-#areainstance div.section:nth-child(2) { border-left: 1px solid ButtonShadow; padding: 0 0.5em; }
-#areainstance div.section:nth-child(3) { border-left: 1px solid ButtonShadow; padding: 0 0 0 0.5em; }
-
-#areainstance div.section:nth-child(1) div                          { vertical-align: middle; margin: 0; padding: 0; }
-#areainstance div.section:nth-child(1) button                       { vertical-align: middle; margin: 0; padding: 0; }
-#areainstance div.section:nth-child(1) div:nth-child(2)             { text-align: right; }
-#areainstance div.section:nth-child(1) button[name=loadtestset]     { width: 10em; height: 3.5em; }
-#areainstance div.section:nth-child(1) button[name=loadtestsetfile] { width: 10em; height: 3.5em; margin-left: 0.2em; }
-#areainstance div.section:nth-child(1) button[name=loadmodelfile]   { width: 10em; height: 2em;   margin-top: 0.2em; }
-
-#areainstance div.section:nth-child(2) button                       { width: 6em; height: 4.5em; vertical-align: middle; margin: 0; padding: 0; }
-#areainstance div.section:nth-child(3) div                          { vertical-align: middle; margin: 0; padding: 0; }
-#areainstance div.section:nth-child(3) button[name=loadmodeltype]   { width: 10em; height: 2em; }
-
-#areaexecution { height: 7em; overflow: auto; }
-#areaexecution input { padding: 0; margin:0; }
-#areaexecution table.compact { width: 100%; }
-#areaexecution table.compact tr td:nth-child(1) { width: 15ex; }
-
-#areaexecution table.compact tbody.debug tr:last-child td { padding-bottom: 0.5em; }
-#areaexecution table.compact tbody.exe tr:first-child td { padding-top: 0.5em; }
-#areaexecution table.compact tbody.exe { 1em; border-top: 1px solid ButtonShadow; }
-
-#areaexecution table.compact tbody.exe td { height: 2.2em; }
-
-#dat_log { width:100%; }
-#dat_log td { vertical-align: top; }
-#dat_log tr:nth-child(odd) { background-color: ButtonFace; color: ButtonText; }
-
-#areadetails { table-layout: fixed; }
-
-#dat_endpoints {
+#areatasks { height: 100%; overflow-x: hidden; overflow-y: scroll; }
+#dat_tasks {
   border-collapse:collapse;
   border-spacing:0;
   border:0 none;
@@ -93,41 +57,11 @@ button.highlight { background-color: #cc0000; }
   padding:0;
   width: 100%;
 }
-#dat_endpoints button                  { border: 1pt solid buttonshadow; padding: 0; }
-#dat_endpoints td:nth-child(1)         { width: 1.2em; font-size: 1.3em; font-weight: bold; }
-#dat_endpoints td:nth-child(2)         { width: 8em; }
-#dat_endpoints td:nth-child(3)         { width: 1em; }
-#dat_endpoints tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
-#dat_endpoints tr:nth-child(odd) input { background-color: ButtonFace; }
-#dat_endpoints input                   { border: 0 none; padding: 0; margin: 0; }
-#dat_endpoints input:first-child       { border: 0 none; width: 8em; }  
-#dat_endpoints input:last-child        { border: 0 none; width: 100%; }
-
-#dat_dataelements {
-  border-collapse:collapse;
-  border-spacing:0;
-  border:0 none;
-  margin:0;
-  padding:0;
-  width: 100%;
-}
-#dat_dataelements button                  { border: 1pt solid buttonshadow; padding: 0; }
-#dat_dataelements td:nth-child(1)         { width: 8em; font-size: 1.3em; font-weight: bold;}
-#dat_dataelements td:nth-child(2)         { width: 4em; }
-#dat_dataelements td:nth-child(3)         { width: 5em; }
-#dat_dataelements td:nth-child(4)         { width: 5em; }
-#dat_dataelements td:nth-child(5)         { width: 5em; }
-#dat_dataelements tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
-#dat_dataelements tr:nth-child(odd) input { background-color: ButtonFace; }
-#dat_dataelements input                   { border: 0 none; padding: 0; margin: 0; }
-#dat_dataelements input:first-child       { border: 0 none; width: 8em; }  
-#dat_dataelements input:last-child        { border: 0 none; width: 100%; }
-
-#areadsl pre {
-  margin: 1em;
-  font-family: monospace; 
-  font-size:1.3em;
-}
+#dat_tasks button                  { border: 1pt solid buttonshadow; padding: 0; }
+#dat_tasks td:nth-child(1)         { width: 32ex; }
+#dat_tasks td:nth-child(2)         { width: 1em; }
+#dat_tasks tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
+#dat_tasks tr:nth-child(odd) input { background-color: ButtonFace; }
 
 span.active {
   font-weight: bold;
@@ -141,11 +75,6 @@ span.vote {
   font-weight: bold;
   color: #73d216;
 }
-
-#detailcolumn { width: 50%; }
-#detailcolumn .column { padding-left: 2em; }
-#graphcolumn { margin: 0; padding: 0; border-right: 1pt solid ButtonShadow; min-width: 9em; }
-#graphcolumn .column { margin: 0; padding: 0; }
 
 .ui-resizable-handle { 
   z-index: 99999; 
@@ -168,33 +97,3 @@ span.vote {
   text-align: right;
   margin-top: 1.1em;
 }
-
-#dat_details {
-  border-collapse:collapse;
-  border-spacing:0;
-  border:0 none;
-  margin:0;
-  padding:0;
-  width: 100%;
-}
-#dat_details td.del                     { width: 1.2em; font-size: 1.3em; font-weight: bold; }
-#dat_details td.pname                   { width: 7em; }
-#dat_details td.cname                   { width: 10.2em; padding-top:0.25em; }
-#dat_details td.sep                     { width: 1em;    padding-top:0.25em; }
-#dat_details tr.indent td:nth-child(1)  { padding-left: 2em;}
-#dat_details tr:nth-child(odd) input    { background-color: ButtonFace; }
-#dat_details tr:nth-child(odd) textarea { background-color: ButtonFace; }
-#dat_details tr:nth-child(odd) select   { background-color: ButtonFace; }
-#dat_details tr:nth-child(even) select  { background-color: white; }
-#dat_details input                      { border: 0 none; width: 100%; padding: 0; margin: 0; }
-#dat_details select                     { border: 0 none; width: 100%; padding: 0; margin: 0; }
-#dat_details textarea                   { border: 0 none; width: 100%; padding: 0; margin: 0; }
-#dat_details tr.header td               { padding-bottom:0.2em; padding-top: 0.6em; }
-#dat_details tr.sizer td                { padding:0; margin:0; }
-
-#dat_details tr:nth-child(odd) { background-color: ButtonFace; color: ButtonText; }
-#dat_details .header button { border: 1pt solid buttonshadow; }
-
-#disclaimer { margin: 1em; }
-#disclaimer p { max-width: 80ex; text-align: justify; }
-#disclaimer input { margin:0; padding:0; vertical-align:bottom; margin-right: 0.5em; }

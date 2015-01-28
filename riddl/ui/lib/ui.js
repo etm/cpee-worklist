@@ -1,20 +1,8 @@
-/*
-  This file is part of CPEE.
+function ui_click_tab(moi) { // {{{
+  $(moi).trigger('click');
+} // }}}
 
-  CPEE is free software: you can redistribute it and/or modify it under the terms
-  of the GNU General Public License as published by the Free Software Foundation,
-  either version 3 of the License, or (at your option) any later version.
-
-  CPEE is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  CPEE (file COPYING in the main directory).  If not, see
-  <http://www.gnu.org/licenses/>.
-*/
-
-function ui_tab_click(moi) { // {{{
+function ui_activate_tab(moi) { // {{{
   var active = $(moi).attr('id').replace(/tab/,'');
   var tab = $(moi).parent().parent().parent().parent();
   var tabs = [];
@@ -31,6 +19,13 @@ function ui_tab_click(moi) { // {{{
   });
   ui_rest_resize();
 } // }}}
+function ui_activate_section(section) {
+    section.parent().children().each(function() {
+        if(!$(this).hasClass("hidden"))
+            $(this).addClass("hidden");
+    });
+    section.removeClass("hidden");
+}
 function ui_toggle_vis_tab(moi) {// {{{
   var tabbar = $(moi).parent().parent().parent();
   var tab = $(tabbar).parent();
@@ -53,8 +48,43 @@ function ui_rest_resize() {
   }  
 }  
 
+function ui_close_tab(moi){
+  var active = $(moi).parent().attr('id').replace(/tab/,'');
+  var is_inactive = $(moi).parent().hasClass('inactive');
+  $('#area' + active).remove();
+  $('#tab' + active).remove();
+  if (!is_inactive)
+    ui_click_tab($('.tabbed table.tabbar td.tab.default'));
+}
+
+function ui_add_close(moi) {
+  $(moi).append($('<span class="close">✖</span>'));
+}
+
+function ui_add_tab(tabbar,title,id,closeable,additionalclasses) {
+  additionalclasses = typeof additionalclasses !== 'undefined' ? additionalclasses : '';
+  var instab = $("<td class='tab inactive" + (closeable ? ' closeable' : '') + (additionalclasses == '' ? '' : ' ' + additionalclasses) + "' id='tab_" + id + "'><h1>" + title + "</h1></td>");
+  var insarea = $("<div id='area_" + id + "' class='inactive'></div>");
+  $(tabbar).find('tr td.tabbehind').before(instab);
+  $(tabbar).parent('.tabbed').find('.tabbelow').append(insarea);
+  ui_add_close($('#tab_' + id));
+}
+
+function ui_clone_tab(tabbar,original,title,id,closeable,additionalclasses) {
+    additionalclasses = typeof additionalclasses !== 'undefined' ? additionalclasses : '';
+    var instab = $("<td class='tab inactive" + (closeable ? ' closeable' : '') + (additionalclasses == '' ? '' : ' ' + additionalclasses) + "' id='tab_" + id + "'><h1>" + title + "</h1></td>");
+    var insarea = original.clone();
+    insarea.attr("id","area_"+id);
+    insarea.attr("class","inactive");
+    $(tabbar).find('tr td.tabbehind').before(instab);
+    $(tabbar).parent('.tabbed').find('.tabbelow').append(insarea);
+    ui_add_close($('#tab_' + id));
+}
+
 $(document).ready(function() {
   $(window).resize(ui_rest_resize);
   $('.tabbed table.tabbar td.tab.switch').click(function(){ui_toggle_vis_tab(this);});
-  $('.tabbed table.tabbar td.tab').not('.switch').click(function(){ui_tab_click(this);});
+  $('.tabbed table.tabbar td.tab:not(.switch)').on('click',function(){ui_activate_tab(this);});
+  ui_add_close($('.tabbed table.tabbar td.tab.closeable'));
+  $('.tabbed table.tabbar td.tab.closeable .close').on('click',function(){ui_close_tab(this);});
 });
