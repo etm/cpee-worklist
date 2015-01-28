@@ -1,0 +1,24 @@
+<script type="text/javascript">
+  new Prefill(function(top,global){
+    $('p.schaden span',top).text(global.schaden);
+    $('p.text span',top).text(global.text);
+  });
+</script>
+<p class="schaden">
+  Die Schadenssumme beträgt <span></span> Euro.
+</p>
+<p class="text">
+  Laut unserem Techniker ist dieses Auto <span></span>.
+</p>';
+
+<table>
+  <tr>
+    <td>
+      <input class ="rbt" type=radio name="ok" id="radiook" value="ok" checked/> OK
+      <input class ="rbt" type=radio name="ok" id="radionok" value="nok" /> Nicht OK
+    </td>
+    <td>
+      <input type='button' id="butt" value="absenden"/>
+    </td>
+  </tr>
+</table>
