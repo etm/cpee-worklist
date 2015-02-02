@@ -67,6 +67,7 @@ end #}}}
 class Callbacks < Riddl::Implementation #{{{
   def response
     activity = {}
+    activity['label'] = "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})"
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
@@ -134,12 +135,12 @@ class Show_Tasks < Riddl:: Implementation #{{{
     get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
       @a[0].each do |cb| 
         if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
-          tasks["#{cb['id']}"] = cb['user']
+          tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
         end
       end
     end
     pp tasks
-    tasks.each{|k,v| out.root.add("task", :id => k, :uid => v)}
+    tasks.each{|k,v| out.root.add("task", :id => k, :uid => v[:uid], :label => v[:label])}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
     end
@@ -192,7 +193,7 @@ class JSON_Task_Details < Riddl::Implementation #{{{
   def response
     index = @a[0].index{ |c| c["id"] == @r.last } 
     if index 
-      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0][index]['url'], 'form' => @a[0][index]['form'], 'parameters' => @a[0][index]['parameters']})
+      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0][index]['url'], 'form' => @a[0][index]['form'], 'parameters' => @a[0][index]['parameters'], 'label' => @a[0][index]['label']})
     else
       @status = 404
     end
