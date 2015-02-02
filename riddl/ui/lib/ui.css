@@ -99,8 +99,17 @@ div.tabbed table.tabbar .tab {
   -webkit-border-bottom-left-radius: 0em;
   -webkit-border-bottom-right-radius: 0em;
 }
-div.tabbed table.tabbar .tab h1 { margin-top: 0em; margin-bottom: 0em; padding-top: 0em; padding-bottom: 0em; }
-div.tabbed table.tabbar .tab h1 { white-space: nowrap; }
+div.tabbed table.tabbar .tab.closeable .close { font-weight:bold; font-size: 1.2em; padding-left: 0.4em; }
+div.tabbed table.tabbar .tab.closeable .close:hover { color: red; }
+
+div.tabbed table.tabbar .tab h1 { 
+  margin-top: 0em; 
+  margin-bottom: 0em; 
+  padding-top: 0em; 
+  padding-bottom: 0em;
+  white-space: nowrap;
+  display: inline;
+}
 div.tabbed table.tabbar .tab.inactive {
   border: 1pt solid ButtonShadow;
   border-radius: 1em;

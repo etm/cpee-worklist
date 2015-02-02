@@ -66,7 +66,7 @@ function ui_add_tab(tabbar,title,id,closeable,additionalclasses) {
   var instab = $("<td class='tab inactive" + (closeable ? ' closeable' : '') + (additionalclasses == '' ? '' : ' ' + additionalclasses) + "' id='tab_" + id + "'><h1>" + title + "</h1></td>");
   var insarea = $("<div id='area_" + id + "' class='inactive'></div>");
   $(tabbar).find('tr td.tabbehind').before(instab);
-  $(tabbar).parent('.tabbed').find('.tabbelow').append(insarea);
+  $(tabbar).find('.tabbelow').append(insarea);
   ui_add_close($('#tab_' + id));
 }
 
@@ -84,7 +84,7 @@ function ui_clone_tab(tabbar,original,title,id,closeable,additionalclasses) {
 $(document).ready(function() {
   $(window).resize(ui_rest_resize);
   $('.tabbed table.tabbar td.tab.switch').click(function(){ui_toggle_vis_tab(this);});
-  $('.tabbed table.tabbar td.tab:not(.switch)').on('click',function(){ui_activate_tab(this);});
+  $(document).on('click','.tabbed table.tabbar td.tab:not(.switch)',function(){ui_activate_tab(this);});
   ui_add_close($('.tabbed table.tabbar td.tab.closeable'));
-  $('.tabbed table.tabbar td.tab.closeable .close').on('click',function(){ui_close_tab(this);});
+  $(document).on('click','.tabbed table.tabbar td.tab.closeable .close',function(){ui_close_tab(this);});
 });

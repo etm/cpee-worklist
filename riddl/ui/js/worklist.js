@@ -1,6 +1,7 @@
 var base_url;
 
 Prefill = function(what) {
+  // find out in which context the new Prefill has been called -> hopefully in the "this" we have the javascript tag inside the form after we inserted it.
   what(top,global);
 };
 
@@ -16,17 +17,20 @@ $(document).ready(function() {// {{{
   $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val());
   var url =$("input[name=user-url]").val()+'/tasks';
   $('.task_do').on('click',function(){
-    var id = url + '/' + $(this).parents('tr').attr('data-id');
-    take_work(id,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1);
-    do_work(id); 
+    var taskid = $(this).parents('tr').attr('data-id');
+    var taskidurl = url + '/' + taskid;
+    // take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1);
+    do_work(taskid,taskidurl); 
   });
   $('.task_take').on('click',function(){
-    var id = url + '/' + $(this).parents('tr').attr('data-id');
-    take_work(id,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1); 
+    var taskid = $(this).parents('tr').attr('data-id');
+    var taskidurl = url + '/' + taskid;
+    take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1); 
   });
   $('.task_giveback').on('click',function(){
-    var id = url + '/' + $(this).parents('tr').attr('data-id');
-    take_work(id,$('.task_giveback',$(this).parent()),$('.task_take',$(this).parent()),0);
+    var taskid = $(this).parents('tr').attr('data-id');
+    var taskidurl = url + '/' + taskid;
+    take_work(taskidurl,$('.task_giveback',$(this).parent()),$('.task_take',$(this).parent()),0);
   });
 });// }}}
 
@@ -49,9 +53,10 @@ function get_worklist() {// {{{
       ctv.empty();
       $(res).find('task').each(function(){
         var node = $("#dat_template_tasks tr").clone(true);
-        var id = $(this).attr('id');
-        node.attr('data-id',id);
-        $('.name',node).text(id);
+        var taskidurl = $(this).attr('id');
+        node.attr('data-id',taskidurl);
+        node.attr('data-id',taskidurl);
+        $('.name',node).text(taskidurl);
         if ($(this).attr('uid')=='*') {
           $('.task_giveback',node).prop('disabled', true);
         } else {
@@ -83,31 +88,33 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
   });
 } //}}}
 
-function do_work(url) { //{{{
+function do_work(taskid,taskidurl) { //{{{
   // fill the global variable 'global' with the shit that is needed
   // create new tab
   // write form into the tab
   // ajax get the formhtml
   // insert formhtml into form (the javascript is automatically executed when you append/insert shit)
   // happiness
-  $.ajax({
-    type: "GET",
-    url: url,
-    data: "operation=json",
-    success: function(res) {
-      var postFormStr = "<form method='POST' onsubmit='' action='" + res.form + "'>\n";
-      postFormStr += "<input type='hidden' name='url' value='" + res.url + "'></input>";
-      postFormStr += "<input type='hidden' name='parameters' value='" + res.parameters + "'></input>";
-      postFormStr += "<input type='hidden' name='baseurl' value='" + base_url + "'></input>";
-      postFormStr += "<input type='hidden' name='wlurl' value='" + url + "'></input>";
-      postFormStr += "</form>";
-      var formElement = $(postFormStr);
-      $('body').append(formElement);
-      console.log(postFormStr);
-      $(formElement).submit();
-    },
-    error: function(a,b,c) {
-      alert ("Error while getting Task");
-    }
-  });
+  // Statt Form Label vom Task
+  ui_add_tab("#main", "Form", taskid, true, '');
+  //$.ajax({
+  //  type: "GET",
+  //  url: url,
+  //  data: "operation=json",
+  //  success: function(res) {
+  //    var postFormStr = "<form method='POST' onsubmit='' action='" + res.form + "'>\n";
+  //    postFormStr += "<input type='hidden' name='url' value='" + res.url + "'></input>";
+  //    postFormStr += "<input type='hidden' name='parameters' value='" + res.parameters + "'></input>";
+  //    postFormStr += "<input type='hidden' name='baseurl' value='" + base_url + "'></input>";
+  //    postFormStr += "<input type='hidden' name='wlurl' value='" + url + "'></input>";
+  //    postFormStr += "</form>";
+  //    var formElement = $(postFormStr);
+  //    $('body').append(formElement);
+  //    console.log(postFormStr);
+  //    $(formElement).submit();
+  //  },
+  //  error: function(a,b,c) {
+  //    alert ("Error while getting Task");
+  //  }
+  //});
 } //}}}
