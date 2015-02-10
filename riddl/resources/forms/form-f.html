@@ -1,9 +1,8 @@
-<script type="text/javascript">
-  new Prefill(function(top,global){
-    $('p.schaden span',top).text(global.schaden);
-    $('p.text span',top).text(global.text);
-  });
-</script>
+<worklist-form-load>
+  $('p.schaden span',$(form_area)).text(data[0].value);
+  $('p.text span',$(form_area)).text(data[1].value);
+</worklist-form-load>
+
 <p class="schaden">
   Die Schadenssumme beträgt <span></span> Euro.
 </p>
@@ -17,8 +16,10 @@
       <input class ="rbt" type=radio name="ok" id="radiook" value="ok" checked/> OK
       <input class ="rbt" type=radio name="ok" id="radionok" value="nok" /> Nicht OK
     </td>
+  </tr>
+  <tr>
     <td>
-      <button type='submit' id="butt">absenden</button>
+      <input type="submit" value="Submit">
     </td>
   </tr>
 </table>

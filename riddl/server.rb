@@ -150,6 +150,8 @@ end  #}}}
 
 class Take_Task < Riddl::Implementation #{{{
   def response
+    pp "USER TAKE"
+    pp @r[-3]
     index = @a[0].index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0][index]["user"] = @r[-3]
@@ -162,6 +164,8 @@ end  #}}}
 
 class Return_Task < Riddl::Implementation #{{{
   def response
+    pp "USER RETURN"
+    pp @r[-3]
     index = @a[0].index{ |c| c["id"] == @r.last }
     if index && (@a[0][index]['user'] == @r[-3])
       @a[0][index]["user"] = '*'
