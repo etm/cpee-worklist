@@ -232,39 +232,57 @@ class Echo < Riddl::WebSocketImplementation #{{{
 
 end #}}}
 
+class ControllerItem
+  attr_accessor :callbacks, :notifications
+
+  def initialize
+    callbacks = []
+    notifications = nil
+  end
+
+  def notify
+  end
+end
+
+class Controller < Hash #{{{
+  def initialize
+    super
+    Dir::glob(File.dirname(__FILE__) + '/data/domains/*').each do |f|
+      f = File.basename(f)
+      self[f] = ControllerItem.new
+      self[f].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
+        File.dirname(__FILE__) + "/topics.xml",
+        File.dirname(__FILE__) + "/data/domains/#{f}/notifications/"
+      )
+      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/domains/#{f}/callbacks.sav' rescue []
+    end
+  end
+end #}}}
+
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
   accessible_description true
   cross_site_xhr true
-  callbacks = []   
-  notifications = {}
-  at_exit do #{{{
-    File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(callbacks)
-  end #}}}
-  callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/callbacks.sav' rescue []
 
-  Dir::glob(File.dirname(__FILE__) + '/data/domains/*').each do |f|
-    f = File.basename(f)
-    notifications[f] = Riddl::Utils::Notifications::Producer::Backend.new(
-      File.dirname(__FILE__) + "/topics.xml",
-      File.dirname(__FILE__) + "/data/domains/#{f}/notifications/"
-    )
-  end
+  controller = Controller.new
 
   interface 'main' do
-    run Callbacks,callbacks,notifications if post 'activity'
-    run Show_Domains,callbacks if get
-    on resource do
-      run Show_Domain_Users,callbacks if get
+    run Callbacks,controller if post 'activity'
+    run Show_Domains,controller if get
+    on resource do |r|
+      domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
+      domain = Riddl::Protocols::Utils::unescape(domain)
+
+      run Show_Domain_Users,controller[domain] if get
       on resource do
         run Login if post 'session'
         on resource 'tasks' do
-          run Show_Tasks,callbacks if get
-          on resource do
-            run JSON_Task_Details,callbacks if get 'json_details'
-            run Task_Details,callbacks if get
-            run Take_Task,callbacks if put 'take'
-            run Return_Task,callbacks if put 'giveback'
-            run Delbacks,callbacks if delete
+          run Show_Tasks,controller[domain] if get
+          on resource do |r|
+            run JSON_Task_Details,controller[domain] if get 'json_details'
+            run Task_Details,controller[domain] if get
+            run Take_Task,controller[domain] if put 'take'
+            run Return_Task,controller[domain] if put 'giveback'
+            run Delbacks,controller[domain] if delete
           end
         end
       end
@@ -280,7 +298,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   interface 'events' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use Riddl::Utils::Notifications::Producer::implementation(notifications[domain], NotificationsHandler.new(nil))
+    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, NotificationsHandler.new(nil))
   end
 
 end.loop!
