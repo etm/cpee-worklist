@@ -72,20 +72,16 @@ class Callbacks < Riddl::Implementation #{{{
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
     activity['orgmodel'] = @h[ 'CPEE_ATTR_' + @p.shift.value.upcase]
-    activity['domain'] = @p.shift.value
+    domain = activity['domain'] = @p.shift.value
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
     activity['parameters'] = JSON.generate(@p)
-
-    @a[1][activity['domain']] = Riddl::Utils::Notifications::Producer::Backend.new(
-       File.dirname(__FILE__) + "/topics.xml",
-      File.dirname(__FILE__) + "/data/domains/#{activity['domain']}/notifications/"
-    )
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
-      File.write(File.dirname(__FILE__) + "/data/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
-      write_callback @a[0].callbacks << activity, activity['domain']
+      File.write(File.dirname(__FILE__) + "/data/domains/#{domain}/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
+      @a[0][domain].callbacks = [] if @a[0][domain].callbacks == nil
+      write_callback @a[0][domain].callbacks << activity, domain
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 501
@@ -260,7 +256,7 @@ class Controller < Hash #{{{
   end
 end #}}}
 
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do 
+Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do 
   accessible_description true
   cross_site_xhr true
 
