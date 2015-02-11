@@ -55,15 +55,6 @@ def get_rel(orgmodels) #{{{
   rels
 end #}}}
 
-def dl_xml(domain,url) #{{{
-end #}}}
-
-def write_callback(cb,domain) #{{{
-  Thread.new do 
-    File.write File.dirname(__FILE__) + "/domains/#{domain}/callbacks.sav", JSON.dump(cb)
-  end  
-end #}}}
-
 class Callbacks < Riddl::Implementation #{{{
   def response
     activity = {}
@@ -79,11 +70,8 @@ class Callbacks < Riddl::Implementation #{{{
     activity['parameters'] = JSON.generate(@p)
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
-      File.write(File.dirname(__FILE__) + "/domains/#{domain}/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
-      p @a[0]
-      p @a[0].keys
-      @a[0][domain].callbacks = [] if @a[0][domain].callbacks == nil
-      write_callback @a[0][domain].callbacks << activity, domain
+      @a[0].add_callback domain, activity
+      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 501
@@ -97,7 +85,7 @@ class Delbacks < Riddl::Implementation #{{{
     if index 
       domain = @a[0].callbacks[index]['domain']
       @a[0].callbacks.delete_at(index)
-      write_callback @a[0].callbacks, domain
+      @a[0].callbacks.serialize
     else 
       @status = 404
     end
@@ -130,7 +118,6 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-    pp @a[0].callbacks
     get_rel(@a[0].callbacks.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
       @a[0].callbacks.each do |cb| 
         if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
@@ -138,7 +125,6 @@ class Show_Tasks < Riddl:: Implementation #{{{
         end
       end
     end
-    pp tasks
     tasks.each{|k,v| out.root.add("task", :id => k, :uid => v[:uid], :label => v[:label])}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
@@ -154,7 +140,7 @@ class Take_Task < Riddl::Implementation #{{{
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0].callbacks[index]["user"] = @r[-3]
-      write_callback @a[0].callbacks, @a[0].callbacks[index]['domain']
+      @a[0].callbacks.serialize
     else
       @status = 404
     end
@@ -168,7 +154,7 @@ class Return_Task < Riddl::Implementation #{{{
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
     if index && (@a[0].callbacks[index]['user'] == @r[-3])
       @a[0].callbacks[index]["user"] = '*'
-      write_callback @a[0].callbacks, @a[0].callbacks[index]['domain']
+      @a[0].callbacks.serialize
     else
       @stauts = 404
     end
@@ -231,30 +217,65 @@ class Echo < Riddl::WebSocketImplementation #{{{
 
 end #}}}
 
-class ControllerItem
+
+class CallbackItem < Array #{{{
+  def initialize(domain)
+    super()
+    @domain = domain
+  end
+
+  def unserialize
+    self.clear
+    self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/callbacks.sav")) rescue []
+  end
+
+  def  serialize
+    Thread.new do 
+      File.write File.dirname(__FILE__) + "/domains/#{@domain}/callbacks.sav", JSON.dump(self)
+    end  
+  end
+end #}}}
+
+class ControllerItem #{{{
   attr_accessor :callbacks, :notifications
 
-  def initialize
-    @callbacks = []
+  def initialize(domain)
+    @domain = domain
+    @callbacks = CallbackItem.new(domain)
+    @orgmodels = []
     @notifications = nil
   end
 
-  def notify
+  def add_orgmodel(name,content)
+    FileUtils.mkdir_p(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/")
+    @orgmodels << name unless @orgmodels.include?(name)
+    File.write(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/" + name, content)
   end
-end
+end #}}}
 
 class Controller < Hash #{{{
   def initialize
     super
     Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
-      f = File.basename(f)
-      self[f] = ControllerItem.new
-      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + "/domains/#{f}/callbacks.sav" rescue []
-      self[f].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
+      domain = File.basename(f)
+      self[domain] = ControllerItem.new(domain)
+      self[domain].callbacks.unserialize
+      pp self[domain].callbacks
+      self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
         File.dirname(__FILE__) + "/topics.xml",
         File.dirname(__FILE__) + "/domains/#{f}/notifications/"
       )
     end
+  end
+
+  def add_callback(domain,activity)
+    self[domain] ||= ControllerItem.new(domain)
+    self[domain].callbacks << activity
+    self[domain].callbacks.serialize
+    self[domain].notifications ||= Riddl::Utils::Notifications::Producer::Backend.new(
+      File.dirname(__FILE__) + "/topics.xml",
+      File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
+    )
   end
 end #}}}
 
