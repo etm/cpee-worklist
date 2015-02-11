@@ -58,9 +58,9 @@ end #}}}
 def dl_xml(domain,url) #{{{
 end #}}}
 
-def write_callback(cb) #{{{
+def write_callback(cb,domain) #{{{
   Thread.new do 
-    File.write File.dirname(__FILE__) + '/data/callbacks.sav', JSON.dump(cb)
+    File.write File.dirname(__FILE__) + "/data/domains/#{domain}/callbacks.sav", JSON.dump(cb)
   end  
 end #}}}
 
@@ -85,7 +85,7 @@ class Callbacks < Riddl::Implementation #{{{
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
       File.write(File.dirname(__FILE__) + "/data/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
-      write_callback @a[0] << activity
+      write_callback @a[0].callbacks << activity, activity['domain']
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 501
@@ -95,10 +95,11 @@ end #}}}
 
 class Delbacks < Riddl::Implementation #{{{
   def response
-    index = @a[0].index{ |e| e["id"] == @r.last }
+    index = @a[0].callbacks.index{ |e| e["id"] == @r.last }
     if index 
-      @a[0].delete_at(index)
-      write_callback @a[0]
+      domain = @a[0].callbacks[index]['domain']
+      @a[0].callbacks.delete_at(index)
+      write_callback @a[0].callbacks, domain
     else 
       @status = 404
     end
@@ -108,7 +109,7 @@ end  #}}}
 class Show_Domains < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<domains/>')
-    @a[0].map { |e| e['domain'] }.uniq.each { |x| out.root.add('domain', :name=> x)}
+    @a[0].callbacks.map { |e| e['domain'] }.uniq.each { |x| out.root.add('domain', :name=> x)}
     Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
     end
@@ -119,7 +120,7 @@ class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
     fname = nil
-    @a[0].each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
+    @a[0].callbacks.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
     doc = XML::Smart.open(File.dirname(__FILE__) + "/data/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
     doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
     doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
@@ -131,9 +132,9 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-
-    get_rel(@a[0].map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
-      @a[0].each do |cb| 
+    pp @a[0].callbacks
+    get_rel(@a[0].callbacks.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
+      @a[0].callbacks.each do |cb| 
         if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
           tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
         end
@@ -152,10 +153,10 @@ class Take_Task < Riddl::Implementation #{{{
   def response
     pp "USER TAKE"
     pp @r[-3]
-    index = @a[0].index{ |c| c["id"] == @r.last }                                                 
+    index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
     if index 
-      @a[0][index]["user"] = @r[-3]
-      write_callback @a[0]
+      @a[0].callbacks[index]["user"] = @r[-3]
+      write_callback @a[0].callbacks, @a[0].callbacks[index]['domain']
     else
       @status = 404
     end
@@ -166,10 +167,10 @@ class Return_Task < Riddl::Implementation #{{{
   def response
     pp "USER RETURN"
     pp @r[-3]
-    index = @a[0].index{ |c| c["id"] == @r.last }
-    if index && (@a[0][index]['user'] == @r[-3])
-      @a[0][index]["user"] = '*'
-      write_callback @a[0]
+    index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
+    if index && (@a[0].callbacks[index]['user'] == @r[-3])
+      @a[0].callbacks[index]["user"] = '*'
+      write_callback @a[0].callbacks, @a[0].callbacks[index]['domain']
     else
       @stauts = 404
     end
@@ -178,9 +179,9 @@ end  #}}}
 
 class Task_Details < Riddl::Implementation #{{{
   def response
-    index = @a[0].index{ |c| c["id"] == @r.last } 
+    index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
     if index 
-      [Riddl::Parameter::Simple.new("callbackurl", @a[0][index]['url']), Riddl::Parameter::Simple.new("formurl", @a[0][index]['form']), Riddl::Parameter::Simple.new("parameters", @a[0][index]['parameters'])]
+      [Riddl::Parameter::Simple.new("callbackurl", @a[0].callbacks[index]['url']), Riddl::Parameter::Simple.new("formurl", @a[0].callbacks[index]['form']), Riddl::Parameter::Simple.new("parameters", @a[0].callbacks[index]['parameters'])]
     else
       @status = 404
     end
@@ -195,9 +196,9 @@ end  #}}}
 
 class JSON_Task_Details < Riddl::Implementation #{{{
   def response
-    index = @a[0].index{ |c| c["id"] == @r.last } 
+    index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
     if index 
-      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0][index]['url'], 'form' => @a[0][index]['form'], 'parameters' => @a[0][index]['parameters'], 'label' => @a[0][index]['label']})
+      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0].callbacks[index]['url'], 'form' => @a[0].callbacks[index]['form'], 'parameters' => @a[0].callbacks[index]['parameters'], 'label' => @a[0].callbacks[index]['label']})
     else
       @status = 404
     end
@@ -250,11 +251,11 @@ class Controller < Hash #{{{
     Dir::glob(File.dirname(__FILE__) + '/data/domains/*').each do |f|
       f = File.basename(f)
       self[f] = ControllerItem.new
+      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + "/data/domains/#{f}/callbacks.sav" rescue []
       self[f].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
         File.dirname(__FILE__) + "/topics.xml",
         File.dirname(__FILE__) + "/data/domains/#{f}/notifications/"
       )
-      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + '/data/domains/#{f}/callbacks.sav' rescue []
     end
   end
 end #}}}
@@ -264,7 +265,6 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9299 ) do
   cross_site_xhr true
 
   controller = Controller.new
-
   interface 'main' do
     run Callbacks,controller if post 'activity'
     run Show_Domains,controller if get
