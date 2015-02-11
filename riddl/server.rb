@@ -60,7 +60,7 @@ end #}}}
 
 def write_callback(cb,domain) #{{{
   Thread.new do 
-    File.write File.dirname(__FILE__) + "/data/domains/#{domain}/callbacks.sav", JSON.dump(cb)
+    File.write File.dirname(__FILE__) + "/domains/#{domain}/callbacks.sav", JSON.dump(cb)
   end  
 end #}}}
 
@@ -79,7 +79,9 @@ class Callbacks < Riddl::Implementation #{{{
     activity['parameters'] = JSON.generate(@p)
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
-      File.write(File.dirname(__FILE__) + "/data/domains/#{domain}/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
+      File.write(File.dirname(__FILE__) + "/domains/#{domain}/orgmodels/" + Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read)
+      p @a[0]
+      p @a[0].keys
       @a[0][domain].callbacks = [] if @a[0][domain].callbacks == nil
       write_callback @a[0][domain].callbacks << activity, domain
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
@@ -105,7 +107,7 @@ end  #}}}
 class Show_Domains < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<domains/>')
-    @a[0].callbacks.map { |e| e['domain'] }.uniq.each { |x| out.root.add('domain', :name=> x)}
+    @a[0].keys.each { |x| out.root.add('domain', :name=> x)}
     Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
     end
@@ -117,7 +119,7 @@ class Show_Domain_Users < Riddl::Implementation #{{{
     out = XML::Smart.string('<users/>')
     fname = nil
     @a[0].callbacks.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
-    doc = XML::Smart.open(File.dirname(__FILE__) + "/data/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
+    doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
     doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
     doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
     Riddl::Parameter::Complex.new("return","text/xml", out.to_s) 
@@ -233,8 +235,8 @@ class ControllerItem
   attr_accessor :callbacks, :notifications
 
   def initialize
-    callbacks = []
-    notifications = nil
+    @callbacks = []
+    @notifications = nil
   end
 
   def notify
@@ -244,13 +246,13 @@ end
 class Controller < Hash #{{{
   def initialize
     super
-    Dir::glob(File.dirname(__FILE__) + '/data/domains/*').each do |f|
+    Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
       f = File.basename(f)
       self[f] = ControllerItem.new
-      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + "/data/domains/#{f}/callbacks.sav" rescue []
+      self[f].callbacks = JSON.parse! File.read File.dirname(__FILE__) + "/domains/#{f}/callbacks.sav" rescue []
       self[f].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
         File.dirname(__FILE__) + "/topics.xml",
-        File.dirname(__FILE__) + "/data/domains/#{f}/notifications/"
+        File.dirname(__FILE__) + "/domains/#{f}/notifications/"
       )
     end
   end

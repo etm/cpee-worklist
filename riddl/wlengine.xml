@@ -38,7 +38,15 @@
 
   <message name="domains">
     <parameter name="return" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
-     <!--  <xi:include href="xxxx.rng"/> -->
+      <element name="domains" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
+        <zeroOrMore>
+          <element name="domain">
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>  
+          </element>  
+        </zeroOrMore>  
+      </element>
     </parameter>            
   </message>
   <message name="users">
