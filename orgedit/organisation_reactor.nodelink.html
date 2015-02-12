@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>NodeLink</title>
+    <style media="screen" type="text/css">
+      .highlight path {
+        stroke: #a40000;
+      }
+      .highlight polygon {
+        stroke: #a40000;
+      }
+      .entity {
+        cursor: pointer;
+      }
+    </style>
+    <script type="text/javascript" src="helpers/jquery-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery.svgdom.js"></script>
+    <script type="text/javascript" src="helpers/underscore-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="helpers/ui.js"></script>
+    <link rel="stylesheet" href="helpers/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="helpers/custom.css" type="text/css"/>
+    <script type="text/javascript">
+      function over_entity(target) {
+      var tname = $(target).attr('id').replace(/entity_[^_]*_/,'');
+      var tnamer = new RegExp(tname);
+      $('.edge').each(function(e,f){
+      if ($(f).attr('id').match(tnamer)) {
+      var pname = $(f).attr('id').replace(/edge_[^_]*_/,'');
+      pname = pname.replace(/_(a|b)$/,'');
+      pname = pname.split('--');
+      $('.unit, .role, .subject').each(function(g,h){
+      if (
+      $(h).attr('id') == 'entity_unit_' + pname[0] || 
+      $(h).attr('id') == 'entity_role_' + pname[0] || 
+      $(h).attr('id') == 'entity_subject_' + pname[0] ||
+      $(h).attr('id') == 'entity_unit_' + pname[1] || 
+      $(h).attr('id') == 'entity_role_' + pname[1] || 
+      $(h).attr('id') == 'entity_subject_' + pname[1]
+      ) {
+      $(h).addClass('highlight');
+      }  
+      });
+      $(f).addClass('highlight');
+      }
+      });  
+      }
+      function out_entity(target) {
+      $('.highlight').each(function(e,f){
+      $(f).removeClass('highlight');
+      });  
+      }
+    </script>
+    <script type="text/javascript">
+      var filter = '';
+      $(document).ready(function() {
+        $('#usercolumn').resizable({
+          handles: { 'w' : '#handle2'},
+          resize: function(event, ui) {
+            if ($.browser.webkit) {
+              $('#handle2').offset({ left: ui.helper.offset().left+3 });
+            }
+          }
+        });
+      });  
+      function relationstoggle() {
+        toggle($('.relation' ),'inactive');
+      }  
+      function subjectnumberstoggle() {
+        toggle($('.subjecticon.number tspan'),'inactive');
+      }
+      function orbittoggle() {
+        toggle($('.connect' ),'inactive');
+      }  
+      function changetspans(tspans,t1,t2) {
+        $.each(tspans,function(a,d){
+          d.textContent = (d.textContent == t1 ? t2 : t1);
+        });
+      }
+      function toggle(things,cls) {
+        $.each(things,function(a,d){
+          $(d).toggleClass(cls)
+        });
+      }
+      function s_relationstoggle(nid) {
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        
+        var togglers = [];
+        var tspans = [];
+        var units = [];
+        var roles = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).attr('class').match(/(u\d+) (r\d+)/);
+          u = RegExp.$1;
+          r = RegExp.$2;
+          togglers.push(b);
+          togglers.push('#' + r + ' .subjecticon');
+          togglers.push('#' + u + ' .subjecticon');
+          togglers.push('#' + r + ' .role');
+          togglers.push('#' + u + ' .unit');
+          tspans.push($('#' + r + ' .subjecticon.number tspan.special')[0]);
+          tspans.push($('#' + u + ' .subjecticon.number tspan.special')[0]);
+          units.push(u);
+          roles.push(r);
+        });
+        togglers = _.uniq(togglers);
+        tspans = _.uniq(tspans);
+        units = _.uniq(units);
+        roles = _.uniq(roles);
+        $.each(units,function(a,b){
+          $.each(units,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        $.each(roles,function(a,b){
+          $.each(roles,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        changetspans(tspans,'1','');
+        toggle(togglers,'highlight');
+        toggle($(nid).find('.subjecticon'),'highlight');
+      }
+      function ur_filtertoggle(nid){
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          subjects = _.union(subjects,res);
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        $.each($('.subject'),function(a,d){
+          $(d).removeClass('hidden');
+        });
+        $.each($('.activefilter'),function(a,d){
+          $(d).removeClass('activefilter');
+        });
+        if (filter == $(nid).attr('id')) {
+          filter = '';
+        } else {  
+          filter = $(nid).attr('id');
+          $('#' + filter + '_text').addClass('activefilter');
+          var allsubjects = _.map($('.subject'), function(d){ return '#' + $(d).attr('id'); });
+          $.each(_.difference(allsubjects,subjects),function(a,d){
+            $(d).addClass('hidden');
+          });
+        }  
+      }
+      function ur_relationstoggle(nid){
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).toggleClass($(nid).attr('class'));
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          var len = res.length;
+          subjects = _.union(subjects,res);
+          if ($(nid).hasClass('role')) {
+            var target = $(b).attr('class').match(/(u\d+)/)[1];
+          } else {  
+            var target = $(b).attr('class').match(/(r\d+)/)[1];
+          }
+          changetspans($('#' + target + ' .subjecticon.number tspan.special'),len,'');
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        toggle(subjects,$(nid).hasClass('role') ? 'highlightrole': 'highlightunit');
+        changetspans($('#' + $(nid).attr('id') + ' .subjecticon.number tspan.special'),$('#' + $(nid).attr('id') + ' .subjecticon.number tspan.normal')[0].textContent,'');
+        $.each($('.connect.f' + $(nid).attr('id')),function(a,b){
+          toggle($(b),'highlight');
+        });
+      }
+    </script>
+  </head>
+  <body>
+<div class="tabbed rest"><table class="tabbar"><tbody><tr><td class="tabbefore"></td>
+<td class="tab" id="tabgraph"><h1>NodeLink</h1></td>
+<td class="tabbehind"></td></tr></tbody></table>
+<div class="tabbelow"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg" xmlns:dyn="http://exslt.org/dynamic" class="active" width="320pt" height="152pt" viewBox="0.00 0.00 320.00 152.00">
+  <g id="graph1" graph="" transform="scale(1 1) rotate(0) translate(4 148)">
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_Powerplant">
+      <title>Powerplant</title>
+      <polygon fill="#729fcf" stroke="black" points="64,-44 2.13163e-14,-44 1.06581e-14,-26 64,-26 64,-44"/>
+      <text text-anchor="middle" x="32" y="-32.8" font-family="sans-serif" font-size="8.00">Powerplant</text>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_Reactor">
+      <title>Reactor</title>
+      <polygon fill="#729fcf" stroke="black" points="156,-43 102,-43 102,-25 156,-25 156,-43"/>
+      <text text-anchor="middle" x="129" y="-31.8" font-family="sans-serif" font-size="8.00">Reactor</text>
+    </g>
+    <g id="edge_unit_Reactor--Powerplant">
+      <title>Reactor - Powerplant</title>
+      <ellipse fill="#ffffff" stroke="black" cx="75" cy="-35" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_Turbine">
+      <title>Turbine</title>
+      <polygon fill="#729fcf" stroke="black" points="156,-93 102,-93 102,-75 156,-75 156,-93"/>
+      <text text-anchor="middle" x="129" y="-81.8" font-family="sans-serif" font-size="8.00">Turbine</text>
+    </g>
+    <g id="edge_unit_Turbine--Powerplant">
+      <title>Turbine - Powerplant</title>
+      <ellipse fill="#ffffff" stroke="black" cx="75" cy="-66" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_IAEA">
+      <title>IAEA</title>
+      <polygon fill="#729fcf" stroke="black" points="156,-119 102,-119 102,-101 156,-101 156,-119"/>
+      <text text-anchor="middle" x="129" y="-107.8" font-family="sans-serif" font-size="8.00">IAEA</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_CEO">
+      <title>CEO</title>
+      <polygon fill="#ad7fa8" stroke="black" points="59,-18 5,-18 5,-5.32907e-15 59,-0 59,-18"/>
+      <text text-anchor="middle" x="32" y="-6.8" font-family="sans-serif" font-size="8.00">CEO</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_COO">
+      <title>COO</title>
+      <polygon fill="#ad7fa8" stroke="black" points="156,-68 102,-68 102,-50 156,-50 156,-68"/>
+      <text text-anchor="middle" x="129" y="-56.8" font-family="sans-serif" font-size="8.00">COO</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_Supervisor">
+      <title>Supervisor</title>
+      <polygon fill="#ad7fa8" stroke="black" points="160,-144 98,-144 98,-126 160,-126 160,-144"/>
+      <text text-anchor="middle" x="129" y="-132.8" font-family="sans-serif" font-size="8.00">Supervisor</text>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Juergen Mangler">
+      <title>Juergen Mangler</title>
+      <polygon fill="#ffffff" stroke="black" points="172,-18 86,-18 86,-5.32907e-15 172,-0 172,-18"/>
+      <text text-anchor="middle" x="129" y="-6.8" font-family="sans-serif" font-size="8.00">Juergen Mangler</text>
+    </g>
+    <g id="edge_subject_Juergen Mangler--CEO">
+      <title>Juergen Mangler - CEO</title>
+      <ellipse fill="#ffffff" stroke="black" cx="75" cy="-9" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Juergen Mangler--Powerplant">
+      <title>Juergen Mangler - Powerplant</title>
+      <ellipse fill="#ffffff" stroke="black" cx="75" cy="-22" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Alexander Kyshynevskyi">
+      <title>Alexander Kyshynevskyi</title>
+      <polygon fill="#ffffff" stroke="black" points="311,-68 195,-68 195,-50 311,-50 311,-68"/>
+      <text text-anchor="middle" x="253" y="-56.8" font-family="sans-serif" font-size="8.00">Alexander Kyshynevskyi</text>
+    </g>
+    <g id="edge_subject_Alexander Kyshynevskyi--COO">
+      <title>Alexander Kyshynevskyi - COO</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-59" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Alexander Kyshynevskyi--Reactor">
+      <title>Alexander Kyshynevskyi - Reactor</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-46" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Alexander Kyshynevskyi--Turbine">
+      <title>Alexander Kyshynevskyi - Turbine</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-72" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Stefanie Rinderle-Ma">
+      <title>Stefanie Rinderle-Ma</title>
+      <polygon fill="#ffffff" stroke="black" points="305,-99 201,-99 201,-81 305,-81 305,-99"/>
+      <text text-anchor="middle" x="253" y="-87.8" font-family="sans-serif" font-size="8.00">Stefanie Rinderle-Ma</text>
+    </g>
+    <g id="edge_subject_Stefanie Rinderle-Ma--COO">
+      <title>Stefanie Rinderle-Ma - COO</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-85" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Stefanie Rinderle-Ma--Turbine">
+      <title>Stefanie Rinderle-Ma - Turbine</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-98" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Alexander Weber">
+      <title>Alexander Weber</title>
+      <polygon fill="#ffffff" stroke="black" points="296,-36 210,-36 210,-18 296,-18 296,-36"/>
+      <text text-anchor="middle" x="253" y="-24.8" font-family="sans-serif" font-size="8.00">Alexander Weber</text>
+    </g>
+    <g id="edge_subject_Alexander Weber--COO">
+      <title>Alexander Weber - COO</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-33" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Alexander Weber--Reactor">
+      <title>Alexander Weber - Reactor</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-20" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Tatjana Sahadak">
+      <title>Tatjana Sahadak</title>
+      <polygon fill="#ffffff" stroke="black" points="296,-129 210,-129 210,-111 296,-111 296,-129"/>
+      <text text-anchor="middle" x="253" y="-117.8" font-family="sans-serif" font-size="8.00">Tatjana Sahadak</text>
+    </g>
+    <g id="edge_subject_Tatjana Sahadak--Supervisor">
+      <title>Tatjana Sahadak - Supervisor</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-130" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Tatjana Sahadak--IAEA">
+      <title>Tatjana Sahadak - IAEA</title>
+      <ellipse fill="#ffffff" stroke="black" cx="183" cy="-111" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="edge" id="edge_unit_Reactor--Powerplant_a">
+      <title>Reactor--Reactor - Powerplant</title>
+      <path fill="none" stroke="black" d="M102,-34.5C92.2969,-34.6797 82.5938,-34.8594 77.9033,-34.9462"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Turbine--Powerplant_a">
+      <title>Turbine--Turbine - Powerplant</title>
+      <path fill="none" stroke="black" d="M101.978,-76.431C96.6392,-74.7674 91.1091,-72.9237 86,-71 83.173,-69.9356 80.0459,-68.4866 77.8508,-67.4225"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Juergen Mangler--CEO_a">
+      <title>Juergen Mangler--Juergen Mangler - CEO</title>
+      <path fill="none" stroke="black" d="M85.9277,-9C82.7199,-9 79.988,-9 78.058,-9"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Juergen Mangler--Powerplant_a">
+      <title>Juergen Mangler--Juergen Mangler - Powerplant</title>
+      <path fill="none" stroke="black" d="M91.4952,-18.0289C86.0241,-19.3461 81.2347,-20.4991 78.2463,-21.2185"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--COO_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - COO</title>
+      <path fill="none" stroke="black" d="M194.247,-57.2951C190.669,-57.4942 187.719,-57.748 185.739,-58.0563"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--COO_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - COO</title>
+      <path fill="none" stroke="black" d="M194.247,-61.2733C190.669,-61.0077 187.719,-60.6694 185.739,-60.2582"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Reactor_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - Reactor</title>
+      <path fill="none" stroke="black" d="M204.383,-49.9711C196.544,-48.5153 189.785,-47.26 186.064,-46.5691"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Turbine_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - Turbine</title>
+      <path fill="none" stroke="black" d="M204.383,-68.0289C196.544,-69.4847 189.785,-70.74 186.064,-71.4309"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Stefanie Rinderle-Ma--COO_a">
+      <title>Stefanie Rinderle-Ma--Stefanie Rinderle-Ma - COO</title>
+      <path fill="none" stroke="black" d="M200.664,-86.2617C194.334,-85.8096 189.017,-85.4298 185.919,-85.2085"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Stefanie Rinderle-Ma--Turbine_a">
+      <title>Stefanie Rinderle-Ma--Stefanie Rinderle-Ma - Turbine</title>
+      <path fill="none" stroke="black" d="M200.664,-95.9813C194.334,-96.7046 189.017,-97.3124 185.919,-97.6664"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--COO_a">
+      <title>Alexander Weber--Alexander Weber - COO</title>
+      <path fill="none" stroke="black" d="M209.464,-30.7317C199.455,-31.5896 190.438,-32.3625 185.966,-32.7458"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Reactor_a">
+      <title>Alexander Weber--Alexander Weber - Reactor</title>
+      <path fill="none" stroke="black" d="M209.464,-22.6464C199.455,-21.6455 190.438,-20.7438 185.966,-20.2966"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Supervisor_a">
+      <title>Tatjana Sahadak--Tatjana Sahadak - Supervisor</title>
+      <path fill="none" stroke="black" d="M209.864,-126.162C199.735,-127.609 190.569,-128.919 186.019,-129.569"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--IAEA_a">
+      <title>Tatjana Sahadak--Tatjana Sahadak - IAEA</title>
+      <path fill="none" stroke="black" d="M209.864,-114.454C199.735,-113.152 190.569,-111.973 186.019,-111.388"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Reactor--Powerplant_b">
+      <title>Reactor - Powerplant--Powerplant</title>
+      <path fill="none" stroke="black" d="M71.9075,-35C69.9819,-35 67.286,-35 64.1944,-35"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Turbine--Powerplant_b">
+      <title>Turbine - Powerplant--Powerplant</title>
+      <path fill="none" stroke="black" d="M72.4389,-64.1536C67.0872,-60.2954 54.4075,-51.1543 44.6616,-44.1281"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Juergen Mangler--CEO_b">
+      <title>Juergen Mangler - CEO--CEO</title>
+      <path fill="none" stroke="black" d="M71.9075,-9C68.9805,-9 64.2742,-9 59.1029,-9"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Juergen Mangler--Powerplant_b">
+      <title>Juergen Mangler - Powerplant--Powerplant</title>
+      <path fill="none" stroke="black" d="M72.1786,-22.853C69.7871,-23.576 66.0801,-24.6967 61.8649,-25.9711"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--COO_b">
+      <title>Alexander Kyshynevskyi - COO--COO</title>
+      <path fill="none" stroke="black" d="M180.097,-57.9124C175.409,-57.1378 165.713,-56.7504 156.015,-56.75"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--COO_b">
+      <title>Alexander Kyshynevskyi - COO--COO</title>
+      <path fill="none" stroke="black" d="M180.395,-60.3821C175.845,-61.4567 165.987,-61.996 156.109,-62"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Reactor_b">
+      <title>Alexander Kyshynevskyi - Reactor--Reactor</title>
+      <path fill="none" stroke="black" d="M180.097,-45.3548C175.409,-44.313 165.713,-42.1584 156.015,-40.0033"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Turbine_b">
+      <title>Alexander Kyshynevskyi - Turbine--Turbine</title>
+      <path fill="none" stroke="black" d="M180.097,-72.6452C175.409,-73.687 165.713,-75.8416 156.015,-77.9967"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Stefanie Rinderle-Ma--COO_b">
+      <title>Stefanie Rinderle-Ma - COO--COO</title>
+      <path fill="none" stroke="black" d="M181.466,-82.4142C179.592,-79.473 176.152,-74.7264 172,-72 167.306,-68.9177 161.851,-66.5409 156.435,-64.7165"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Stefanie Rinderle-Ma--Turbine_b">
+      <title>Stefanie Rinderle-Ma - Turbine--Turbine</title>
+      <path fill="none" stroke="black" d="M180.097,-97.2473C175.409,-96.0319 165.713,-93.5182 156.015,-91.0038"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--COO_b">
+      <title>Alexander Weber - COO--COO</title>
+      <path fill="none" stroke="black" d="M181.466,-35.5858C179.592,-38.527 176.152,-43.2736 172,-46 167.306,-49.0823 161.851,-51.4591 156.435,-53.2835"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Reactor_b">
+      <title>Alexander Weber - Reactor--Reactor</title>
+      <path fill="none" stroke="black" d="M180.097,-20.7527C175.409,-21.9681 165.713,-24.4818 156.015,-26.9962"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Supervisor_b">
+      <title>Tatjana Sahadak - Supervisor--Supervisor</title>
+      <path fill="none" stroke="black" d="M180.097,-130.269C176.153,-130.634 168.667,-131.327 160.617,-132.072"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--IAEA_b">
+      <title>Tatjana Sahadak - IAEA--IAEA</title>
+      <path fill="none" stroke="black" d="M180.097,-110.946C175.409,-110.859 165.713,-110.68 156.015,-110.5"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+  </g>
+</svg></div></div>
+  </body>
+</html>

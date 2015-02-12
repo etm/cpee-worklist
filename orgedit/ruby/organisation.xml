@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="WebBank">
+      <permissions/>
+    </unit>
+    <unit id="Marketing">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="Accounting">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <!--unit id="a">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="b">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="c">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="d">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="e">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit>
+    <unit id="f">
+      <parent>WebBank</parent>
+      <permissions/>
+    </unit-->
+  </units>
+  <roles>
+    <role id="Secretary">
+      <permissions/>
+    </role>
+    <role id="Junior Accountant">
+      <parent>Senior Accountant</parent>
+      <permissions/>
+    </role>
+    <role id="Analyst">
+      <permissions/>
+    </role>
+    <role id="Senior Accountant">
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+    <subject id="Black">
+      <relation unit="Accounting" role="Secretary"/>
+    </subject>
+    <subject id="Jones">
+      <relation unit="Accounting" role="Junior Accountant"/>
+      <relation unit="Accounting" role="Secretary"/>
+    </subject>
+    <subject id="Red">
+      <relation unit="Accounting" role="Junior Accountant"/>
+    </subject>
+    <subject id="Green">
+      <relation unit="Accounting" role="Senior Accountant"/>
+    </subject>
+    <subject id="Smith">
+      <relation unit="Marketing" role="Analyst"/>
+    </subject>
+    <subject id="Sharp">
+      <relation unit="Marketing" role="Analyst"/>
+    </subject>
+    <subject id="Moss">
+      <relation unit="Marketing" role="Secretary"/>
+    </subject>
+  </subjects>
+</organisation>

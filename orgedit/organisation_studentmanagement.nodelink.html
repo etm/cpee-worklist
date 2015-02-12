@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>NodeLink</title>
+    <style media="screen" type="text/css">
+      .highlight path {
+        stroke: #a40000;
+      }
+      .highlight polygon {
+        stroke: #a40000;
+      }
+      .entity {
+        cursor: pointer;
+      }
+    </style>
+    <script type="text/javascript" src="helpers/jquery-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery.svgdom.js"></script>
+    <script type="text/javascript" src="helpers/underscore-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="helpers/ui.js"></script>
+    <link rel="stylesheet" href="helpers/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="helpers/custom.css" type="text/css"/>
+    <script type="text/javascript">
+      function over_entity(target) {
+      var tname = $(target).attr('id').replace(/entity_[^_]*_/,'');
+      var tnamer = new RegExp(tname);
+      $('.edge').each(function(e,f){
+      if ($(f).attr('id').match(tnamer)) {
+      var pname = $(f).attr('id').replace(/edge_[^_]*_/,'');
+      pname = pname.replace(/_(a|b)$/,'');
+      pname = pname.split('--');
+      $('.unit, .role, .subject').each(function(g,h){
+      if (
+      $(h).attr('id') == 'entity_unit_' + pname[0] || 
+      $(h).attr('id') == 'entity_role_' + pname[0] || 
+      $(h).attr('id') == 'entity_subject_' + pname[0] ||
+      $(h).attr('id') == 'entity_unit_' + pname[1] || 
+      $(h).attr('id') == 'entity_role_' + pname[1] || 
+      $(h).attr('id') == 'entity_subject_' + pname[1]
+      ) {
+      $(h).addClass('highlight');
+      }  
+      });
+      $(f).addClass('highlight');
+      }
+      });  
+      }
+      function out_entity(target) {
+      $('.highlight').each(function(e,f){
+      $(f).removeClass('highlight');
+      });  
+      }
+    </script>
+    <script type="text/javascript">
+      var filter = '';
+      $(document).ready(function() {
+        $('#usercolumn').resizable({
+          handles: { 'w' : '#handle2'},
+          resize: function(event, ui) {
+            if ($.browser.webkit) {
+              $('#handle2').offset({ left: ui.helper.offset().left+3 });
+            }
+          }
+        });
+      });  
+      function relationstoggle() {
+        toggle($('.relation' ),'inactive');
+      }  
+      function subjectnumberstoggle() {
+        toggle($('.subjecticon.number tspan'),'inactive');
+      }
+      function orbittoggle() {
+        toggle($('.connect' ),'inactive');
+      }  
+      function changetspans(tspans,t1,t2) {
+        $.each(tspans,function(a,d){
+          d.textContent = (d.textContent == t1 ? t2 : t1);
+        });
+      }
+      function toggle(things,cls) {
+        $.each(things,function(a,d){
+          $(d).toggleClass(cls)
+        });
+      }
+      function s_relationstoggle(nid) {
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        
+        var togglers = [];
+        var tspans = [];
+        var units = [];
+        var roles = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).attr('class').match(/(u\d+) (r\d+)/);
+          u = RegExp.$1;
+          r = RegExp.$2;
+          togglers.push(b);
+          togglers.push('#' + r + ' .subjecticon');
+          togglers.push('#' + u + ' .subjecticon');
+          togglers.push('#' + r + ' .role');
+          togglers.push('#' + u + ' .unit');
+          tspans.push($('#' + r + ' .subjecticon.number tspan.special')[0]);
+          tspans.push($('#' + u + ' .subjecticon.number tspan.special')[0]);
+          units.push(u);
+          roles.push(r);
+        });
+        togglers = _.uniq(togglers);
+        tspans = _.uniq(tspans);
+        units = _.uniq(units);
+        roles = _.uniq(roles);
+        $.each(units,function(a,b){
+          $.each(units,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        $.each(roles,function(a,b){
+          $.each(roles,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        changetspans(tspans,'1','');
+        toggle(togglers,'highlight');
+        toggle($(nid).find('.subjecticon'),'highlight');
+      }
+      function ur_filtertoggle(nid){
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          subjects = _.union(subjects,res);
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        $.each($('.subject'),function(a,d){
+          $(d).removeClass('hidden');
+        });
+        $.each($('.activefilter'),function(a,d){
+          $(d).removeClass('activefilter');
+        });
+        if (filter == $(nid).attr('id')) {
+          filter = '';
+        } else {  
+          filter = $(nid).attr('id');
+          $('#' + filter + '_text').addClass('activefilter');
+          var allsubjects = _.map($('.subject'), function(d){ return '#' + $(d).attr('id'); });
+          $.each(_.difference(allsubjects,subjects),function(a,d){
+            $(d).addClass('hidden');
+          });
+        }  
+      }
+      function ur_relationstoggle(nid){
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).toggleClass($(nid).attr('class'));
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          var len = res.length;
+          subjects = _.union(subjects,res);
+          if ($(nid).hasClass('role')) {
+            var target = $(b).attr('class').match(/(u\d+)/)[1];
+          } else {  
+            var target = $(b).attr('class').match(/(r\d+)/)[1];
+          }
+          changetspans($('#' + target + ' .subjecticon.number tspan.special'),len,'');
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        toggle(subjects,$(nid).hasClass('role') ? 'highlightrole': 'highlightunit');
+        changetspans($('#' + $(nid).attr('id') + ' .subjecticon.number tspan.special'),$('#' + $(nid).attr('id') + ' .subjecticon.number tspan.normal')[0].textContent,'');
+        $.each($('.connect.f' + $(nid).attr('id')),function(a,b){
+          toggle($(b),'highlight');
+        });
+      }
+    </script>
+  </head>
+  <body>
+<div class="tabbed rest"><table class="tabbar"><tbody><tr><td class="tabbefore"></td>
+<td class="tab" id="tabgraph"><h1>NodeLink</h1></td>
+<td class="tabbehind"></td></tr></tbody></table>
+<div class="tabbelow"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg" xmlns:dyn="http://exslt.org/dynamic" class="active" width="344pt" height="101pt" viewBox="0.00 0.00 344.00 101.00">
+  <g id="graph1" graph="" transform="scale(1 1) rotate(0) translate(4 97)">
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_University">
+      <title>University</title>
+      <polygon fill="#729fcf" stroke="black" points="59,-63 1,-63 1,-45 59,-45 59,-63"/>
+      <text text-anchor="middle" x="30" y="-51.8" font-family="sans-serif" font-size="8.00">University</text>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_Admission Office">
+      <title>Admission Office</title>
+      <polygon fill="#729fcf" stroke="black" points="183,-93 95,-93 95,-75 183,-75 183,-93"/>
+      <text text-anchor="middle" x="139" y="-81.8" font-family="sans-serif" font-size="8.00">Admission Office</text>
+    </g>
+    <g id="edge_unit_Admission Office--University">
+      <title>Admission Office - University</title>
+      <ellipse fill="#ffffff" stroke="black" cx="71" cy="-68" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_Applicants">
+      <title>Applicants</title>
+      <polygon fill="#729fcf" stroke="black" points="169,-18 109,-18 109,-5.32907e-15 169,-0 169,-18"/>
+      <text text-anchor="middle" x="139" y="-6.8" font-family="sans-serif" font-size="8.00">Applicants</text>
+    </g>
+    <g id="edge_unit_Applicants--University">
+      <title>Applicants - University</title>
+      <ellipse fill="#ffffff" stroke="black" cx="71" cy="-40" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_Applicant">
+      <title>Applicant</title>
+      <polygon fill="#ad7fa8" stroke="black" points="166,-43 112,-43 112,-25 166,-25 166,-43"/>
+      <text text-anchor="middle" x="139" y="-31.8" font-family="sans-serif" font-size="8.00">Applicant</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_Admission Office Clerk">
+      <title>Admission Office Clerk</title>
+      <polygon fill="#ad7fa8" stroke="black" points="195,-68 83,-68 83,-50 195,-50 195,-68"/>
+      <text text-anchor="middle" x="139" y="-56.8" font-family="sans-serif" font-size="8.00">Admission Office Clerk</text>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Alexander Kyshynevskyi">
+      <title>Alexander Kyshynevskyi</title>
+      <polygon fill="#ffffff" stroke="black" points="335,-24 219,-24 219,-6 335,-6 335,-24"/>
+      <text text-anchor="middle" x="277" y="-12.8" font-family="sans-serif" font-size="8.00">Alexander Kyshynevskyi</text>
+    </g>
+    <g id="edge_subject_Alexander Kyshynevskyi--Applicant">
+      <title>Alexander Kyshynevskyi - Applicant</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-21" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Alexander Kyshynevskyi--Applicants">
+      <title>Alexander Kyshynevskyi - Applicants</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-8" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Alexander Weber">
+      <title>Alexander Weber</title>
+      <polygon fill="#ffffff" stroke="black" points="320,-82 234,-82 234,-64 320,-64 320,-82"/>
+      <text text-anchor="middle" x="277" y="-70.8" font-family="sans-serif" font-size="8.00">Alexander Weber</text>
+    </g>
+    <g id="edge_subject_Alexander Weber--Admission Office Clerk">
+      <title>Alexander Weber - Admission Office Clerk</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-65" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Alexander Weber--Admission Office">
+      <title>Alexander Weber - Admission Office</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-81" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity subject" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_subject_Tatjana Sahadak">
+      <title>Tatjana Sahadak</title>
+      <polygon fill="#ffffff" stroke="black" points="320,-49 234,-49 234,-31 320,-31 320,-49"/>
+      <text text-anchor="middle" x="277" y="-37.8" font-family="sans-serif" font-size="8.00">Tatjana Sahadak</text>
+    </g>
+    <g id="edge_subject_Tatjana Sahadak--Applicant">
+      <title>Tatjana Sahadak - Applicant</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-47" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_subject_Tatjana Sahadak--Applicants">
+      <title>Tatjana Sahadak - Applicants</title>
+      <ellipse fill="#ffffff" stroke="black" cx="207" cy="-34" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="edge" id="edge_unit_Admission Office--University_a">
+      <title>Admission Office--Admission Office - University</title>
+      <path fill="none" stroke="black" d="M98.47,-74.9769C92.927,-73.6785 87.317,-72.3307 82,-71 79.2349,-70.3079 76.1,-69.4452 73.8863,-68.8228"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Applicants--University_a">
+      <title>Applicants--Applicants - University</title>
+      <path fill="none" stroke="black" d="M108.719,-11.3389C99.4901,-13.1993 89.7472,-16.4312 82,-22 76.6472,-25.8477 73.3835,-33.1835 71.9175,-37.2"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Applicant_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - Applicant</title>
+      <path fill="none" stroke="black" d="M218.247,-20.036C214.88,-20.3246 212.068,-20.5656 210.098,-20.7344"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Applicants_a">
+      <title>Alexander Kyshynevskyi--Alexander Kyshynevskyi - Applicants</title>
+      <path fill="none" stroke="black" d="M218.247,-9.12467C214.88,-8.78797 212.068,-8.50681 210.098,-8.30981"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Admission Office Clerk_a">
+      <title>Alexander Weber--Alexander Weber - Admission Office Clerk</title>
+      <path fill="none" stroke="black" d="M233.464,-68.0245C223.455,-66.8806 214.438,-65.85 209.966,-65.339"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Admission Office_a">
+      <title>Alexander Weber--Alexander Weber - Admission Office</title>
+      <path fill="none" stroke="black" d="M233.464,-77.9755C223.455,-79.1194 214.438,-80.15 209.966,-80.661"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Applicant_a">
+      <title>Tatjana Sahadak--Tatjana Sahadak - Applicant</title>
+      <path fill="none" stroke="black" d="M233.864,-44.3136C223.735,-45.3265 214.569,-46.2431 210.019,-46.6981"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Applicants_a">
+      <title>Tatjana Sahadak--Tatjana Sahadak - Applicants</title>
+      <path fill="none" stroke="black" d="M233.864,-36.3026C223.735,-35.4344 214.569,-34.6488 210.019,-34.2588"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Admission Office--University_b">
+      <title>Admission Office - University--University</title>
+      <path fill="none" stroke="black" d="M68.0514,-66.9932C65.4074,-66.0903 61.2407,-64.6676 56.617,-63.0887"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_Applicants--University_b">
+      <title>Applicants - University--University</title>
+      <path fill="none" stroke="black" d="M68.0514,-41.0068C65.4074,-41.9097 61.2407,-43.3324 56.617,-44.9113"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Applicant_b">
+      <title>Alexander Kyshynevskyi - Applicant--Applicant</title>
+      <path fill="none" stroke="black" d="M204.078,-21.5586C197.57,-22.8027 181.301,-25.9131 166.658,-28.7124"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Kyshynevskyi--Applicants_b">
+      <title>Alexander Kyshynevskyi - Applicants--Applicants</title>
+      <path fill="none" stroke="black" d="M204.078,-8.04297C197.926,-8.13344 183.051,-8.35219 169.073,-8.55775"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Admission Office Clerk_b">
+      <title>Alexander Weber - Admission Office Clerk--Admission Office Clerk</title>
+      <path fill="none" stroke="black" d="M204.078,-64.7422C202.095,-64.5672 199.206,-64.3123 195.733,-64.0059"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Alexander Weber--Admission Office_b">
+      <title>Alexander Weber - Admission Office--Admission Office</title>
+      <path fill="none" stroke="black" d="M204.078,-81.1289C200.062,-81.3061 192.327,-81.6474 183.551,-82.0345"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Applicant_b">
+      <title>Tatjana Sahadak - Applicant--Applicant</title>
+      <path fill="none" stroke="black" d="M204.078,-46.4414C197.57,-45.1973 181.301,-42.0869 166.658,-39.2876"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_subject_Tatjana Sahadak--Applicants_b">
+      <title>Tatjana Sahadak - Applicants--Applicants</title>
+      <path fill="none" stroke="black" d="M205.449,-31.5668C203.559,-28.8084 200.105,-24.3861 196,-22 187.927,-17.3072 178.295,-14.3085 169.267,-12.3922"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+  </g>
+</svg></div></div>
+  </body>
+</html>

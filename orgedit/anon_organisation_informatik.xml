@@ -1,0 +1,570 @@
+<?xml version="1.0"?>
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="Dekanat Informatik">
+      <permissions/>
+    </unit>
+    <unit id="Studienservicecenter Informatik">
+      <permissions/>
+    </unit>
+    <unit id="Fachdidaktik">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Theory and Applications of Algorithms">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Scientific Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Software Architectures">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Future Communication">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Entertainment Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Multimedia Information Systems">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Knowledge Engineering">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Workflow Systems and Technology">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Data Analytics and Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Bioinformatics and Computational Biology">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+  </units>
+  <roles>
+    <role id="Regular">
+      <permissions/>
+    </role>
+    <role id="Project">
+      <permissions/>
+    </role>
+    <role id="Senior Lecturer">
+      <permissions/>
+    </role>
+    <role id="Ass.Prof.">
+      <permissions/>
+    </role>
+    <role id="Univ.Prof.">
+      <permissions/>
+    </role>
+    <role id="Post.Doc.">
+      <parent>Project</parent>
+      <parent>Regular</parent>
+      <permissions/>
+    </role>
+    <role id="Prae.Doc.">
+      <parent>Project</parent>
+      <parent>Regular</parent>
+      <permissions/>
+    </role>
+    <role id="Staff">
+      <parent>Project</parent>
+      <parent>Regular</parent>
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+    <subject id="Xxxxxxx Xxxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxx">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxx">
+      <relation unit="Multimedia Information Systems" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxxx">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxx Xxxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxx">
+      <relation unit="Fachdidaktik" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxx Xxxxxxxx">
+      <relation unit="Bioinformatics and Computational Biology" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxx">
+      <relation unit="Entertainment Computing" role="Project"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxx">
+      <relation unit="Entertainment Computing" role="Regular"/>
+      <relation unit="Entertainment Computing" role="Staff"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx">
+      <relation unit="Fachdidaktik" role="Univ.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxx-Xxxxxxx Xxxxx">
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxx">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxx-Xxxxxx">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Entertainment Computing" role="Project"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxxxx">
+      <relation unit="Data Analytics and Computing" role="Regular"/>
+      <relation unit="Data Analytics and Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxx">
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Ass.Prof."/>
+    </subject>
+    <subject id="Xxxx-Xxxxx Xxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Post.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxxxxx">
+      <relation unit="Entertainment Computing" role="Project"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Univ.Prof."/>
+      <relation unit="Fachdidaktik" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxx-Xxxx Xxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx Xxxxxxxxx">
+      <relation unit="Entertainment Computing" role="Project"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx">
+      <relation unit="Workflow Systems and Technology" role="Senior Lecturer"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Entertainment Computing" role="Univ.Prof."/>
+      <relation unit="Entertainment Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxx Xxxx">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxx Xxxxxxxx">
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+      <relation unit="Fachdidaktik" role="Regular"/>
+      <relation unit="Fachdidaktik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxx">
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxx">
+      <relation unit="Entertainment Computing" role="Regular"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxx-Xxxxx">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Post.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxxxx">
+      <relation unit="Future Communication" role="Project"/>
+      <relation unit="Future Communication" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Entertainment Computing" role="Regular"/>
+      <relation unit="Entertainment Computing" role="Staff"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxx">
+      <relation unit="Entertainment Computing" role="Regular"/>
+      <relation unit="Entertainment Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxx Xxxx">
+      <relation unit="Software Architectures" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxx Xxxxxxx">
+      <relation unit="Fachdidaktik" role="Project"/>
+      <relation unit="Fachdidaktik" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxx">
+      <relation unit="Entertainment Computing" role="Regular"/>
+      <relation unit="Entertainment Computing" role="Staff"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxx-Xx">
+      <relation unit="Workflow Systems and Technology" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxx">
+      <relation unit="Data Analytics and Computing" role="Regular"/>
+      <relation unit="Data Analytics and Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxx">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxxx">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxx Xxxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxxx">
+      <relation unit="Future Communication" role="Univ.Prof."/>
+      <relation unit="Future Communication" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxxx">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxxx">
+      <relation unit="Fachdidaktik" role="Project"/>
+      <relation unit="Fachdidaktik" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxx">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxx Xxxxx">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx Xxxxxx">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxxx">
+      <relation unit="Bioinformatics and Computational Biology" role="Regular"/>
+      <relation unit="Bioinformatics and Computational Biology" role="Post.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxx">
+      <relation unit="Fachdidaktik" role="Ass.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Ass.Prof."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxx">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxx">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxx Xxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxx">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxx Xxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+    </subject>
+    <subject id="Xxxxx Xxxx Xxx">
+      <relation unit="Bioinformatics and Computational Biology" role="Project"/>
+      <relation unit="Bioinformatics and Computational Biology" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxxxxx">
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxx">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx-Xxxxxxx">
+      <relation unit="Future Communication" role="Regular"/>
+      <relation unit="Future Communication" role="Staff"/>
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxxx Xxxxxxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxx Xxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxx">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Xxxxxxx Xxxxxxxxx">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Post.Doc."/>
+    </subject>
+    <subject id="Xxxxx Xxxxxxxxxxxx">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxx Xxxxxxxxxx">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Prae.Doc."/>
+    </subject>
+    <subject id="Xxxxxxxx Xxxxxx">
+      <relation unit="Fachdidaktik" role="Univ.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Xxxxxx Xxxxx-Xxxxxx">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+  </subjects>
+</organisation>

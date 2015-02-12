@@ -217,7 +217,6 @@ class Echo < Riddl::WebSocketImplementation #{{{
 
 end #}}}
 
-
 class CallbackItem < Array #{{{
   def initialize(domain)
     super()
@@ -235,7 +234,6 @@ class CallbackItem < Array #{{{
     end  
   end
 end #}}}
-
 class ControllerItem #{{{
   attr_accessor :callbacks, :notifications
 
@@ -252,7 +250,6 @@ class ControllerItem #{{{
     File.write(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/" + name, content)
   end
 end #}}}
-
 class Controller < Hash #{{{
   def initialize
     super
@@ -260,7 +257,6 @@ class Controller < Hash #{{{
       domain = File.basename(f)
       self[domain] = ControllerItem.new(domain)
       self[domain].callbacks.unserialize
-      pp self[domain].callbacks
       self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
         File.dirname(__FILE__) + "/topics.xml",
         File.dirname(__FILE__) + "/domains/#{f}/notifications/"
@@ -268,12 +264,35 @@ class Controller < Hash #{{{
     end
   end
 
+  def notify(what,content={})# {{{
+    item = @events[what]
+    if item
+      item.each do |ke,ur|
+        Thread.new(ke,ur) do |key,url|
+          notf = build_notification(key,what,content,'event')
+          if url.class == String
+            client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml',:xmpp => @opts[:xmpp])
+            params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
+            params << Riddl::Header.new("CPEE_BASE",self.base)
+            params << Riddl::Header.new("CPEE_INSTANCE",self.instance)
+            client.post params
+          elsif url.class == Riddl::Utils::Notifications::Producer::WS
+            e = XML::Smart::string("<event/>")
+            notf.each do |k,v|
+              e.root.add(k,v)
+            end
+            url.send(e.to_s) rescue nil
+          end  
+        end
+      end
+    end
+  end # }}}
+
   def add_callback(domain,activity)
     self[domain] ||= ControllerItem.new(domain)
     self[domain].callbacks << activity
     self[domain].callbacks.serialize
     self[domain].notifications ||= Riddl::Utils::Notifications::Producer::Backend.new(
-      File.dirname(__FILE__) + "/topics.xml",
       File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
     )
   end

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="University">
+      <permissions/>
+    </unit>
+    <unit id="Admission Office">
+      <parent>University</parent>
+      <permissions/>
+    </unit>
+    <unit id="Applicants">
+      <parent>University</parent>
+      <permissions/>
+    </unit>	
+  </units>
+  <roles>
+    <role id="Applicant">
+      <permissions/>
+    </role>
+    <role id="Admission Office Clerk">
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+    <subject id="Alexander Kyshynevskyi">
+      <relation unit="Applicants" role="Applicant"/>
+    </subject>
+    <subject id="Alexander Weber">
+      <relation unit="Admission Office" role="Admission Office Clerk"/>
+    </subject>
+    <subject id="Tatjana Sahadak">
+      <relation unit="Applicants" role="Applicant"/>
+    </subject>
+  </subjects> 
+</organisation>

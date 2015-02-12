@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>NodeLink</title>
+    <style media="screen" type="text/css">
+      .highlight path {
+        stroke: #a40000;
+      }
+      .highlight polygon {
+        stroke: #a40000;
+      }
+      .entity {
+        cursor: pointer;
+      }
+    </style>
+    <script type="text/javascript" src="helpers/jquery-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery.svgdom.js"></script>
+    <script type="text/javascript" src="helpers/underscore-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="helpers/ui.js"></script>
+    <link rel="stylesheet" href="helpers/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="helpers/custom.css" type="text/css"/>
+    <script type="text/javascript">
+      function over_entity(target) {
+      var tname = $(target).attr('id').replace(/entity_[^_]*_/,'');
+      var tnamer = new RegExp(tname);
+      $('.edge').each(function(e,f){
+      if ($(f).attr('id').match(tnamer)) {
+      var pname = $(f).attr('id').replace(/edge_[^_]*_/,'');
+      pname = pname.replace(/_(a|b)$/,'');
+      pname = pname.split('--');
+      $('.unit, .role, .subject').each(function(g,h){
+      if (
+      $(h).attr('id') == 'entity_unit_' + pname[0] || 
+      $(h).attr('id') == 'entity_role_' + pname[0] || 
+      $(h).attr('id') == 'entity_subject_' + pname[0] ||
+      $(h).attr('id') == 'entity_unit_' + pname[1] || 
+      $(h).attr('id') == 'entity_role_' + pname[1] || 
+      $(h).attr('id') == 'entity_subject_' + pname[1]
+      ) {
+      $(h).addClass('highlight');
+      }  
+      });
+      $(f).addClass('highlight');
+      }
+      });  
+      }
+      function out_entity(target) {
+      $('.highlight').each(function(e,f){
+      $(f).removeClass('highlight');
+      });  
+      }
+    </script>
+    <script type="text/javascript">
+      var filter = '';
+      $(document).ready(function() {
+        $('#usercolumn').resizable({
+          handles: { 'w' : '#handle2'},
+          resize: function(event, ui) {
+            if ($.browser.webkit) {
+              $('#handle2').offset({ left: ui.helper.offset().left+3 });
+            }
+          }
+        });
+      });  
+      function relationstoggle() {
+        toggle($('.relation' ),'inactive');
+      }  
+      function subjectnumberstoggle() {
+        toggle($('.subjecticon.number tspan'),'inactive');
+      }
+      function orbittoggle() {
+        toggle($('.connect' ),'inactive');
+      }  
+      function changetspans(tspans,t1,t2) {
+        $.each(tspans,function(a,d){
+          d.textContent = (d.textContent == t1 ? t2 : t1);
+        });
+      }
+      function toggle(things,cls) {
+        $.each(things,function(a,d){
+          $(d).toggleClass(cls)
+        });
+      }
+      function s_relationstoggle(nid) {
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        
+        var togglers = [];
+        var tspans = [];
+        var units = [];
+        var roles = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).attr('class').match(/(u\d+) (r\d+)/);
+          u = RegExp.$1;
+          r = RegExp.$2;
+          togglers.push(b);
+          togglers.push('#' + r + ' .subjecticon');
+          togglers.push('#' + u + ' .subjecticon');
+          togglers.push('#' + r + ' .role');
+          togglers.push('#' + u + ' .unit');
+          tspans.push($('#' + r + ' .subjecticon.number tspan.special')[0]);
+          tspans.push($('#' + u + ' .subjecticon.number tspan.special')[0]);
+          units.push(u);
+          roles.push(r);
+        });
+        togglers = _.uniq(togglers);
+        tspans = _.uniq(tspans);
+        units = _.uniq(units);
+        roles = _.uniq(roles);
+        $.each(units,function(a,b){
+          $.each(units,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        $.each(roles,function(a,b){
+          $.each(roles,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        changetspans(tspans,'1','');
+        toggle(togglers,'highlight');
+        toggle($(nid).find('.subjecticon'),'highlight');
+      }
+      function ur_filtertoggle(nid){
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          subjects = _.union(subjects,res);
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        $.each($('.subject'),function(a,d){
+          $(d).removeClass('hidden');
+        });
+        $.each($('.activefilter'),function(a,d){
+          $(d).removeClass('activefilter');
+        });
+        if (filter == $(nid).attr('id')) {
+          filter = '';
+        } else {  
+          filter = $(nid).attr('id');
+          $('#' + filter + '_text').addClass('activefilter');
+          var allsubjects = _.map($('.subject'), function(d){ return '#' + $(d).attr('id'); });
+          $.each(_.difference(allsubjects,subjects),function(a,d){
+            $(d).addClass('hidden');
+          });
+        }  
+      }
+      function ur_relationstoggle(nid){
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).toggleClass($(nid).attr('class'));
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          var len = res.length;
+          subjects = _.union(subjects,res);
+          if ($(nid).hasClass('role')) {
+            var target = $(b).attr('class').match(/(u\d+)/)[1];
+          } else {  
+            var target = $(b).attr('class').match(/(r\d+)/)[1];
+          }
+          changetspans($('#' + target + ' .subjecticon.number tspan.special'),len,'');
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        toggle(subjects,$(nid).hasClass('role') ? 'highlightrole': 'highlightunit');
+        changetspans($('#' + $(nid).attr('id') + ' .subjecticon.number tspan.special'),$('#' + $(nid).attr('id') + ' .subjecticon.number tspan.normal')[0].textContent,'');
+        $.each($('.connect.f' + $(nid).attr('id')),function(a,b){
+          toggle($(b),'highlight');
+        });
+      }
+    </script>
+  </head>
+  <body>
+<div class="tabbed rest"><table class="tabbar"><tbody><tr><td class="tabbefore"></td>
+<td class="tab" id="tabgraph"><h1>NodeLink</h1></td>
+<td class="tabbehind"></td></tr></tbody></table>
+<div class="tabbelow"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:s="http://www.w3.org/2000/svg" xmlns:dyn="http://exslt.org/dynamic" class="active" width="456pt" height="107pt" viewBox="0.00 0.00 456.00 107.00">
+  <g id="graph1" graph="" transform="scale(1 1) rotate(0) translate(4 103)">
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_A">
+      <title>A</title>
+      <polygon fill="#729fcf" stroke="black" points="372,-74 318,-74 318,-56 372,-56 372,-74"/>
+      <text text-anchor="middle" x="345" y="-62.8" font-family="sans-serif" font-size="8.00">A</text>
+    </g>
+    <g id="edge_unit_A--C">
+      <title>A - C</title>
+      <ellipse fill="#ffffff" stroke="black" cx="307" cy="-51" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_unit_A--X">
+      <title>A - X</title>
+      <ellipse fill="#ffffff" stroke="black" cx="307" cy="-82" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_B">
+      <title>B</title>
+      <polygon fill="#729fcf" stroke="black" points="220,-54 166,-54 166,-36 220,-36 220,-54"/>
+      <text text-anchor="middle" x="193" y="-42.8" font-family="sans-serif" font-size="8.00">B</text>
+    </g>
+    <g id="edge_unit_B--J">
+      <title>B - J</title>
+      <ellipse fill="#ffffff" stroke="black" cx="155" cy="-45" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_J">
+      <title>J</title>
+      <polygon fill="#729fcf" stroke="black" points="144,-54 90,-54 90,-36 144,-36 144,-54"/>
+      <text text-anchor="middle" x="117" y="-42.8" font-family="sans-serif" font-size="8.00">J</text>
+    </g>
+    <g id="edge_unit_J--A">
+      <title>J - A</title>
+      <ellipse fill="#ffffff" stroke="black" cx="79" cy="-55" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_C">
+      <title>C</title>
+      <polygon fill="#729fcf" stroke="black" points="296,-54 242,-54 242,-36 296,-36 296,-54"/>
+      <text text-anchor="middle" x="269" y="-42.8" font-family="sans-serif" font-size="8.00">C</text>
+    </g>
+    <g id="edge_unit_C--B">
+      <title>C - B</title>
+      <ellipse fill="#ffffff" stroke="black" cx="231" cy="-45" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_D">
+      <title>D</title>
+      <polygon fill="#729fcf" stroke="black" points="372,-47 318,-47 318,-29 372,-29 372,-47"/>
+      <text text-anchor="middle" x="345" y="-35.8" font-family="sans-serif" font-size="8.00">D</text>
+    </g>
+    <g id="edge_unit_D--C">
+      <title>D - C</title>
+      <ellipse fill="#ffffff" stroke="black" cx="307" cy="-38" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_E">
+      <title>E</title>
+      <polygon fill="#729fcf" stroke="black" points="448,-47 394,-47 394,-29 448,-29 448,-47"/>
+      <text text-anchor="middle" x="421" y="-35.8" font-family="sans-serif" font-size="8.00">E</text>
+    </g>
+    <g id="edge_unit_E--D">
+      <title>E - D</title>
+      <ellipse fill="#ffffff" stroke="black" cx="383" cy="-38" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_F">
+      <title>F</title>
+      <polygon fill="#729fcf" stroke="black" points="220,-28 166,-28 166,-10 220,-10 220,-28"/>
+      <text text-anchor="middle" x="193" y="-16.8" font-family="sans-serif" font-size="8.00">F</text>
+    </g>
+    <g id="edge_unit_F--J">
+      <title>F - J</title>
+      <ellipse fill="#ffffff" stroke="black" cx="155" cy="-32" rx="2.88" ry="2.88"/>
+    </g>
+    <g id="edge_unit_F--G">
+      <title>F - G</title>
+      <ellipse fill="#ffffff" stroke="black" cx="155" cy="-19" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_G">
+      <title>G</title>
+      <polygon fill="#729fcf" stroke="black" points="144,-29 90,-29 90,-11 144,-11 144,-29"/>
+      <text text-anchor="middle" x="117" y="-17.8" font-family="sans-serif" font-size="8.00">G</text>
+    </g>
+    <g id="edge_unit_G--H">
+      <title>G - H</title>
+      <ellipse fill="#ffffff" stroke="black" cx="79" cy="-20" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity unit" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_unit_H">
+      <title>H</title>
+      <polygon fill="#729fcf" stroke="black" points="68,-29 14,-29 14,-11 68,-11 68,-29"/>
+      <text text-anchor="middle" x="41" y="-17.8" font-family="sans-serif" font-size="8.00">H</text>
+    </g>
+    <g id="edge_unit_H--F">
+      <title>H - F</title>
+      <ellipse fill="#ffffff" stroke="black" cx="3" cy="-10" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_X">
+      <title>X</title>
+      <polygon fill="#ad7fa8" stroke="black" points="296,-94 242,-94 242,-76 296,-76 296,-94"/>
+      <text text-anchor="middle" x="269" y="-82.8" font-family="sans-serif" font-size="8.00">X</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_S">
+      <title>S</title>
+      <polygon fill="#ad7fa8" stroke="black" points="372,-99 318,-99 318,-81 372,-81 372,-99"/>
+      <text text-anchor="middle" x="345" y="-87.8" font-family="sans-serif" font-size="8.00">S</text>
+    </g>
+    <g class="entity role" onmouseover="over_entity(this)" onmouseout="out_entity(this)" id="entity_role_T">
+      <title>T</title>
+      <polygon fill="#ad7fa8" stroke="black" points="448,-99 394,-99 394,-81 448,-81 448,-99"/>
+      <text text-anchor="middle" x="421" y="-87.8" font-family="sans-serif" font-size="8.00">T</text>
+    </g>
+    <g id="edge_role_T--S">
+      <title>T - S</title>
+      <ellipse fill="#ffffff" stroke="black" cx="383" cy="-90" rx="2.88" ry="2.88"/>
+    </g>
+    <g class="edge" id="edge_unit_A--C_a">
+      <title>A--A - C</title>
+      <path fill="none" stroke="black" d="M320.291,-55.8965C316.208,-54.3924 312.513,-53.0311 310.061,-52.1279"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_A--X_a">
+      <title>A--A - X</title>
+      <path fill="none" stroke="black" d="M324.665,-74.0972C318.736,-76.7497 312.981,-79.3242 309.725,-80.7808"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_B--J_a">
+      <title>B--B - J</title>
+      <path fill="none" stroke="black" d="M165.788,-45C162.742,-45 160.045,-45 158.11,-45"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_J--A_a">
+      <title>J--J - A</title>
+      <path fill="none" stroke="black" d="M89.7876,-52.1611C86.7421,-52.9626 84.0452,-53.6723 82.1097,-54.1817"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_C--B_a">
+      <title>C--C - B</title>
+      <path fill="none" stroke="black" d="M241.788,-45C238.742,-45 236.045,-45 234.11,-45"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_D--C_a">
+      <title>D--D - C</title>
+      <path fill="none" stroke="black" d="M317.788,-38C314.742,-38 312.045,-38 310.11,-38"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_E--D_a">
+      <title>E--E - D</title>
+      <path fill="none" stroke="black" d="M393.788,-38C390.742,-38 388.045,-38 386.11,-38"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_F--J_a">
+      <title>F--F - J</title>
+      <path fill="none" stroke="black" d="M166.608,-28.0289C163.163,-29.2074 160.102,-30.2545 157.99,-30.9772"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_F--G_a">
+      <title>F--F - G</title>
+      <path fill="none" stroke="black" d="M165.788,-19C162.742,-19 160.045,-19 158.11,-19"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_G--H_a">
+      <title>G--G - H</title>
+      <path fill="none" stroke="black" d="M89.7876,-20C86.7421,-20 84.0452,-20 82.1097,-20"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_H--F_a">
+      <title>H--H - F</title>
+      <path fill="none" stroke="black" d="M13.7876,-12.8389C10.7421,-12.0374 8.04524,-11.3277 6.1097,-10.8183"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_role_T--S_a">
+      <title>T--T - S</title>
+      <path fill="none" stroke="black" d="M393.788,-90C390.742,-90 388.045,-90 386.11,-90"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_A--C_b">
+      <title>A - C--C</title>
+      <path fill="none" stroke="black" d="M304.018,-50.5292C302.059,-50.2198 299.281,-49.7812 296.136,-49.2847"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_A--X_b">
+      <title>A - X--X</title>
+      <path fill="none" stroke="black" d="M304.018,-82.2354C302.059,-82.3901 299.281,-82.6094 296.136,-82.8577"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_B--J_b">
+      <title>B - J--J</title>
+      <path fill="none" stroke="black" d="M152.018,-45C150.059,-45 147.281,-45 144.136,-45"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_J--A_b">
+      <title>J - A--A</title>
+      <path fill="none" stroke="black" d="M81.8812,-55.6561C91.9115,-57.8809 126.254,-65 155,-65 269,-65 269,-65 269,-65 285.229,-65 303.408,-65 317.916,-65"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_C--B_b">
+      <title>C - B--B</title>
+      <path fill="none" stroke="black" d="M228.018,-45C226.059,-45 223.281,-45 220.136,-45"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_D--C_b">
+      <title>D - C--C</title>
+      <path fill="none" stroke="black" d="M304.018,-38.5493C302.059,-38.9103 299.281,-39.422 296.136,-40.0012"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_E--D_b">
+      <title>E - D--D</title>
+      <path fill="none" stroke="black" d="M380.018,-38C378.059,-38 375.281,-38 372.136,-38"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_F--J_b">
+      <title>F - J--J</title>
+      <path fill="none" stroke="black" d="M152.018,-33.0201C149.919,-33.7384 146.88,-34.778 143.457,-35.949"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_F--G_b">
+      <title>F - G--G</title>
+      <path fill="none" stroke="black" d="M152.018,-19.0785C150.059,-19.13 147.281,-19.2031 144.136,-19.2859"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_G--H_b">
+      <title>G - H--H</title>
+      <path fill="none" stroke="black" d="M76.0182,-20C74.0586,-20 71.2807,-20 68.1362,-20"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_unit_H--F_b">
+      <title>H - F--F</title>
+      <path fill="none" stroke="black" d="M5.88118,-9.34387C15.9115,-7.11914 50.2543,-0 79,-0 117,-0 117,-0 117,-0 134.953,-0 154.598,-5.05151 169.417,-9.94517"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+    <g class="edge" id="edge_role_T--S_b">
+      <title>T - S--S</title>
+      <path fill="none" stroke="black" d="M380.018,-90C378.059,-90 375.281,-90 372.136,-90"/>
+      <s:path d="" fill="" stroke=""/>
+      <s:path d="" fill="" stroke=""/>
+    </g>
+  </g>
+</svg></div></div>
+  </body>
+</html>

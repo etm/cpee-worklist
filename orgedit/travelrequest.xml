@@ -1,0 +1,86 @@
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+    <units>
+        <unit id="Dean's Office">
+            <permissions/>
+        </unit>
+        <unit id="Org Unit 2">
+            <parent>Dean's Office</parent>
+            <permissions/>
+        </unit>
+        <unit id="Org Unit 3">
+            <parent>Dean's Office</parent>
+            <permissions/>
+        </unit>
+        <unit id="Org Unit 1">
+            <parent>Dean's Office</parent>
+            <permissions/>
+        </unit>
+    </units>
+    <roles>
+        <role id="Employee">
+            <permissions/>
+        </role>
+        <role id="Head">
+            <permissions/>
+        </role>
+        <role id="Budget owner">
+            <permissions/>
+        </role>
+        <role id="Vice budget owner">
+            <permissions/>
+        </role>
+        <role id="Administrative staff">
+            <permissions/>
+        </role>
+        <role id="Vice head">
+            <permissions/>
+        </role>
+    </roles>
+    <subjects>
+        <subject id="Duncan Foster">
+            <relation unit="Dean's Office" role="Employee"/>
+        </subject>
+        <subject id="William Barker">
+            <relation unit="Org Unit 1" role="Employee"/>
+        </subject>
+        <subject id="Tim Grey">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 3" role="Employee"/>
+        </subject>
+        <subject id="George Huffington">
+            <relation unit="Org Unit 1" role="Employee"/>
+        </subject>
+        <subject id="Kirsten Singer">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 2" role="Employee"/>
+        </subject>
+        <subject id="Jay Miller">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 2" role="Employee"/>
+            <relation unit="Org Unit 3" role="Employee"/>
+        </subject>
+        <subject id="Camille Dixon">
+            <relation unit="Org Unit 1" role="Employee"/>
+        </subject>
+        <subject id="Raymond Bill">
+            <relation unit="Org Unit 1" role="Employee"/>
+        </subject>
+        <subject id="Mary Saunders">
+            <relation unit="Org Unit 1" role="Employee"/>
+        </subject>
+        <subject id="Sandra Heart">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 1" role="Head"/>
+            <relation unit="Org Unit 1" role="Budget owner"/>
+        </subject>
+        <subject id="Molly Enders">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 1" role="Administrative staff"/>
+        </subject>
+        <subject id="Ernst Bingham">
+            <relation unit="Org Unit 1" role="Employee"/>
+            <relation unit="Org Unit 1" role="Vice head"/>
+            <relation unit="Org Unit 1" role="Vice budget owner"/>
+        </subject>
+    </subjects>
+</organisation>

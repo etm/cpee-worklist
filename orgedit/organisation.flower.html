@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>OrbitFlower</title>
+    <style media="screen" type="text/css">
+      .unit {
+        fill: #729fcf;
+        stroke: #204a87;
+        stroke-width:1.5;
+        cursor: pointer;
+      }
+      .role {
+        fill: #ad7fa8;
+        stroke: #5c3566;
+        stroke-width:1.5;
+        cursor: pointer;
+      }
+      .subject {
+        cursor: pointer;
+      }
+      text {
+        font-size:10px;
+        font-style:normal;
+        font-variant:normal;
+        font-weight:normal;
+        font-stretch:normal;
+        line-height:100%;
+        letter-spacing:0px;
+        word-spacing:0px;
+        writing-mode:lr-tb;
+        text-anchor:start;
+        fill:#000000;
+        fill-opacity:1;
+        stroke:none;
+        font-family:Arial;
+      }
+      .labeltext {
+        font-weight:normal;
+      }
+      .btext {
+        fill: #ffffff;
+        stroke: #ffffff;
+        stroke-width: 2.5;
+      }
+      .role circle.highlight, .unit circle.highlight {
+        stroke: #a40000;
+      }
+      .subject:hover .labeltext {
+        fill:#a40000;
+        color:#a40000;
+      }
+      .subject.highlightrole .labeltext {
+        color:#ad7fa8;
+      }
+      .subject.highlightunit .labeltext {
+        color:#729fcf;
+      }
+      .subject.highlightrole .subjecticon {
+        stroke:#ad7fa8;
+      }
+      .subject.highlightunit .subjecticon {
+        stroke:#729fcf;
+      }
+      .left {
+        text-align: end;
+        text-anchor: end
+      }
+      .right {
+        text-align: start;
+        text-anchor: start
+      }
+      .unit.connect {
+        fill:none;
+        stroke: #204a87;
+        stroke-width:1;
+      }
+      .role.connect {
+        fill:none;
+        stroke: #5c3566;
+        stroke-width:1;
+      }
+      .unit.connect.highlight {
+        stroke: #a40000;
+        stroke-opacity: 1;
+      }
+      .role.connect.highlight {
+        stroke: #a40000;
+        stroke-opacity: 1;
+      }
+      .connect.inactive {
+        stroke-opacity: 0.1;
+      }
+      .relation {
+        fill:none;
+        stroke: #777676;
+        stroke-width:1;
+      }
+      .relation.inactive {
+        stroke-opacity: 0.2;
+      }
+      .relation.role {
+        stroke-opacity: 1;
+        stroke: #5c3566;
+      }
+      .relation.unit {
+        stroke-opacity: 1;
+        stroke: #204a87;
+      }
+      .relation.highlight {
+        stroke-opacity: 1;
+        stroke: #a40000;
+      }
+      .subject .subjecticon {
+        fill:#ffffff;
+        stroke: #000000;
+        stroke-width:1;
+      }
+      .subjecticon.subjecthighlight {
+        stroke: #a40000;
+      }
+      .subjecticon.highlight {
+        stroke: #a40000;
+      }
+      .subjecticon.number {
+        font-size:7px;
+        font-style:normal;
+        font-variant:normal;
+        font-weight:normal;
+        font-stretch:normal;
+        line-height:100%;
+        letter-spacing:0px;
+        word-spacing:0px;
+        writing-mode:lr-tb;
+        text-anchor:start;
+        fill:#000000;
+        fill-opacity:1;
+        stroke:none;
+        font-family:Arial;
+      }
+      .subjecticon.number tspan {
+        text-anchor:middle;
+        text-align:center;
+      }
+      .subjecticon.number .inactive {
+        visibility:hidden;
+      }
+      .plainwhite {
+        fill: none;
+        stroke: #ffffff;
+        stroke-width:2.9;
+      }
+      .activefilter {
+        fill: #a40000;
+      }
+      .relation.u3.r1.s1.s2 {
+        stroke-width: 3.4;
+      }
+      .relation.highlight.u3.r1.s1.s2 {
+        stroke-opacity:1;
+        stroke-width:1;
+        stroke: #a40000;
+      }
+      .relation.u3.r4.s4 {
+        stroke-width: 1.95;
+      }
+      .relation.highlight.u3.r4.s4 {
+        stroke-opacity:1;
+        stroke-width:1;
+        stroke: #a40000;
+      }
+      .relation.u3.r2.s2.s3 {
+        stroke-width: 3.4;
+      }
+      .relation.highlight.u3.r2.s2.s3 {
+        stroke-opacity:1;
+        stroke-width:1;
+        stroke: #a40000;
+      }
+      .relation.u2.r1.s7 {
+        stroke-width: 1.95;
+      }
+      .relation.highlight.u2.r1.s7 {
+        stroke-opacity:1;
+        stroke-width:1;
+        stroke: #a40000;
+      }
+      .relation.u2.r3.s6.s5 {
+        stroke-width: 3.4;
+      }
+      .relation.highlight.u2.r3.s6.s5 {
+        stroke-opacity:1;
+        stroke-width:1;
+        stroke: #a40000;
+      }
+    </style>
+    <script type="text/javascript" src="helpers/jquery-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery.svgdom.js"></script>
+    <script type="text/javascript" src="helpers/underscore-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="helpers/ui.js"></script>
+    <link rel="stylesheet" href="helpers/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="helpers/custom.css" type="text/css"/>
+    <script type="text/javascript">
+    </script>
+    <script type="text/javascript">
+      var filter = '';
+      $(document).ready(function() {
+        $('#usercolumn').resizable({
+          handles: { 'w' : '#handle2'},
+          resize: function(event, ui) {
+            if ($.browser.webkit) {
+              $('#handle2').offset({ left: ui.helper.offset().left+3 });
+            }
+          }
+        });
+      });  
+      function relationstoggle() {
+        toggle($('.relation' ),'inactive');
+      }  
+      function subjectnumberstoggle() {
+        toggle($('.subjecticon.number tspan'),'inactive');
+      }
+      function orbittoggle() {
+        toggle($('.connect' ),'inactive');
+      }  
+      function changetspans(tspans,t1,t2) {
+        $.each(tspans,function(a,d){
+          d.textContent = (d.textContent == t1 ? t2 : t1);
+        });
+      }
+      function toggle(things,cls) {
+        $.each(things,function(a,d){
+          $(d).toggleClass(cls)
+        });
+      }
+      function s_relationstoggle(nid) {
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        
+        var togglers = [];
+        var tspans = [];
+        var units = [];
+        var roles = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).attr('class').match(/(u\d+) (r\d+)/);
+          u = RegExp.$1;
+          r = RegExp.$2;
+          togglers.push(b);
+          togglers.push('#' + r + ' .subjecticon');
+          togglers.push('#' + u + ' .subjecticon');
+          togglers.push('#' + r + ' .role');
+          togglers.push('#' + u + ' .unit');
+          tspans.push($('#' + r + ' .subjecticon.number tspan.special')[0]);
+          tspans.push($('#' + u + ' .subjecticon.number tspan.special')[0]);
+          units.push(u);
+          roles.push(r);
+        });
+        togglers = _.uniq(togglers);
+        tspans = _.uniq(tspans);
+        units = _.uniq(units);
+        roles = _.uniq(roles);
+        $.each(units,function(a,b){
+          $.each(units,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        $.each(roles,function(a,b){
+          $.each(roles,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        changetspans(tspans,'1','');
+        toggle(togglers,'highlight');
+        toggle($(nid).find('.subjecticon'),'highlight');
+      }
+      function ur_filtertoggle(nid){
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          subjects = _.union(subjects,res);
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        $.each($('.subject'),function(a,d){
+          $(d).removeClass('hidden');
+        });
+        $.each($('.activefilter'),function(a,d){
+          $(d).removeClass('activefilter');
+        });
+        if (filter == $(nid).attr('id')) {
+          filter = '';
+        } else {  
+          filter = $(nid).attr('id');
+          $('#' + filter + '_text').addClass('activefilter');
+          var allsubjects = _.map($('.subject'), function(d){ return '#' + $(d).attr('id'); });
+          $.each(_.difference(allsubjects,subjects),function(a,d){
+            $(d).addClass('hidden');
+          });
+        }  
+      }
+      function ur_relationstoggle(nid){
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).toggleClass($(nid).attr('class'));
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          var len = res.length;
+          subjects = _.union(subjects,res);
+          if ($(nid).hasClass('role')) {
+            var target = $(b).attr('class').match(/(u\d+)/)[1];
+          } else {  
+            var target = $(b).attr('class').match(/(r\d+)/)[1];
+          }
+          changetspans($('#' + target + ' .subjecticon.number tspan.special'),len,'');
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        toggle(subjects,$(nid).hasClass('role') ? 'highlightrole': 'highlightunit');
+        changetspans($('#' + $(nid).attr('id') + ' .subjecticon.number tspan.special'),$('#' + $(nid).attr('id') + ' .subjecticon.number tspan.normal')[0].textContent,'');
+        $.each($('.connect.f' + $(nid).attr('id')),function(a,b){
+          toggle($(b),'highlight');
+        });
+      }
+    </script>
+  </head>
+  <body>
+<div class="tabbed rest"><table class="tabbar"><tbody><tr><td class="tabbefore"></td>
+<td class="tab" id="tabgraph"><h1>OrbitFlower</h1></td>
+<td class="tabbehind"></td></tr></tbody></table>
+<table class="tabbelow columns"><tbody><tr><td id="graphcolumn"><div class="column"><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='298.101645696199' height='226.8915599856892'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 186.36915774348665 60.96317984009191 L 203.38873365356858 38.729555847567454 A 10 10 0 0 1 217.09392514679723 37.25044655973532 A 100.9457799928446 100.9457799928446 0 0 1 244.37699117420541 80.57564417893414 A 10 10 0 0 1 237.12116093374323 92.29626556489369 L 209.71618875877465 98.03799876047142" class="unit connect fu1 tu2" id="o1"/>
+  <path d="M 120.45954209228128 54.397303701955565 L 105.96450536726786 24.75115875289832 A 10 10 0 0 1 110.74955936824729 11.805222975619401 A 105.9457799928446 105.9457799928446 0 0 1 249.293253026459 79.5440784337436 A 10 10 0 0 1 242.0149059649876 91.27095606568338 L 209.71618875877465 98.03799876047142" class="unit connect fu1 tu3" id="o2"/>
+  <path d="M 195.47782807356833 152.3978867883749 L 220.3119320417656 174.12959818202194 A 10 10 0 0 1 220.90693108037584 187.91872328428178 A 105.9457799928446 105.9457799928446 0 0 1 90.50539641020745 199.86394682227248 A 10 10 0 0 1 88.58525357249093 186.19620939340422 L 109.05778414111487 160.3142563736501" class="role connect fr4 tr2" id="o3"/>
+  <path d="M 120.45954209228128 54.397303701955565 Q 148.10806914321756 110.9457799928446 85.16427497599554 110.44578525088781" class="relation u3 r1 s1 s2"/>
+  <path d="M 120.45954209228128 54.397303701955565 Q 148.10806914321756 110.9457799928446 195.47782807356833 152.3978867883749" class="relation u3 r4 s4"/>
+  <path d="M 120.45954209228128 54.397303701955565 Q 148.10806914321756 110.9457799928446 109.05778414111487 160.3142563736501" class="relation u3 r2 s2 s3"/>
+  <path d="M 186.36915774348665 60.96317984009191 Q 148.10806914321756 110.9457799928446 85.16427497599554 110.44578525088781" class="relation u2 r1 s7"/>
+  <path d="M 186.36915774348665 60.96317984009191 Q 148.10806914321756 110.9457799928446 156.9536933968545 173.26693330751831" class="relation u2 r3 s6 s5"/>
+<g id='u1' class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='unit' cx="209.71618875877465" cy="98.03799876047142" r="8"/>
+  <text x='209.71618875877465' y='98.03799876047142' class='subjecticon number'><tspan class='normal' x='209.71618875877465' y='100.41799876047142'>0</tspan><tspan class='special inactive' x='209.71618875877465' y='100.41799876047142'></tspan></text>
+</g>
+  <text x='220.54618080876568' y='99.39750356173494' class='right btext'>WebBank</text>
+  <text x='220.54618080876568' y='99.39750356173494' class='right labeltext' id="u1_text">WebBank</text>
+<g id='u2' class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='unit' cx="186.36915774348665" cy="60.96317984009191" r="26.75"/>
+  <text x='186.36915774348665' y='60.96317984009191' class='subjecticon number'><tspan class='normal' x='186.36915774348665' y='63.34317984009191'>3</tspan><tspan class='special inactive' x='186.36915774348665' y='63.34317984009191'></tspan></text>
+</g>
+  <text x='205.6289311575828' y='36.72212834723372' class='right btext'>Marketing</text>
+  <text x='205.6289311575828' y='36.72212834723372' class='right labeltext' id="u2_text">Marketing</text>
+<g id='u3' class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='unit' cx="120.45954209228128" cy="54.397303701955565" r="33.0"/>
+  <text x='120.45954209228128' y='54.397303701955565' class='subjecticon number'><tspan class='normal' x='120.45954209228128' y='56.77730370195557'>4</tspan><tspan class='special inactive' x='120.45954209228128' y='56.77730370195557'></tspan></text>
+</g>
+  <text x='102.96450536726786' y='21.75115875289832' class='left btext'>Accounting</text>
+  <text x='102.96450536726786' y='21.75115875289832' class='left labeltext' id="u3_text">Accounting</text>
+<g id='r1' class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='role' cx="85.16427497599554" cy="110.44578525088781" r="26.75"/>
+  <text x='85.16427497599554' y='110.44578525088781' class='subjecticon number'><tspan class='normal' x='85.16427497599554' y='112.8257852508878'>3</tspan><tspan class='special inactive' x='85.16427497599554' y='112.8257852508878'></tspan></text>
+</g>
+  <text x='55.415118890161224' y='113.23330302652161' class='left btext'>Secretary</text>
+  <text x='55.415118890161224' y='113.23330302652161' class='left labeltext' id="r1_text">Secretary</text>
+<g id='r2' class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='role' cx="109.05778414111487" cy="160.3142563736501" r="20.5"/>
+  <text x='109.05778414111487' y='160.3142563736501' class='subjecticon number'><tspan class='normal' x='109.05778414111487' y='162.6942563736501'>2</tspan><tspan class='special inactive' x='109.05778414111487' y='162.6942563736501'></tspan></text>
+</g>
+  <text x='93.34' y='188.292439310164' class='left btext'>Junior Accountant</text>
+  <text x='93.34' y='188.292439310164' class='left labeltext' id="r2_text">Junior Accountant</text>
+<g id='r3' class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='role' cx="156.9536933968545" cy="173.26693330751831" r="20.5"/>
+  <text x='156.9536933968545' y='173.26693330751831' class='subjecticon number'><tspan class='normal' x='156.9536933968545' y='175.6469333075183'>2</tspan><tspan class='special inactive' x='156.9536933968545' y='175.6469333075183'></tspan></text>
+</g>
+  <text x='162.83451078000826' y='205.46350669331227' class='right btext'>Analyst</text>
+  <text x='162.83451078000826' y='205.46350669331227' class='right labeltext' id="r3_text">Analyst</text>
+<g id='r4' class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='role' cx="195.47782807356833" cy="152.3978867883749" r="14.25"/>
+  <text x='195.47782807356833' y='152.3978867883749' class='subjecticon number'><tspan class='normal' x='195.47782807356833' y='154.7778867883749'>1</tspan><tspan class='special inactive' x='195.47782807356833' y='154.7778867883749'></tspan></text>
+</g>
+  <text x='209.201645696199' y='167.73203489017703' class='right btext'>Senior Accountant</text>
+  <text x='209.201645696199' y='167.73203489017703' class='right labeltext' id="r4_text">Senior Accountant</text>
+<g id='' class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)" onclick="ur_filtertoggle(this)">
+  <circle class='role' cx="209.71618875877465" cy="123.85356122521776" r="8"/>
+  <text x='209.71618875877465' y='123.85356122521776' class='subjecticon number'><tspan class='normal' x='209.71618875877465' y='126.23356122521776'>0</tspan><tspan class='special inactive' x='209.71618875877465' y='126.23356122521776'></tspan></text>
+</g>
+  <text x='220.54618080876568' y='131.44405642395424' class='right btext'>add</text>
+  <text x='220.54618080876568' y='131.44405642395424' class='right labeltext' id="_text">add</text>
+</svg></div></td>
+<td id="usercolumn" class="ui-resizable"><span id="handle2" class="ui-resizable-handle ui-resizable-w">drag to resize</span>
+<div class="column"><table id="s1" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Black</td></tr></tbody></table>
+<table id="s4" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Green</td></tr></tbody></table>
+<table id="s2" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Jones</td></tr></tbody></table>
+<table id="s7" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Moss</td></tr></tbody></table>
+<table id="s3" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Red</td></tr></tbody></table>
+<table id="s6" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Sharp</td></tr></tbody></table>
+<table id="s5" class="subject" onmouseover="s_relationstoggle(this)" onmouseout="s_relationstoggle(this)"><tbody><tr><td><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='8' height='12'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 4 3.0 L 7.333333333333333 10.333333333333332 A 8.666666666666666 8.666666666666666 0 0 1 0.666666666666667 10.333333333333332 z" class="subjecticon"/>
+  <circle class='subjecticon' cx="4" cy="3.0" r="2.0"/>
+</svg></td>
+<td class="labeltext">Smith</td></tr></tbody></table></div></td></tr></tbody></table></div>
+  </body>
+</html>

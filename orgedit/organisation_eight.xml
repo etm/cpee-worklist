@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="A">
+      <parent>C</parent>
+      <permissions/>
+    </unit>
+    <unit id="B">
+      <parent>J</parent>
+      <permissions/>
+    </unit>
+    <unit id="J">
+      <parent>A</parent>
+      <parent>X</parent>
+      <permissions/>
+    </unit>
+    <unit id="C">
+      <parent>B</parent>
+      <permissions/>
+    </unit>
+    <unit id="X">
+      <parent>Y</parent>
+      <permissions/>
+    </unit>
+    <unit id="Y">
+      <parent>B</parent>
+      <permissions/>
+    </unit>
+  </units>
+  <roles/>
+  <subjects/>
+</organisation>

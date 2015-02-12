@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>OrbitFlower</title>
+    <style media="screen" type="text/css">
+      .unit {
+        fill: #729fcf;
+        stroke: #204a87;
+        stroke-width:1.5;
+        cursor: pointer;
+      }
+      .role {
+        fill: #ad7fa8;
+        stroke: #5c3566;
+        stroke-width:1.5;
+        cursor: pointer;
+      }
+      .subject {
+        cursor: pointer;
+      }
+      text {
+        font-size:10px;
+        font-style:normal;
+        font-variant:normal;
+        font-weight:normal;
+        font-stretch:normal;
+        line-height:100%;
+        letter-spacing:0px;
+        word-spacing:0px;
+        writing-mode:lr-tb;
+        text-anchor:start;
+        fill:#000000;
+        fill-opacity:1;
+        stroke:none;
+        font-family:Arial;
+      }
+      .labeltext {
+        font-weight:normal;
+      }
+      .btext {
+        fill: #ffffff;
+        stroke: #ffffff;
+        stroke-width: 2.5;
+      }
+      .role circle.highlight, .unit circle.highlight {
+        stroke: #a40000;
+      }
+      .subject:hover .labeltext {
+        fill:#a40000;
+        color:#a40000;
+      }
+      .subject.highlightrole .labeltext {
+        color:#ad7fa8;
+      }
+      .subject.highlightunit .labeltext {
+        color:#729fcf;
+      }
+      .subject.highlightrole .subjecticon {
+        stroke:#ad7fa8;
+      }
+      .subject.highlightunit .subjecticon {
+        stroke:#729fcf;
+      }
+      .left {
+        text-align: end;
+        text-anchor: end
+      }
+      .right {
+        text-align: start;
+        text-anchor: start
+      }
+      .unit.connect {
+        fill:none;
+        stroke: #204a87;
+        stroke-width:1;
+      }
+      .role.connect {
+        fill:none;
+        stroke: #5c3566;
+        stroke-width:1;
+      }
+      .unit.connect.highlight {
+        stroke: #a40000;
+        stroke-opacity: 1;
+      }
+      .role.connect.highlight {
+        stroke: #a40000;
+        stroke-opacity: 1;
+      }
+      .connect.inactive {
+        stroke-opacity: 0.1;
+      }
+      .relation {
+        fill:none;
+        stroke: #777676;
+        stroke-width:1;
+      }
+      .relation.inactive {
+        stroke-opacity: 0.2;
+      }
+      .relation.role {
+        stroke-opacity: 1;
+        stroke: #5c3566;
+      }
+      .relation.unit {
+        stroke-opacity: 1;
+        stroke: #204a87;
+      }
+      .relation.highlight {
+        stroke-opacity: 1;
+        stroke: #a40000;
+      }
+      .subject .subjecticon {
+        fill:#ffffff;
+        stroke: #000000;
+        stroke-width:1;
+      }
+      .subjecticon.subjecthighlight {
+        stroke: #a40000;
+      }
+      .subjecticon.highlight {
+        stroke: #a40000;
+      }
+      .subjecticon.number {
+        font-size:7px;
+        font-style:normal;
+        font-variant:normal;
+        font-weight:normal;
+        font-stretch:normal;
+        line-height:100%;
+        letter-spacing:0px;
+        word-spacing:0px;
+        writing-mode:lr-tb;
+        text-anchor:start;
+        fill:#000000;
+        fill-opacity:1;
+        stroke:none;
+        font-family:Arial;
+      }
+      .subjecticon.number tspan {
+        text-anchor:middle;
+        text-align:center;
+      }
+      .subjecticon.number .inactive {
+        visibility:hidden;
+      }
+      .plainwhite {
+        fill: none;
+        stroke: #ffffff;
+        stroke-width:2.9;
+      }
+      .activefilter {
+        fill: #a40000;
+      }
+    </style>
+    <script type="text/javascript" src="helpers/jquery-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery.svgdom.js"></script>
+    <script type="text/javascript" src="helpers/underscore-min.js"></script>
+    <script type="text/javascript" src="helpers/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="helpers/ui.js"></script>
+    <link rel="stylesheet" href="helpers/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="helpers/custom.css" type="text/css"/>
+    <script type="text/javascript">
+    </script>
+    <script type="text/javascript">
+      var filter = '';
+      $(document).ready(function() {
+        $('#usercolumn').resizable({
+          handles: { 'w' : '#handle2'},
+          resize: function(event, ui) {
+            if ($.browser.webkit) {
+              $('#handle2').offset({ left: ui.helper.offset().left+3 });
+            }
+          }
+        });
+      });  
+      function relationstoggle() {
+        toggle($('.relation' ),'inactive');
+      }  
+      function subjectnumberstoggle() {
+        toggle($('.subjecticon.number tspan'),'inactive');
+      }
+      function orbittoggle() {
+        toggle($('.connect' ),'inactive');
+      }  
+      function changetspans(tspans,t1,t2) {
+        $.each(tspans,function(a,d){
+          d.textContent = (d.textContent == t1 ? t2 : t1);
+        });
+      }
+      function toggle(things,cls) {
+        $.each(things,function(a,d){
+          $(d).toggleClass(cls)
+        });
+      }
+      function s_relationstoggle(nid) {
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        
+        var togglers = [];
+        var tspans = [];
+        var units = [];
+        var roles = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).attr('class').match(/(u\d+) (r\d+)/);
+          u = RegExp.$1;
+          r = RegExp.$2;
+          togglers.push(b);
+          togglers.push('#' + r + ' .subjecticon');
+          togglers.push('#' + u + ' .subjecticon');
+          togglers.push('#' + r + ' .role');
+          togglers.push('#' + u + ' .unit');
+          tspans.push($('#' + r + ' .subjecticon.number tspan.special')[0]);
+          tspans.push($('#' + u + ' .subjecticon.number tspan.special')[0]);
+          units.push(u);
+          roles.push(r);
+        });
+        togglers = _.uniq(togglers);
+        tspans = _.uniq(tspans);
+        units = _.uniq(units);
+        roles = _.uniq(roles);
+        $.each(units,function(a,b){
+          $.each(units,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        $.each(roles,function(a,b){
+          $.each(roles,function(c,d){
+            $('.connect.f'+b+'.t'+d).toggleClass('highlight');
+          });
+        });
+        changetspans(tspans,'1','');
+        toggle(togglers,'highlight');
+        toggle($(nid).find('.subjecticon'),'highlight');
+      }
+      function ur_filtertoggle(nid){
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          subjects = _.union(subjects,res);
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        $.each($('.subject'),function(a,d){
+          $(d).removeClass('hidden');
+        });
+        $.each($('.activefilter'),function(a,d){
+          $(d).removeClass('activefilter');
+        });
+        if (filter == $(nid).attr('id')) {
+          filter = '';
+        } else {  
+          filter = $(nid).attr('id');
+          $('#' + filter + '_text').addClass('activefilter');
+          var allsubjects = _.map($('.subject'), function(d){ return '#' + $(d).attr('id'); });
+          $.each(_.difference(allsubjects,subjects),function(a,d){
+            $(d).addClass('hidden');
+          });
+        }  
+      }
+      function ur_relationstoggle(nid){
+        relationstoggle();
+        subjectnumberstoggle();
+        orbittoggle();
+        var subjects = [];
+        $.each($('.relation.' + $(nid).attr('id')),function(a,b){
+          $(b).toggleClass($(nid).attr('class'));
+          var res = $(b).attr('class').match(/(s\d+ )*(s\d+)/);
+              res = res[0].split(' ');
+          var len = res.length;
+          subjects = _.union(subjects,res);
+          if ($(nid).hasClass('role')) {
+            var target = $(b).attr('class').match(/(u\d+)/)[1];
+          } else {  
+            var target = $(b).attr('class').match(/(r\d+)/)[1];
+          }
+          changetspans($('#' + target + ' .subjecticon.number tspan.special'),len,'');
+        });
+        subjects = _.uniq(subjects);
+        subjects = _.map(subjects, function(d){ return '#' + d; });
+        toggle(subjects,$(nid).hasClass('role') ? 'highlightrole': 'highlightunit');
+        changetspans($('#' + $(nid).attr('id') + ' .subjecticon.number tspan.special'),$('#' + $(nid).attr('id') + ' .subjecticon.number tspan.normal')[0].textContent,'');
+        $.each($('.connect.f' + $(nid).attr('id')),function(a,b){
+          toggle($(b),'highlight');
+        });
+      }
+    </script>
+  </head>
+  <body>
+<div class="tabbed rest"><table class="tabbar"><tbody><tr><td class="tabbefore"></td>
+<td class="tab" id="tabgraph"><h1>OrbitFlower</h1></td>
+<td class="tabbehind"></td></tr></tbody></table>
+<table class="tabbelow columns"><tbody><tr><td id="graphcolumn"><div class="column"><!-- width: -->
+<svg id="svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" width='190.312684489343' height='200.312684489343'>
+  <defs>
+    <filter id="glow" x="-0.2" width="2" y="-0.1" height="2">
+      <feGaussianBlur stdDeviation="0.5" id="feGaussianBlur3794"/>
+    </filter>
+  </defs>
+  <path d="M 145.620685657848 110.508349327721 L 148.518463136715 111.284806463029 A 10 10 0 0 1 154.831327190968 123.285199415293 A 62.6563422446713 62.6563422446713 0 0 1 148.439076097541 134.356903083846 A 10 10 0 0 1 134.889998918358 134.889998918358 L 132.768678574799 132.768678574798" class="role connect fr2 tr3" id="o11"/>
+  <path d="M 132.768678574798 62.5440059145442 L 134.889998918358 60.4226855709846 A 10 10 0 0 1 148.439076097541 60.9557814054968 A 62.6563422446713 62.6563422446713 0 0 1 154.831327190968 72.0274850740492 A 10 10 0 0 1 148.518463136715 84.027878026314 L 145.620685657848 84.8043351616216" class="unit connect fu1 tu2" id="o2"/>
+  <path d="M 110.508349327721 49.6919988314944 L 111.284806463029 46.7942213526272 A 10 10 0 0 1 123.285199415294 40.4813572983748 A 62.6563422446713 62.6563422446713 0 0 1 134.356903083846 46.8736083918013 A 10 10 0 0 1 134.889998918358 60.4226855709846 L 132.768678574798 62.5440059145442" class="unit connect fu2 tu3" id="o3"/>
+  <path d="M 84.8043351616216 145.620685657848 L 84.027878026314 148.518463136715 A 10 10 0 0 1 72.0274850740492 154.831327190968 A 62.6563422446713 62.6563422446713 0 0 1 60.9557814054968 148.439076097541 A 10 10 0 0 1 60.4226855709846 134.889998918358 L 62.5440059145442 132.768678574798" class="unit connect fu8 tu9" id="o10"/>
+  <path d="M 62.5440059145442 132.768678574798 L 60.4226855709846 134.889998918358 A 10 10 0 0 1 46.8736083918013 134.356903083846 A 62.6563422446713 62.6563422446713 0 0 1 40.4813572983748 123.285199415294 A 10 10 0 0 1 46.7942213526272 111.284806463029 L 49.6919988314944 110.508349327721" class="unit connect fu7 tu8" id="o9"/>
+  <path d="M 84.8043351616216 49.6919988314944 L 82.7337828008014 41.9645922211819 A 10 10 0 0 1 89.9606455696039 30.4391056262752 A 67.6563422446714 67.6563422446714 0 0 1 137.929629374297 43.2923560984844 A 10 10 0 0 1 138.425532824291 56.8871516650518 L 132.768678574798 62.5440059145442" class="unit connect fu2 tu4" id="o4"/>
+  <path d="M 49.6919988314944 110.508349327721 L 37.1349630897365 113.872996914054 A 10 10 0 0 1 25.5593517049903 106.654565596865 A 72.6563422446714 72.6563422446714 0 0 1 39.7176285769978 53.8151569629052 A 10 10 0 0 1 53.3516177591191 53.3516177591191 L 62.5440059145442 62.5440059145442" class="unit connect fu5 tu7" id="o7"/>
+  <path d="M 84.8043351616216 145.620685657848 L 80.1455923497762 163.007350531052 A 10 10 0 0 1 68.0912307517223 169.464501065456 A 77.6563422446714 77.6563422446714 0 0 1 25.8481834238868 127.22145373762 A 10 10 0 0 1 32.3053339582912 115.167092139567 L 49.6919988314944 110.508349327721" class="unit connect fu9 tu7" id="o8"/>
+  <path d="M 62.5440059145442 62.5440059145442 L 46.2805499472536 46.2805499472536 A 10 10 0 0 1 46.6905303728715 32.5828688971041 A 82.6563422446714 82.6563422446714 0 0 1 109.257293376365 15.8181552772886 A 10 10 0 0 1 116.461187365079 27.4757048268458 L 110.508349327721 49.6919988314944" class="unit connect fu3 tu5" id="o5"/>
+  <path d="M 49.6919988314944 84.8043351616216 L 22.6460756954005 77.557401898751 A 10 10 0 0 1 16.1197733109813 65.478364336845 A 87.6563422446714 87.6563422446714 0 0 1 65.4783643368449 16.1197733109813 A 10 10 0 0 1 77.557401898751 22.6460756954005 L 84.8043351616216 49.6919988314944" class="unit connect fu4 tu6" id="o6"/>
+  <path d="M 62.5440059145442 62.5440059145442 L 39.2094821353881 39.2094821353882 A 10 10 0 0 1 39.5769675929209 25.4622704781941 A 92.6563422446714 92.6563422446714 0 0 1 184.05159201224 64.1741294181403 A 10 10 0 0 1 177.496237925388 76.2633066732384 L 145.620685657848 84.8043351616216" class="unit connect fu5 tu1" id="o1"/>
+<g id='u1' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="145.620685657848" cy="84.8043351616216" r="8"/>
+  <text x='145.620685657848' y='84.8043351616216' class='subjecticon number'><tspan class='normal' x='145.620685657848' y='87.1843351616215'>0</tspan><tspan class='special inactive' x='145.620685657848' y='87.1843351616215'></tspan></text>
+</g>
+  <text x='156.348092268161' y='85.7337828008014' class='right btext'>B</text>
+  <text x='156.348092268161' y='85.7337828008014' class='right labeltext' id="u1_text">B</text>
+<g id='u2' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="132.768678574798" cy="62.5440059145442" r="8"/>
+  <text x='132.768678574798' y='62.5440059145442' class='subjecticon number'><tspan class='normal' x='132.768678574798' y='64.9240059145442'>0</tspan><tspan class='special inactive' x='132.768678574798' y='64.9240059145442'></tspan></text>
+</g>
+  <text x='141.425532824291' y='53.8871516650518' class='right btext'>C</text>
+  <text x='141.425532824291' y='53.8871516650518' class='right labeltext' id="u2_text">C</text>
+<g id='u3' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="110.508349327721" cy="49.6919988314944" r="8"/>
+  <text x='110.508349327721' y='49.6919988314944' class='subjecticon number'><tspan class='normal' x='110.508349327721' y='52.0719988314944'>0</tspan><tspan class='special inactive' x='110.508349327721' y='52.0719988314944'></tspan></text>
+</g>
+  <text x='115.578901688541' y='38.9645922211819' class='right btext'>A</text>
+  <text x='115.578901688541' y='38.9645922211819' class='right labeltext' id="u3_text">A</text>
+<g id='u4' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="84.8043351616216" cy="49.6919988314944" r="8"/>
+  <text x='84.8043351616216' y='49.6919988314944' class='subjecticon number'><tspan class='normal' x='84.8043351616216' y='52.0719988314944'>0</tspan><tspan class='special inactive' x='84.8043351616216' y='52.0719988314944'></tspan></text>
+</g>
+  <text x='79.7337828008014' y='38.9645922211819' class='left btext'>D</text>
+  <text x='79.7337828008014' y='38.9645922211819' class='left labeltext' id="u4_text">D</text>
+<g id='u5' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="62.5440059145442" cy="62.5440059145442" r="8"/>
+  <text x='62.5440059145442' y='62.5440059145442' class='subjecticon number'><tspan class='normal' x='62.5440059145442' y='64.9240059145442'>0</tspan><tspan class='special inactive' x='62.5440059145442' y='64.9240059145442'></tspan></text>
+</g>
+  <text x='53.8871516650518' y='59.8871516650519' class='left btext'>J</text>
+  <text x='53.8871516650518' y='59.8871516650519' class='left labeltext' id="u5_text">J</text>
+<g id='u6' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="49.6919988314944" cy="84.8043351616216" r="8"/>
+  <text x='49.6919988314944' y='84.8043351616216' class='subjecticon number'><tspan class='normal' x='49.6919988314944' y='87.1843351616216'>0</tspan><tspan class='special inactive' x='49.6919988314944' y='87.1843351616216'></tspan></text>
+</g>
+  <text x='38.9645922211819' y='85.7337828008014' class='left btext'>E</text>
+  <text x='38.9645922211819' y='85.7337828008014' class='left labeltext' id="u6_text">E</text>
+<g id='u7' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="49.6919988314944" cy="110.508349327721" r="8"/>
+  <text x='49.6919988314944' y='110.508349327721' class='subjecticon number'><tspan class='normal' x='49.6919988314944' y='112.888349327721'>0</tspan><tspan class='special inactive' x='49.6919988314944' y='112.888349327721'></tspan></text>
+</g>
+  <text x='38.9645922211819' y='118.528901688541' class='left btext'>F</text>
+  <text x='38.9645922211819' y='118.528901688541' class='left labeltext' id="u7_text">F</text>
+<g id='u8' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="62.5440059145442" cy="132.768678574798" r="8"/>
+  <text x='62.5440059145442' y='132.768678574798' class='subjecticon number'><tspan class='normal' x='62.5440059145442' y='135.148678574798'>0</tspan><tspan class='special inactive' x='62.5440059145442' y='135.148678574798'></tspan></text>
+</g>
+  <text x='53.8871516650518' y='150.325532824291' class='left btext'>H</text>
+  <text x='53.8871516650518' y='150.325532824291' class='left labeltext' id="u8_text">H</text>
+<g id='u9' onclick="ur_filtertoggle(this)" class="unit" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='unit' cx="84.8043351616216" cy="145.620685657848" r="8"/>
+  <text x='84.8043351616216' y='145.620685657848' class='subjecticon number'><tspan class='normal' x='84.8043351616216' y='148.000685657848'>0</tspan><tspan class='special inactive' x='84.8043351616216' y='148.000685657848'></tspan></text>
+</g>
+  <text x='79.7337828008014' y='165.248092268161' class='left btext'>G</text>
+  <text x='79.7337828008014' y='165.248092268161' class='left labeltext' id="u9_text">G</text>
+<g id='r1' onclick="ur_filtertoggle(this)" class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='role' cx="110.508349327721" cy="145.620685657848" r="8"/>
+  <text x='110.508349327721' y='145.620685657848' class='subjecticon number'><tspan class='normal' x='110.508349327721' y='148.000685657848'>0</tspan><tspan class='special inactive' x='110.508349327721' y='148.000685657848'></tspan></text>
+</g>
+  <text x='115.578901688541' y='165.248092268161' class='right btext'>X</text>
+  <text x='115.578901688541' y='165.248092268161' class='right labeltext' id="r1_text">X</text>
+<g id='r2' onclick="ur_filtertoggle(this)" class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='role' cx="132.768678574799" cy="132.768678574798" r="8"/>
+  <text x='132.768678574799' y='132.768678574798' class='subjecticon number'><tspan class='normal' x='132.768678574799' y='135.148678574798'>0</tspan><tspan class='special inactive' x='132.768678574799' y='135.148678574798'></tspan></text>
+</g>
+  <text x='141.425532824291' y='144.375532824291' class='right btext'>S</text>
+  <text x='141.425532824291' y='144.375532824291' class='right labeltext' id="r2_text">S</text>
+<g id='r3' onclick="ur_filtertoggle(this)" class="role" onmouseover="ur_relationstoggle(this)" onmouseout="ur_relationstoggle(this)">
+  <circle class='role' cx="145.620685657848" cy="110.508349327721" r="8"/>
+  <text x='145.620685657848' y='110.508349327721' class='subjecticon number'><tspan class='normal' x='145.620685657848' y='112.888349327721'>0</tspan><tspan class='special inactive' x='145.620685657848' y='112.888349327721'></tspan></text>
+</g>
+  <text x='156.348092268161' y='118.528901688541' class='right btext'>T</text>
+  <text x='156.348092268161' y='118.528901688541' class='right labeltext' id="r3_text">T</text>
+</svg></div></td>
+<td class="ui-resizable" id="usercolumn"><span class="ui-resizable-handle ui-resizable-w" id="handle2">drag to resize</span>
+<div class="column"></div></td></tr></tbody></table></div>
+  </body>
+</html>
