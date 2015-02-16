@@ -11,39 +11,28 @@ $socket = []
 
 class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase #{{{
   def ws_open(socket)
-    pp @data
-    pp @key
-    #@data.add_websocket(@key,socket)
-
+    @data.communication[@key] = socket
+    @data.events.each do |a|
+      if a[1].has_key?(@key)
+        a[1][@key] = socket
+      end  
+    end
+    # eventuell notify dass handler change
   end
   def ws_close
-    pp @data
-    pp @key
-    #@data.notify('properties/handlers/change', :instance => @data.instance)
-  end
-  def ws_message(data)
-    pp @data
-    pp @key
-   # begin
-   #   doc = XML::Smart::string(data)
-   #   callback = doc.find("string(/vote/@id)")
-   #   result = doc.find("string(/vote)")
-   #   @data.callbacks[callback].callback(result == 'true' ? true : false)
-   #   @data.callbacks.delete(callback)
-   # rescue
-   #   puts "Invalid message over websocket"
-   # end
+    delete
+    # eventuell notify dass handler change
   end
 
   def create
-    @data.notifications.subscriptions[@key].read do |d|
+    @data.notifications.subscriptions[@key].read do |doc|
       turl = doc.find('string(/n:subscription/@url)') 
       url = turl == '' ? nil : turl
-      @data.communication[key] = url
+      @data.communication[@key] = url
       doc.find('/n:subscription/n:topic').each do |t|
         t.find('n:event').each do |e|
           @data.events["#{t.attributes['id']}/#{e}"] ||= {}
-          @data.events["#{t.attributes['id']}/#{e}"][key] = (url == "" ? nil : url)
+          @data.events["#{t.attributes['id']}/#{e}"][@key] = (url == "" ? nil : url)
         end
       end
     end
@@ -60,9 +49,23 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
    # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def update
-    p 'update'
-    pp @data
-    pp @key
+    if @data.notifications.subscriptions.include?(@key)
+      url = @data.communication[@key]
+      evs = []
+      @data.events.each { |e,v| evs << e }
+      @data.notifications.subscriptions[@key].read do |doc|
+        turl = doc.find('string(/n:subscription/@url)') 
+        url = turl == '' ? url : turl
+        @data.communication[@key] = url
+        doc.find('/n:subscription/n:topic').each do |t|
+          t.find('n:event').each do |e|
+            @data.events["#{t.attributes['id']}/#{e}"] ||= {}
+            @data.events["#{t.attributes['id']}/#{e}"][@key] = url
+            evs.delete("#{t.attributes['id']}/#{e}")
+          end
+        end
+      end
+    end  
    # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
 end #}}}
@@ -110,6 +113,7 @@ class Delbacks < Riddl::Implementation #{{{
       domain = @a[0].callbacks[index]['domain']
       @a[0].callbacks.delete_at(index)
       @a[0].callbacks.serialize
+      @a[0].notify('user/finish', :index => index )
     else 
       @status = 404
     end
@@ -159,12 +163,11 @@ end  #}}}
 
 class Take_Task < Riddl::Implementation #{{{
   def response
-    pp "USER TAKE"
-    pp @r[-3]
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0].callbacks[index]["user"] = @r[-3]
       @a[0].callbacks.serialize
+      @a[0].notify('user/take', :index => index, :user => @r[-3])
     else
       @status = 404
     end
@@ -173,12 +176,11 @@ end  #}}}
 
 class Return_Task < Riddl::Implementation #{{{
   def response
-    pp "USER RETURN"
-    pp @r[-3]
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
     if index && (@a[0].callbacks[index]['user'] == @r[-3])
       @a[0].callbacks[index]["user"] = '*'
       @a[0].callbacks.serialize
+      @a[0].notify('user/giveback', :index => index )
     else
       @stauts = 404
     end
@@ -196,12 +198,6 @@ class Task_Details < Riddl::Implementation #{{{
   end
 end  #}}} 
 
-class Login < Riddl::Implementation #{{{
-  def response
-    pp @p[0]
-  end
-end  #}}} 
-
 class JSON_Task_Details < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
@@ -212,34 +208,6 @@ class JSON_Task_Details < Riddl::Implementation #{{{
     end
   end
 end  #}}} 
-
-class Bla < Riddl::Implementation  #{{{
-  def response 
-    domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1].to_i
-    user = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[2].to_i
-    p user
-    p domain
-  end
-end #}}}
-
-class Echo < Riddl::WebSocketImplementation #{{{
-  def onopen
-    $socket << self
-    puts "Connection established"
-  end
-
-  def onmessage(data)
-    printf("Received: %p\n", data)
-    send data
-    printf("Sent: %p\n", data)
-  end
-
-  def onclose
-    $socket.delete(self)
-    puts "Connection closed"
-  end
-
-end #}}}
 
 class CallbackItem < Array #{{{
   def initialize(domain)
@@ -260,6 +228,7 @@ class CallbackItem < Array #{{{
 end #}}}
 class ControllerItem #{{{
   attr_accessor :callbacks, :notifications
+  attr_reader :communication, :events
 
   def initialize(domain)
     @events = {}
@@ -281,12 +250,12 @@ class ControllerItem #{{{
     if item
       item.each do |ke,ur|
         Thread.new(ke,ur) do |key,url|
-          notf = build_notification(key,what,content,'event')
+          notf = notify_build_message(key,what,content)
           if url.class == String
             client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            params << Riddl::Header.new("CPEE_BASE",self.base)
-            params << Riddl::Header.new("CPEE_INSTANCE",self.instance)
+            params << Riddl::Header.new("WORKLIST_BASE","") # TODO
+            params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
             client.post params
           elsif url.class == Riddl::Utils::Notifications::Producer::WS
             e = XML::Smart::string("<event/>")
@@ -300,6 +269,14 @@ class ControllerItem #{{{
     end
   end # }}}
 
+  def notify_build_message(key,what,content)# {{{
+    res = []
+    res << ['key'                             , key]
+    res << ['topic'                           , ::File::dirname(what)]
+    res << ['event'                           , ::File::basename(what)]
+    res << ['notification'                    , JSON::generate(content)]
+    res << ['fingerprint-with-consumer-secret', Digest::MD5.hexdigest(res.join(''))]
+  end # }}}
 end #}}}
 class Controller < Hash #{{{
   def initialize
@@ -339,7 +316,6 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
 
       run Show_Domain_Users,controller[domain] if get
       on resource do
-        run Login if post 'session'
         on resource 'tasks' do
           run Show_Tasks,controller[domain] if get
           on resource do |r|

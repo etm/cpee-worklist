@@ -16,21 +16,13 @@
     </zeroOrMore>
   </message> <!--}}}-->
 
-  <message name="session">
-    <parameter name="id" type="string">
-      <param name="pattern">[a-f0-9]{32}</param> <!-- Digest::MD5.hexdigest(Kernel::rand().to_s) -->
-    </parameter>  
-    <optional>
-      <parameter name="url" type="string"/>
-    </optional>
-  </message>
   <message name="take">
     <parameter name="operation" fixed="take"/>
   </message>
   <message name="giveback">
     <parameter name="operation" fixed="giveback"/>
   </message>
-  <message name="details">
+  <message name="tdetails">
     <parameter name="callbackurl" type="string"/>
     <parameter name="formurl" type="string"/>
     <parameter name="parameters" type="string"/>
@@ -68,12 +60,11 @@
     <resource> <!-- domain -->
       <get out="users"/>
       <resource> <!-- user -->
-        <post in="session"/>
         <websocket/>
         <resource relative="tasks">
           <get out="tasks"/>
           <resource> <!-- task -->
-            <get out="details"/>
+            <get out="tdetails"/>
             <get in="json_details" out="json"/>
             <put in="take"/>
             <put in="giveback"/>
