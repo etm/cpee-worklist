@@ -50,6 +50,7 @@
     
     <!-- Flos Stuff -->
     <script type="text/javascript" src="js/worklist.js"></script>
+    <script type="text/javascript" src="js/orga.js"></script>
   </head>
   <body data-defaultport="9302">
     <!-- The following six are templates that get used during ui generation, change them carefully -->
@@ -93,6 +94,18 @@
           </form>
         </div> <!--}}}-->
 
+        <div id="areaorganisation" class="inactive"> <!--{{{-->
+          <table class='layout'>
+            <tr>
+              <td>Organisations URL:</td>
+              <td><input name="org-url" type="text" value=""/></td>
+              <td><input name="getOrg" type="submit" value="get Organisationsmodell"/></td>
+            </tr>
+          </table>
+          <div id="orgmodel">
+          </div>
+        </div> <!--}}}-->
+
         <div id="areaconfigure" class="inactive"> <!--{{{-->
           <table class='layout'>
           <tr>
@@ -107,7 +120,7 @@
         </div> <!--}}}-->
       </div>
     </div>
-
+    
     <div class="tabbed rest hidden" id='main'>
       <table class="tabbar">
         <tr>

@@ -11,35 +11,59 @@ $socket = []
 
 class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase #{{{
   def ws_open(socket)
-    @data.add_websocket(@key,socket)
+    pp @data
+    pp @key
+    #@data.add_websocket(@key,socket)
+
   end
   def ws_close
-    @data.unserialize_notifications!(:del,@key)
-    @data.notify('properties/handlers/change', :instance => @data.instance)
+    pp @data
+    pp @key
+    #@data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def ws_message(data)
-    begin
-      doc = XML::Smart::string(data)
-      callback = doc.find("string(/vote/@id)")
-      result = doc.find("string(/vote)")
-      @data.callbacks[callback].callback(result == 'true' ? true : false)
-      @data.callbacks.delete(callback)
-    rescue
-      puts "Invalid message over websocket"
-    end
+    pp @data
+    pp @key
+   # begin
+   #   doc = XML::Smart::string(data)
+   #   callback = doc.find("string(/vote/@id)")
+   #   result = doc.find("string(/vote)")
+   #   @data.callbacks[callback].callback(result == 'true' ? true : false)
+   #   @data.callbacks.delete(callback)
+   # rescue
+   #   puts "Invalid message over websocket"
+   # end
   end
 
   def create
-    @data.unserialize_notifications!(:cre,@key)
-    @data.notify('properties/handlers/change', :instance => @data.instance)
+    @data.notifications.subscriptions[@key].read do |d|
+      turl = doc.find('string(/n:subscription/@url)') 
+      url = turl == '' ? nil : turl
+      @data.communication[key] = url
+      doc.find('/n:subscription/n:topic').each do |t|
+        t.find('n:event').each do |e|
+          @data.events["#{t.attributes['id']}/#{e}"] ||= {}
+          @data.events["#{t.attributes['id']}/#{e}"][key] = (url == "" ? nil : url)
+        end
+      end
+    end
+   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def delete
-    @data.unserialize_notifications!(:del,@key)
-    @data.notify('properties/handlers/change', :instance => @data.instance)
+    @data.notifications.subscriptions[@key].delete if @data.notifications.subscriptions.include?(@key)
+    @data.communication[@key].io.close_connection if @data.communication[@key].class == Riddl::Utils::Notifications::Producer::WS                                                                                        
+    @data.communication.delete(@key)
+
+    @data.events.each do |eve,keys|
+      keys.delete_if{|k,v| @key == k}
+    end  
+   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def update
-    @data.unserialize_notifications!(:upd,@key)
-    @data.notify('properties/handlers/change', :instance => @data.instance)
+    p 'update'
+    pp @data
+    pp @key
+   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
 end #}}}
 
@@ -238,31 +262,19 @@ class ControllerItem #{{{
   attr_accessor :callbacks, :notifications
 
   def initialize(domain)
+    @events = {}
+    @communication = {}
     @domain = domain
     @callbacks = CallbackItem.new(domain)
     @orgmodels = []
     @notifications = nil
   end
 
-  def add_orgmodel(name,content)
+  def add_orgmodel(name,content) #{{{
     FileUtils.mkdir_p(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/")
     @orgmodels << name unless @orgmodels.include?(name)
     File.write(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/" + name, content)
-  end
-end #}}}
-class Controller < Hash #{{{
-  def initialize
-    super
-    Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
-      domain = File.basename(f)
-      self[domain] = ControllerItem.new(domain)
-      self[domain].callbacks.unserialize
-      self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
-        File.dirname(__FILE__) + "/topics.xml",
-        File.dirname(__FILE__) + "/domains/#{f}/notifications/"
-      )
-    end
-  end
+  end #}}}
 
   def notify(what,content={})# {{{
     item = @events[what]
@@ -271,7 +283,7 @@ class Controller < Hash #{{{
         Thread.new(ke,ur) do |key,url|
           notf = build_notification(key,what,content,'event')
           if url.class == String
-            client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml',:xmpp => @opts[:xmpp])
+            client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
             params << Riddl::Header.new("CPEE_BASE",self.base)
             params << Riddl::Header.new("CPEE_INSTANCE",self.instance)
@@ -287,6 +299,21 @@ class Controller < Hash #{{{
       end
     end
   end # }}}
+
+end #}}}
+class Controller < Hash #{{{
+  def initialize
+    super
+    Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
+      domain = File.basename(f)
+      self[domain] = ControllerItem.new(domain)
+      self[domain].callbacks.unserialize
+      self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
+        File.dirname(__FILE__) + "/topics.xml",
+        File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
+      )
+    end
+  end
 
   def add_callback(domain,activity)
     self[domain] ||= ControllerItem.new(domain)
@@ -336,7 +363,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
   interface 'events' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, NotificationsHandler.new(nil))
+    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, NotificationsHandler.new(controller[domain]))
   end
 
 end.loop!

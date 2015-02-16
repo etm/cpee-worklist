@@ -21,6 +21,13 @@ button {
 }
 input { font-family: sans-serif; font-size: 1em; }
 
+
+#areaorganisation                       { height: 7em; } 
+#areaorganisation input                 { width: 100%; } 
+#areaorganisation td:nth-child(1)       { width: 7em; padding-right: 1em; }
+#areaorganisation td:nth-child(3)       { width: 16em; padding-left: 1em; }
+
+
 #areaconfigure                       { height: 7em; } 
 #areaconfigure td:nth-child(1)       { width: 7em; padding-right: 1em; }
 #areaconfigure td:nth-child(3)       { width: 16em; padding-left: 1em; }
