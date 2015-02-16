@@ -10,17 +10,3 @@ XML::Smart.string(response[0].value.read) do |doc|
     srv.resource("/Virtual%20Business%201/notifications/subscriptions/#{ele}/").delete
   end
 end
-
-exit
-
-
-#view = srv.resource("/#{ins}/notifications/subscriptions/#{key}/ws/")
-#view.ws do |conn|
-#  conn.stream do |msg|
-#    puts "<#{msg}>"
-#  end
-#  conn.disconnect do
-#    EM::stop_event_loop
-#    end
-#  end
-#end

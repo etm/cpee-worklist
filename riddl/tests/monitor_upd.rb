@@ -13,17 +13,3 @@ XML::Smart.string(response[0].value.read) do |doc|
     ]
   end
 end
-
-exit
-
-
-#view = srv.resource("/#{ins}/notifications/subscriptions/#{key}/ws/")
-#view.ws do |conn|
-#  conn.stream do |msg|
-#    puts "<#{msg}>"
-#  end
-#  conn.disconnect do
-#    EM::stop_event_loop
-#    end
-#  end
-#end

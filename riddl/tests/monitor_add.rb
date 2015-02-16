@@ -7,15 +7,3 @@ status, response = res.post [
   Riddl::Parameter::Simple.new("topic","user"),
   Riddl::Parameter::Simple.new("events","take,giveback"),
 ]
-key = response[0].value
-
-#view = srv.resource("/#{ins}/notifications/subscriptions/#{key}/ws/")
-#view.ws do |conn|
-#  conn.stream do |msg|
-#    puts "<#{msg}>"
-#  end
-#  conn.disconnect do
-#    EM::stop_event_loop
-#    end
-#  end
-#end
