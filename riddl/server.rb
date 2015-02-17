@@ -230,8 +230,9 @@ class ControllerItem #{{{
   attr_accessor :callbacks, :notifications
   attr_reader :communication, :events
 
-  def initialize(domain)
+  def initialize(domain,opts)
     @events = {}
+    @opts = opts
     @communication = {}
     @domain = domain
     @callbacks = CallbackItem.new(domain)
@@ -254,6 +255,7 @@ class ControllerItem #{{{
           if url.class == String
             client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
+            p @opts
             params << Riddl::Header.new("WORKLIST_BASE","") # TODO
             params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
             client.post params
@@ -279,11 +281,12 @@ class ControllerItem #{{{
   end # }}}
 end #}}}
 class Controller < Hash #{{{
-  def initialize
-    super
+  def initialize(opts)
+    super()
+    @opts = opts
     Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
       domain = File.basename(f)
-      self[domain] = ControllerItem.new(domain)
+      self[domain] = ControllerItem.new(domain,@opts)
       self[domain].callbacks.unserialize
       self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
         File.dirname(__FILE__) + "/topics.xml",
@@ -293,7 +296,7 @@ class Controller < Hash #{{{
   end
 
   def add_callback(domain,activity)
-    self[domain] ||= ControllerItem.new(domain)
+    self[domain] ||= ControllerItem.new(domain,@opts)
     self[domain].callbacks << activity
     self[domain].callbacks.serialize
     self[domain].notifications ||= Riddl::Utils::Notifications::Producer::Backend.new(
@@ -306,7 +309,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
   accessible_description true
   cross_site_xhr true
 
-  controller = Controller.new
+  controller = Controller.new(@riddl_opts)
   interface 'main' do
     run Callbacks,controller if post 'activity'
     run Show_Domains,controller if get

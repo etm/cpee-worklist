@@ -2,7 +2,7 @@
 require 'riddl/client'
 
 srv = Riddl::Client.new('http://localhost:9302','http://localhost:9302/?riddl-description')
-res = srv.resource("/Virtual%20Business%201/notifications/subscriptions/")
+res = srv.resource("/Virtual%20Business%201/notifications/subscriptions")
 status, response = res.get
 sub = ''
 XML::Smart.string(response[0].value.read) do |doc|

@@ -10,6 +10,7 @@ $(document).ready(function() {// {{{
     $("input[name=user-name]").val($.cookie("user"));
     ui_toggle_vis_tab($("#worklist .switch"));
     get_worklist();
+    subscribe_worklist($.cookie("domain"));
   }
   $('.task_do').on('click',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
@@ -32,6 +33,7 @@ $(document).ready(function() {// {{{
     var taskidurl = url + '/' + taskid;
     take_work(taskidurl,$('.task_giveback',$(this).parent()),$('.task_take',$(this).parent()),0);
   });
+
 });// }}}
 
 function get_worklist() {// {{{
@@ -158,3 +160,30 @@ function do_work(taskid,taskidurl) { //{{{
     }
   });
 } //}}}
+
+function subscribe_worklist(){
+  $.ajax({
+    type: "GET",
+    url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/' + $.cookie('subscription'),
+    async: false,
+    success: function(res) {
+      console.log("exists");
+    },
+    error: function(){
+      $.ajax({
+        type: "POST",
+        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions',
+        data: {topic: "user", events: "take,giveback,finish"},
+        success: function(key){
+          console.log("Successful subscribed");
+          $.cookie("subscription", key.match(/[a-z|0-9]{32}/));
+          console.log("Key: " + key.match(/[a-z|0-9]{32}/));
+        },
+        error: function(){
+          console.log("Not Successful subscribed");
+        }
+      });
+      console.log("does not exist");
+    }
+  });
+}
