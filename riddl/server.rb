@@ -70,18 +70,6 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
   end
 end #}}}
 
-
-def get_rel(orgmodels) #{{{
-  rels = []
-  orgmodels.each do |e|
-    next if e == nil
-    doc = XML::Smart.open(e)
-    doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-    doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each{ |rel| rels << rel }
-  end
-  rels
-end #}}}
-
 class Callbacks < Riddl::Implementation #{{{
   def response
     activity = {}
@@ -146,12 +134,18 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-    get_rel(@a[0].callbacks.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq).each do |rel| 
-      @a[0].callbacks.each do |cb| 
-        if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
-          tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
-        end
-      end
+    @a[0].callbacks.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
+      next if e == nil
+      XML::Smart.open(e) do |doc|
+        doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+        doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do
+          @a[0].callbacks.each do |cb| 
+            if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
+              tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
+            end
+          end
+        end  
+      end  
     end
     tasks.each{|k,v| out.root.add("task", :id => k, :uid => v[:uid], :label => v[:label])}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
@@ -227,8 +221,7 @@ class CallbackItem < Array #{{{
   end
 end #}}}
 class ControllerItem #{{{
-  attr_accessor :callbacks, :notifications
-  attr_reader :communication, :events
+  attr_reader :communication, :events, :notifications, :callbacks, :notifications_handler
 
   def initialize(domain,opts)
     @events = {}
@@ -237,7 +230,14 @@ class ControllerItem #{{{
     @domain = domain
     @callbacks = CallbackItem.new(domain)
     @orgmodels = []
-    @notifications = nil
+    @notifications = Riddl::Utils::Notifications::Producer::Backend.new(
+      File.dirname(__FILE__) + "/topics.xml",
+      File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
+    )
+    @notifications_handler = NotificationsHandler.new(self)
+    @notifications.keys.each do |key|
+      @notifications_handler.key(key).create
+    end
   end
 
   def add_orgmodel(name,content) #{{{
@@ -288,13 +288,6 @@ class Controller < Hash #{{{
       domain = File.basename(f)
       self[domain] = ControllerItem.new(domain,@opts)
       self[domain].callbacks.unserialize
-      self[domain].notifications = Riddl::Utils::Notifications::Producer::Backend.new(
-        File.dirname(__FILE__) + "/topics.xml",
-        File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
-      )
-      self[domain].notifications.keys.each do |key|
-        NotificationsHandler.new(self[domain]).key(key).create
-      end
     end
   end
 
@@ -302,9 +295,6 @@ class Controller < Hash #{{{
     self[domain] ||= ControllerItem.new(domain,@opts)
     self[domain].callbacks << activity
     self[domain].callbacks.serialize
-    self[domain].notifications ||= Riddl::Utils::Notifications::Producer::Backend.new(
-      File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
-    )
   end
 end #}}}
 
@@ -345,7 +335,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
   interface 'events' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, NotificationsHandler.new(controller[domain]))
+    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, controller[domain].notifications_handler)
   end
 
 end.loop!
