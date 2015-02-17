@@ -292,6 +292,9 @@ class Controller < Hash #{{{
         File.dirname(__FILE__) + "/topics.xml",
         File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
       )
+      self[domain].notifications.keys.each do |key|
+        NotificationsHandler.new(self[domain]).key(key).create
+      end
     end
   end
 
