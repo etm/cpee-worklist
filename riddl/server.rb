@@ -7,8 +7,6 @@ require 'riddl/client'
 require 'riddl/utils/notifications_producer'
 require 'riddl/utils/fileserve'
 
-$socket = []
-
 class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase #{{{
   def ws_open(socket)
     @data.communication[@key] = socket
