@@ -161,29 +161,54 @@ function do_work(taskid,taskidurl) { //{{{
   });
 } //}}}
 
-function subscribe_worklist(){
+
+function subscribe_worklist(){ //{{{
+  var url = $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/';
   $.ajax({
-    type: "GET",
-    url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/' + $.cookie('subscription'),
-    async: false,
-    success: function(res) {
-      console.log("exists");
+    type: "POST",
+    url: url,
+    data: {topic: "user", events: "take,giveback,finish"},
+    success: function(ret){
+      console.log("Successful subscribed");
+      var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+      var subscription = $.parseQuery(ret)[0].value;
+      console.log(subscription);
+      ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
+      ws.onmessage = function(e) {
+        data = $.parseXML(e.data);
+        if ($('event > topic',data).length > 0) {
+          switch($('event > topic',data).text()) {
+            case 'user':
+              cid = JSON.parse($('event > notification',data).text()).index;
+              var tr = $('tr[data-id="'+cid+'"]');
+              switch($('event > event',data).text()) {
+                case 'take':
+                  //$('.task_take',tr).prop('disabled',true);
+                  //$('.task_giveback',tr).prop('disabled',false);
+                  get_worklist();
+                  break;
+                case 'giveback':
+                  //$('.task_take',tr).prop('disabled',false);
+                  //$('.task_giveback',tr).prop('disabled',true);
+                  get_worklist();
+                  break;
+                case 'finish':
+                  tr.remove();
+                  break;
+              }
+              break;
+          }
+        }
+        if ($('vote > topic',data).length > 0) {
+          var notification = $('vote > notification',data).text();
+          append_to_log("vote", $('vote > topic',data).text() + "/" + $('vote > vote',data).text(), notification);
+          monitor_instance_vote_add(notification);
+        }  
+      };
     },
     error: function(){
-      $.ajax({
-        type: "POST",
-        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions',
-        data: {topic: "user", events: "take,giveback,finish"},
-        success: function(key){
-          console.log("Successful subscribed");
-          $.cookie("subscription", key.match(/[a-z|0-9]{32}/));
-          console.log("Key: " + key.match(/[a-z|0-9]{32}/));
-        },
-        error: function(){
-          console.log("Not Successful subscribed");
-        }
-      });
-      console.log("does not exist");
+      console.log("Not Successful subscribed");
     }
   });
-}
+} //}}}
+

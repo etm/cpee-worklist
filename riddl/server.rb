@@ -96,10 +96,10 @@ class Delbacks < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |e| e["id"] == @r.last }
     if index 
-      domain = @a[0].callbacks[index]['domain']
+      callback_id = @a[0].callbacks[index]['id']
       @a[0].callbacks.delete_at(index)
       @a[0].callbacks.serialize
-      @a[0].notify('user/finish', :index => index )
+      @a[0].notify('user/finish', :index => callback_id )
     else 
       @status = 404
     end
@@ -136,7 +136,7 @@ class Show_Tasks < Riddl:: Implementation #{{{
       next if e == nil
       XML::Smart.open(e) do |doc|
         doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-        doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do
+        doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
           @a[0].callbacks.each do |cb| 
             if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
               tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
@@ -158,8 +158,10 @@ class Take_Task < Riddl::Implementation #{{{
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0].callbacks[index]["user"] = @r[-3]
+      callback_id = @a[0].callbacks[index]['id']
+      pp callback_id
       @a[0].callbacks.serialize
-      @a[0].notify('user/take', :index => index, :user => @r[-3])
+      @a[0].notify('user/take', :index => callback_id, :user => @r[-3])
     else
       @status = 404
     end
@@ -171,8 +173,9 @@ class Return_Task < Riddl::Implementation #{{{
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
     if index && (@a[0].callbacks[index]['user'] == @r[-3])
       @a[0].callbacks[index]["user"] = '*'
+      callback_id = @a[0].callbacks[index]['id']
       @a[0].callbacks.serialize
-      @a[0].notify('user/giveback', :index => index )
+      @a[0].notify('user/giveback', :index => callback_id )
     else
       @stauts = 404
     end
@@ -233,7 +236,7 @@ class ControllerItem #{{{
       File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
     )
     @notifications_handler = NotificationsHandler.new(self)
-    @notifications.keys.each do |key|
+    @notifications.subscriptions.keys.each do |key|
       @notifications_handler.key(key).create
     end
   end
