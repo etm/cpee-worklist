@@ -85,6 +85,7 @@ class Callbacks < Riddl::Implementation #{{{
     if status == 200
       @a[0].add_callback domain, activity
       @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read
+      @a[0][domain].notify('user/create', :index => activity['id']);
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 501

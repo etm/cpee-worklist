@@ -19,6 +19,7 @@
     <event>take</event>
     <event>giveback</event>
     <event>finish</event>
+    <event>create</event>
   </topic>
   <topic id='worklist'>
     <event>add</event>

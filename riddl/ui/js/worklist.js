@@ -161,13 +161,12 @@ function do_work(taskid,taskidurl) { //{{{
   });
 } //}}}
 
-
 function subscribe_worklist(){ //{{{
   var url = $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/';
   $.ajax({
     type: "POST",
     url: url,
-    data: {topic: "user", events: "take,giveback,finish"},
+    data: {topic: "user", events: "take,giveback,finish,create"},
     success: function(ret){
       console.log("Successful subscribed");
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
@@ -182,19 +181,22 @@ function subscribe_worklist(){ //{{{
               cid = JSON.parse($('event > notification',data).text()).index;
               var tr = $('tr[data-id="'+cid+'"]');
               switch($('event > event',data).text()) {
-                case 'take':
-                  //$('.task_take',tr).prop('disabled',true);
-                  //$('.task_giveback',tr).prop('disabled',false);
-                  get_worklist();
-                  break;
-                case 'giveback':
-                  //$('.task_take',tr).prop('disabled',false);
-                  //$('.task_giveback',tr).prop('disabled',true);
-                  get_worklist();
-                  break;
                 case 'finish':
                   tr.remove();
                   break;
+                default:
+                  get_worklist();
+                  break;
+                //case 'take':
+                  //$('.task_take',tr).prop('disabled',true);
+                  //$('.task_giveback',tr).prop('disabled',false);
+                //  get_worklist();
+                //  break;
+                //case 'giveback':
+                  //$('.task_take',tr).prop('disabled',false);
+                  //$('.task_giveback',tr).prop('disabled',true);
+                //  get_worklist();
+                //  break;
               }
               break;
           }
