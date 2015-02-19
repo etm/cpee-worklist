@@ -60,7 +60,6 @@
     <resource> <!-- domain -->
       <get out="users"/>
       <resource> <!-- user -->
-        <websocket/>
         <resource relative="tasks">
           <get out="tasks"/>
           <resource> <!-- task -->
