@@ -168,10 +168,8 @@ function subscribe_worklist(){ //{{{
     url: url,
     data: {topic: "user", events: "take,giveback,finish,create"},
     success: function(ret){
-      console.log("Successful subscribed");
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
       var subscription = $.parseQuery(ret)[0].value;
-      console.log(subscription);
       ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
       ws.onmessage = function(e) {
         data = $.parseXML(e.data);
@@ -201,11 +199,6 @@ function subscribe_worklist(){ //{{{
               break;
           }
         }
-        if ($('vote > topic',data).length > 0) {
-          var notification = $('vote > notification',data).text();
-          append_to_log("vote", $('vote > topic',data).text() + "/" + $('vote > vote',data).text(), notification);
-          monitor_instance_vote_add(notification);
-        }  
       };
     },
     error: function(){
@@ -213,4 +206,3 @@ function subscribe_worklist(){ //{{{
     }
   });
 } //}}}
-
