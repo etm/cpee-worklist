@@ -185,16 +185,6 @@ function subscribe_worklist(){ //{{{
                 default:
                   get_worklist();
                   break;
-                //case 'take':
-                  //$('.task_take',tr).prop('disabled',true);
-                  //$('.task_giveback',tr).prop('disabled',false);
-                //  get_worklist();
-                //  break;
-                //case 'giveback':
-                  //$('.task_take',tr).prop('disabled',false);
-                  //$('.task_giveback',tr).prop('disabled',true);
-                //  get_worklist();
-                //  break;
               }
               break;
           }

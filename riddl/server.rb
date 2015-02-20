@@ -44,7 +44,6 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
     @data.events.each do |eve,keys|
       keys.delete_if{|k,v| @key == k}
     end  
-   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def update
     if @data.notifications.subscriptions.include?(@key)
@@ -64,7 +63,6 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
         end
       end
     end  
-   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
 end #}}}
 
@@ -83,9 +81,21 @@ class Callbacks < Riddl::Implementation #{{{
     activity['parameters'] = JSON.generate(@p)
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
+      xml =  content[0].value.read
       @a[0].add_callback domain, activity
-      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), content[0].value.read
-      @a[0][domain].notify('user/create', :index => activity['id']);
+      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
+      @a[0][domain].notify('user/create', :index => activity['id'])
+      xml =  XML::Smart.string(xml)
+      xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      attributes = ""
+      if activity['role'] != '*'
+        attributes += "@role='#{activity['role']}'"
+        attributes += " and " if activity['unit'] != '*'
+      end
+      attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
+      user = xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
+      @a[0][domain].notify('domain/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 501
@@ -93,7 +103,7 @@ class Callbacks < Riddl::Implementation #{{{
   end
 end #}}} 
 
-class Delbacks < Riddl::Implementation #{{{
+class TaskDel < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |e| e["id"] == @r.last }
     if index 
@@ -154,22 +164,25 @@ class Show_Tasks < Riddl:: Implementation #{{{
   end
 end  #}}}  
 
-class Take_Task < Riddl::Implementation #{{{
+class TaskTake < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
     if index 
       @a[0].callbacks[index]["user"] = @r[-3]
       callback_id = @a[0].callbacks[index]['id']
-      pp callback_id
       @a[0].callbacks.serialize
       @a[0].notify('user/take', :index => callback_id, :user => @r[-3])
+      Riddl::Client.new(@a[0].callbacks[index]['url']).put [
+        Riddl::Header.new('CPEE_UPDATE','true'),
+        Riddl::Header.new('CPEE_UPDATE_STATUS','take')
+      ]
     else
       @status = 404
     end
   end
 end  #}}} 
 
-class Return_Task < Riddl::Implementation #{{{
+class TaskGiveBack < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
     if index && (@a[0].callbacks[index]['user'] == @r[-3])
@@ -177,13 +190,17 @@ class Return_Task < Riddl::Implementation #{{{
       callback_id = @a[0].callbacks[index]['id']
       @a[0].callbacks.serialize
       @a[0].notify('user/giveback', :index => callback_id )
+      Riddl::Client.new(@a[0].callbacks[index]['url']).put [
+        Riddl::Header.new('CPEE_UPDATE','true'),
+        Riddl::Header.new('CPEE_UPDATE_STATUS','giveback')
+      ]
     else
-      @stauts = 404
+      @status = 404
     end
   end
 end  #}}} 
 
-class Task_Details < Riddl::Implementation #{{{
+class TaskDetails < Riddl::Implementation #{{{
   def response
     index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
     if index 
@@ -257,8 +274,7 @@ class ControllerItem #{{{
           if url.class == String
             client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            p @opts
-            params << Riddl::Header.new("WORKLIST_BASE","") # TODO
+            params << Riddl::Header.new("WORKLIST_BASE","") # TODO the contents of @opts
             params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
             client.post params
           elsif url.class == Riddl::Utils::Notifications::Producer::WS
@@ -318,10 +334,10 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
           run Show_Tasks,controller[domain] if get
           on resource do |r|
             run JSON_Task_Details,controller[domain] if get 'json_details'
-            run Task_Details,controller[domain] if get
-            run Take_Task,controller[domain] if put 'take'
-            run Return_Task,controller[domain] if put 'giveback'
-            run Delbacks,controller[domain] if delete
+            run TaskDetails,controller[domain] if get
+            run TaskTake,controller[domain] if put 'take'
+            run TaskGiveBack,controller[domain] if put 'giveback'
+            run TaskDel,controller[domain] if delete
           end
         end
       end

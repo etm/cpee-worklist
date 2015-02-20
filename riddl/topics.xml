@@ -21,7 +21,7 @@
     <event>finish</event>
     <event>create</event>
   </topic>
-  <topic id='worklist'>
+  <topic id='domain'>
     <event>add</event>
   </topic>
 </topics>
