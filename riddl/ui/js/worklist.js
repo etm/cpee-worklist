@@ -166,7 +166,7 @@ function subscribe_worklist(){ //{{{
   $.ajax({
     type: "POST",
     url: url,
-    data: {topic: "user", events: "take,giveback,finish,create"},
+    data: "topic=user&events=take,giveback,finish&topic=task&events=add",
     success: function(ret){
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
       var subscription = $.parseQuery(ret)[0].value;

@@ -19,9 +19,9 @@
     <event>take</event>
     <event>giveback</event>
     <event>finish</event>
-    <event>create</event>
   </topic>
-  <topic id='domain'>
+  <topic id='task'>
     <event>add</event>
+    <vote>add</vote>
   </topic>
 </topics>

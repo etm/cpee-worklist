@@ -15,11 +15,17 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
         a[1][@key] = socket
       end  
     end
-    # eventuell notify dass handler change
+    @data.votes.each do |eve,keys|
+      keys.delete_if do |k,v|
+        if @key == k
+          @data.activities.each{|voteid,cb|cb.delete_if!(eve,k)}
+          true
+        end  
+      end
+    end  
   end
   def ws_close
     delete
-    # eventuell notify dass handler change
   end
 
   def create
@@ -66,7 +72,7 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
   end
 end #}}}
 
-class Callbacks < Riddl::Implementation #{{{
+class ActivityHappens < Riddl::Implementation #{{{
   def response
     activity = {}
     activity['label'] = "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})"
@@ -84,7 +90,6 @@ class Callbacks < Riddl::Implementation #{{{
       xml =  content[0].value.read
       @a[0].add_callback domain, activity
       @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
-      @a[0][domain].notify('user/create', :index => activity['id'])
       xml =  XML::Smart.string(xml)
       xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       attributes = ""
@@ -94,7 +99,7 @@ class Callbacks < Riddl::Implementation #{{{
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
-      @a[0][domain].notify('domain/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+      @a[0][domain].notify('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
 
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
@@ -105,11 +110,11 @@ end #}}}
 
 class TaskDel < Riddl::Implementation #{{{
   def response
-    index = @a[0].callbacks.index{ |e| e["id"] == @r.last }
+    index = @a[0].activities.index{ |e| e["id"] == @r.last }
     if index 
-      callback_id = @a[0].callbacks[index]['id']
-      @a[0].callbacks.delete_at(index)
-      @a[0].callbacks.serialize
+      callback_id = @a[0].activities[index]['id']
+      @a[0].activities.delete_at(index)
+      @a[0].activities.serialize
       @a[0].notify('user/finish', :index => callback_id )
     else 
       @status = 404
@@ -131,7 +136,7 @@ class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
     fname = nil
-    @a[0].callbacks.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
+    @a[0].activities.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
     doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
     doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
     doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
@@ -143,12 +148,12 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-    @a[0].callbacks.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
+    @a[0].activities.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
       next if e == nil
       XML::Smart.open(e) do |doc|
         doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
-          @a[0].callbacks.each do |cb| 
+          @a[0].activities.each do |cb| 
             if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2]) 
               tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
             end
@@ -166,13 +171,13 @@ end  #}}}
 
 class TaskTake < Riddl::Implementation #{{{
   def response
-    index = @a[0].callbacks.index{ |c| c["id"] == @r.last }                                                 
+    index = @a[0].activities.index{ |c| c["id"] == @r.last }                                                 
     if index 
-      @a[0].callbacks[index]["user"] = @r[-3]
-      callback_id = @a[0].callbacks[index]['id']
-      @a[0].callbacks.serialize
+      @a[0].activities[index]["user"] = @r[-3]
+      callback_id = @a[0].activities[index]['id']
+      @a[0].activities.serialize
       @a[0].notify('user/take', :index => callback_id, :user => @r[-3])
-      Riddl::Client.new(@a[0].callbacks[index]['url']).put [
+      Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','take')
       ]
@@ -184,13 +189,13 @@ end  #}}}
 
 class TaskGiveBack < Riddl::Implementation #{{{
   def response
-    index = @a[0].callbacks.index{ |c| c["id"] == @r.last }
-    if index && (@a[0].callbacks[index]['user'] == @r[-3])
-      @a[0].callbacks[index]["user"] = '*'
-      callback_id = @a[0].callbacks[index]['id']
-      @a[0].callbacks.serialize
+    index = @a[0].activities.index{ |c| c["id"] == @r.last }
+    if index && (@a[0].activities[index]['user'] == @r[-3])
+      @a[0].activities[index]["user"] = '*'
+      callback_id = @a[0].activities[index]['id']
+      @a[0].activities.serialize
       @a[0].notify('user/giveback', :index => callback_id )
-      Riddl::Client.new(@a[0].callbacks[index]['url']).put [
+      Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','giveback')
       ]
@@ -202,9 +207,9 @@ end  #}}}
 
 class TaskDetails < Riddl::Implementation #{{{
   def response
-    index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
+    index = @a[0].activities.index{ |c| c["id"] == @r.last } 
     if index 
-      [Riddl::Parameter::Simple.new("callbackurl", @a[0].callbacks[index]['url']), Riddl::Parameter::Simple.new("formurl", @a[0].callbacks[index]['form']), Riddl::Parameter::Simple.new("parameters", @a[0].callbacks[index]['parameters'])]
+      [Riddl::Parameter::Simple.new("callbackurl", @a[0].activities[index]['url']), Riddl::Parameter::Simple.new("formurl", @a[0].activities[index]['form']), Riddl::Parameter::Simple.new("parameters", @a[0].activities[index]['parameters'])]
     else
       @status = 404
     end
@@ -213,16 +218,16 @@ end  #}}}
 
 class JSON_Task_Details < Riddl::Implementation #{{{
   def response
-    index = @a[0].callbacks.index{ |c| c["id"] == @r.last } 
+    index = @a[0].activities.index{ |c| c["id"] == @r.last } 
     if index 
-      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0].callbacks[index]['url'], 'form' => @a[0].callbacks[index]['form'], 'parameters' => @a[0].callbacks[index]['parameters'], 'label' => @a[0].callbacks[index]['label']})
+      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
     else
       @status = 404
     end
   end
 end  #}}} 
 
-class CallbackItem < Array #{{{
+class Activity < Array #{{{
   def initialize(domain)
     super()
     @domain = domain
@@ -230,24 +235,24 @@ class CallbackItem < Array #{{{
 
   def unserialize
     self.clear
-    self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/callbacks.sav")) rescue []
+    self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav")) rescue []
   end
 
   def  serialize
     Thread.new do 
-      File.write File.dirname(__FILE__) + "/domains/#{@domain}/callbacks.sav", JSON.dump(self)
+      File.write File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav", JSON.dump(self)
     end  
   end
 end #}}}
 class ControllerItem #{{{
-  attr_reader :communication, :events, :notifications, :callbacks, :notifications_handler
+  attr_reader :communication, :events, :notifications, :activities, :notifications_handler
 
   def initialize(domain,opts)
     @events = {}
     @opts = opts
     @communication = {}
     @domain = domain
-    @callbacks = CallbackItem.new(domain)
+    @activities = Activity.new(domain)
     @orgmodels = []
     @notifications = Riddl::Utils::Notifications::Producer::Backend.new(
       File.dirname(__FILE__) + "/topics.xml",
@@ -305,14 +310,14 @@ class Controller < Hash #{{{
     Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
       domain = File.basename(f)
       self[domain] = ControllerItem.new(domain,@opts)
-      self[domain].callbacks.unserialize
+      self[domain].activities.unserialize
     end
   end
 
   def add_callback(domain,activity)
     self[domain] ||= ControllerItem.new(domain,@opts)
-    self[domain].callbacks << activity
-    self[domain].callbacks.serialize
+    self[domain].activities << activity
+    self[domain].activities.serialize
   end
 end #}}}
 
@@ -322,7 +327,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
 
   controller = Controller.new(@riddl_opts)
   interface 'main' do
-    run Callbacks,controller if post 'activity'
+    run ActivityHappens,controller if post 'activityhappens'
     run Show_Domains,controller if get
     on resource do |r|
       domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
