@@ -15,18 +15,26 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
         a[1][@key] = socket
       end  
     end
-    @data.votes.each do |eve,keys|
-      keys.delete_if do |k,v|
-        if @key == k
-          @data.activities.each{|voteid,cb|cb.delete_if!(eve,k)}
-          true
-        end  
-      end
-    end  
+    @data.votes.each do |a|
+      if a[1].has_key?(@key)
+        a[1][@key] = socket
+      end  
+    end
   end
   def ws_close
     delete
   end
+  def ws_message(data)
+    begin
+      doc = XML::Smart::string(data)
+      callback = doc.find("string(/vote/@id)")
+      result = doc.find("string(/vote)")
+      @data.callbacks[callback].callback(result == 'true' ? true : false)
+      @data.callbacks.delete(callback)
+    rescue
+      puts "Invalid message over websocket"
+    end
+  end  
 
   def create
     @data.notifications.subscriptions[@key].read do |doc|
@@ -37,6 +45,10 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
         t.find('n:event').each do |e|
           @data.events["#{t.attributes['id']}/#{e}"] ||= {}
           @data.events["#{t.attributes['id']}/#{e}"][@key] = (url == "" ? nil : url)
+        end
+        t.find('n:vote').each do |e|
+          @data.votes["#{t.attributes['id']}/#{e}"] ||= {}
+          @data.votes["#{t.attributes['id']}/#{e}"][@key] = (url == "" ? nil : url)
         end
       end
     end
@@ -50,12 +62,22 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
     @data.events.each do |eve,keys|
       keys.delete_if{|k,v| @key == k}
     end  
+    @data.votes.each do |eve,keys|
+      keys.delete_if do |k,v|
+        if @key == k
+          @data.callbacks.each{|voteid,cb|cb.delete_if!(eve,k)}
+          true
+        end  
+      end
+    end  
   end
   def update
     if @data.notifications.subscriptions.include?(@key)
       url = @data.communication[@key]
       evs = []
+      vos = []
       @data.events.each { |e,v| evs << e }
+      @data.votes.each { |e,v| vos << e }
       @data.notifications.subscriptions[@key].read do |doc|
         turl = doc.find('string(/n:subscription/@url)') 
         url = turl == '' ? url : turl
@@ -66,8 +88,18 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
             @data.events["#{t.attributes['id']}/#{e}"][@key] = url
             evs.delete("#{t.attributes['id']}/#{e}")
           end
+          t.find('n:vote').each do |e|
+            @data.votes["#{t.attributes['id']}/#{e}"] ||= {}
+            @data.votes["#{t.attributes['id']}/#{e}"][@key] = url
+            vos.delete("#{t.attributes['id']}/#{e}")
+          end
         end
       end
+      evs.each { |e| @data.events[e].delete(@key) if @data.events[e] }
+      vos.each do |e| 
+        @data.callbacks.each{|voteid,cb|cb.delete_if!(e,@key)}
+        @data.votes[e].delete(@key) if @data.votes[e]
+      end  
     end  
   end
 end #}}}
@@ -249,6 +281,7 @@ class ControllerItem #{{{
 
   def initialize(domain,opts)
     @events = {}
+    @votes = {}
     @opts = opts
     @communication = {}
     @domain = domain
