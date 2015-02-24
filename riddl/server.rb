@@ -73,7 +73,6 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
         end
       end
     end
-   # @data.notify('properties/handlers/change', :instance => @data.instance)
   end
   def delete
     @data.notifications.subscriptions[@key].delete if @data.notifications.subscriptions.include?(@key)
@@ -152,7 +151,14 @@ class ActivityHappens < Riddl::Implementation #{{{
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
-      @a[0][domain].notify('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+      Thread.new do
+        @a[0][domain].notify('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+        results = @a[0][domain].vote('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+        # TODO
+        # if results is an empty array do nothing, 
+        # if results is an array with ONE user give the task to the user
+        # if results is an arraz with MORE THAN ONE user, do nothing
+      end
 
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
@@ -279,6 +285,40 @@ class JSON_Task_Details < Riddl::Implementation #{{{
     end
   end
 end  #}}} 
+
+class ExCallback < Riddl::Implementation #{{{
+  def response
+    controller = @a[0]
+    id = @r[0].to_i
+    callback = @r[2]
+    controller[id].mutex.synchronize do
+      if controller[id].callbacks.has_key?(callback)
+        controller[id].callbacks[callback].callback(@p,@h)
+      end
+    end  
+  end
+end #}}}
+
+class Callbacks < Riddl::Implementation #{{{
+  def response
+    controller = @a[0]
+    opts = @a[1]
+    id = @r[0].to_i
+    unless controller[id]
+      @status = 400
+      return
+    end
+    Riddl::Parameter::Complex.new("info","text/xml") do
+      cb = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
+      if opts[:mode] == :debug
+        controller[id].callbacks.each do |k,v|
+          cb.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
+        end  
+      end
+      cb.to_s
+    end  
+  end
+end #}}}
 
 class Activities < Array #{{{
   def initialize(domain)
@@ -426,18 +466,18 @@ class ControllerItem #{{{
       end
       continue.wait
 
-      !@votes_results.delete(voteid).include?(false)
+      @votes_results.delete(voteid).compact.uniq
     else  
-      true
+      []
     end
   end # }}}
 
   def vote_callback(result,options,continue,voteid,callback,num)# {{{
     @callbacks.delete(callback)
     if result == :DELETE
-      @votes_results[voteid] << true
+      @votes_results[voteid] << nil
     else
-      @votes_results[voteid] << (result && result[0] && result[0].value == 'true')
+      @votes_results[voteid] << result && result[0] ? result[0].value : nil
     end  
     if (num == @votes_results[voteid].length)
       continue.continue
@@ -474,40 +514,6 @@ class Controller < Hash #{{{
   end
 end #}}}
   
-class ExCallback < Riddl::Implementation #{{{
-  def response
-    controller = @a[0]
-    id = @r[0].to_i
-    callback = @r[2]
-    controller[id].mutex.synchronize do
-      if controller[id].callbacks.has_key?(callback)
-        controller[id].callbacks[callback].callback(@p,@h)
-      end
-    end  
-  end
-end #}}}
-
-class Callbacks < Riddl::Implementation #{{{
-  def response
-    controller = @a[0]
-    opts = @a[1]
-    id = @r[0].to_i
-    unless controller[id]
-      @status = 400
-      return
-    end
-    Riddl::Parameter::Complex.new("info","text/xml") do
-      cb = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
-      if opts[:mode] == :debug
-        controller[id].callbacks.each do |k,v|
-          cb.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
-        end  
-      end
-      cb.to_s
-    end  
-  end
-end #}}}
-
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do 
   accessible_description true
   cross_site_xhr true
@@ -540,12 +546,6 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
         end
       end
     end
-    # run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources/worklist.html' if get '*'
-    on resource 'resources' do #{{{
-      on resource do
-        run Riddl::Utils::FileServe, ::File.dirname(__FILE__) + '/resources' if get '*'
-      end  
-    end #}}}
   end
 
   interface 'events' do |r|
