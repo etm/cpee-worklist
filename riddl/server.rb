@@ -132,7 +132,7 @@ class Show_Domain_Users < Riddl::Implementation #{{{
     out = XML::Smart.string('<users/>')
     fname = nil
     @a[0].callbacks.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
-    doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
+    doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
     doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
     doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
     Riddl::Parameter::Complex.new("return","text/xml", out.to_s) 
