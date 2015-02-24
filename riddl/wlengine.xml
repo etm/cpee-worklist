@@ -59,6 +59,12 @@
     <post in="activityhappens"/>
     <resource> <!-- domain -->
       <get out="users"/>
+      <resource relative="callbacks">
+        <get in="*" out="callbacks"/>
+        <resource>
+          <put in="*"/>
+        </resource>
+      </resource>
       <resource> <!-- user -->
         <resource relative="tasks">
           <get out="tasks"/>

@@ -7,6 +7,27 @@ require 'riddl/client'
 require 'riddl/utils/notifications_producer'
 require 'riddl/utils/fileserve'
 
+class Continue #{{{
+  def initialize
+    @q = Queue.new
+    @m = Mutex.new
+  end
+  def waiting?
+    @m.synchronize do
+      !@q.empty?
+    end
+  end
+  def continue(*args)
+    @q.push(args.length <= 1 ? args[0] : args)
+  end
+  def clear
+   @q.clear
+  end
+  def wait
+    @q.deq
+  end
+end #}}}
+
 class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase #{{{
   def ws_open(socket)
     @data.communication[@key] = socket
@@ -120,7 +141,7 @@ class ActivityHappens < Riddl::Implementation #{{{
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
       xml =  content[0].value.read
-      @a[0].add_callback domain, activity
+      @a[0].add_activity domain, activity
       @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       xml =  XML::Smart.string(xml)
       xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
@@ -259,7 +280,7 @@ class JSON_Task_Details < Riddl::Implementation #{{{
   end
 end  #}}} 
 
-class Activity < Array #{{{
+class Activities < Array #{{{
   def initialize(domain)
     super()
     @domain = domain
@@ -276,16 +297,20 @@ class Activity < Array #{{{
     end  
   end
 end #}}}
+
 class ControllerItem #{{{
   attr_reader :communication, :events, :notifications, :activities, :notifications_handler
 
   def initialize(domain,opts)
     @events = {}
     @votes = {}
+    @votes_results = {}
+    @mutex = Mutex.new
     @opts = opts
     @communication = {}
+    @callbacks = {}
     @domain = domain
-    @activities = Activity.new(domain)
+    @activities = Activities.new(domain)
     @orgmodels = []
     @notifications = Riddl::Utils::Notifications::Producer::Backend.new(
       File.dirname(__FILE__) + "/topics.xml",
@@ -296,6 +321,33 @@ class ControllerItem #{{{
       @notifications_handler.key(key).create
     end
   end
+
+  class Callback #{{{
+    def initialize(info,handler,method,event,key,protocol,*data)
+      @info = info
+      @event = event
+      @key = key
+      @data = data
+      @handler = handler
+      @protocol = protocol
+      @method = method.class == Symbol ? method : :callback
+    end
+
+    attr_reader :info, :protocol, :method
+
+    def delete_if!(event,key)
+      @handler.send @method, :DELETE, *@data if @key == key && @event == event
+      nil
+    end
+
+    def callback(result=nil,options=nil)
+      if options
+        @handler.send @method, result, options, *@data
+      else  
+        @handler.send @method, result, *@data
+      end 
+    end
+  end #}}}
 
   def add_orgmodel(name,content) #{{{
     FileUtils.mkdir_p(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/")
@@ -308,7 +360,7 @@ class ControllerItem #{{{
     if item
       item.each do |ke,ur|
         Thread.new(ke,ur) do |key,url|
-          notf = notify_build_message(key,what,content)
+          notf = build_message(key,what,content)
           if url.class == String
             client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
@@ -327,15 +379,83 @@ class ControllerItem #{{{
     end
   end # }}}
 
-  def notify_build_message(key,what,content)# {{{
+  def vote(what,content={})# {{{
+    voteid = Digest::MD5.hexdigest(Kernel::rand().to_s)
+    item = @votes[what]
+    if item && item.length > 0
+      continue = Continue.new
+      @votes_results[voteid] = []
+      inum = 0
+      item.each do |key,url|
+        if url.class == String
+          inum += 1
+        elsif url.class == Riddl::Utils::Notifications::Producer::WS
+          inum += 1 unless url.closed?
+        end  
+      end
+
+      item.each do |key,url|
+
+        Thread.new(key,url,content.dup) do |k,u,c|
+          callback = Digest::MD5.hexdigest(Kernel::rand().to_s)
+          c['callback'] = callback
+          notf = build_notification(k,what,c,'vote',callback)
+          if u.class == String
+            client = Riddl::Client.new(u,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml',:xmpp => @opts[:xmpp])
+            params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
+            params << Riddl::Header.new("WORKLIST_BASE","") # TODO the contents of @opts
+            params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
+            @mutex.synchronize do
+              status, result, headers = client.post params
+              if headers["WORKLIST_CALLBACK"] && headers["WORKLIST_CALLBACK"] == 'true'
+                @callbacks[callback] = Callback.new("vote #{notf.find{|a,b| a == 'notification'}[1]}", self, :vote_callback, what, k, :http, continue, voteid, callback, inum)
+              else
+                vote_callback(result,nil,continue,voteid,callback,inum)
+              end
+            end  
+          elsif u.class == Riddl::Utils::Notifications::Producer::WS
+            @callbacks[callback] = Callback.new("vote #{notf.find{|a,b| a == 'notification'}[1]}", self, :vote_callback, what, k, :ws, continue, voteid, callback, inum)
+            e = XML::Smart::string("<vote/>")
+            notf.each do |ke,va|
+              e.root.add(ke,va)
+            end
+            u.send(e.to_s)
+          end
+        end
+
+      end
+      continue.wait
+
+      !@votes_results.delete(voteid).include?(false)
+    else  
+      true
+    end
+  end # }}}
+
+  def vote_callback(result,options,continue,voteid,callback,num)# {{{
+    @callbacks.delete(callback)
+    if result == :DELETE
+      @votes_results[voteid] << true
+    else
+      @votes_results[voteid] << (result && result[0] && result[0].value == 'true')
+    end  
+    if (num == @votes_results[voteid].length)
+      continue.continue
+    end  
+  end # }}}
+  
+  def build_message(key,what,content,type='event',callback=nil)# {{{
     res = []
     res << ['key'                             , key]
     res << ['topic'                           , ::File::dirname(what)]
-    res << ['event'                           , ::File::basename(what)]
+    res << [type                              , ::File::basename(what)]
     res << ['notification'                    , JSON::generate(content)]
+    res << ['callback'                        , callback] unless callback.nil?
     res << ['fingerprint-with-consumer-secret', Digest::MD5.hexdigest(res.join(''))]
   end # }}}
+
 end #}}}
+
 class Controller < Hash #{{{
   def initialize(opts)
     super()
@@ -347,10 +467,44 @@ class Controller < Hash #{{{
     end
   end
 
-  def add_callback(domain,activity)
+  def add_activity(domain,activity)
     self[domain] ||= ControllerItem.new(domain,@opts)
     self[domain].activities << activity
     self[domain].activities.serialize
+  end
+end #}}}
+  
+class ExCallback < Riddl::Implementation #{{{
+  def response
+    controller = @a[0]
+    id = @r[0].to_i
+    callback = @r[2]
+    controller[id].mutex.synchronize do
+      if controller[id].callbacks.has_key?(callback)
+        controller[id].callbacks[callback].callback(@p,@h)
+      end
+    end  
+  end
+end #}}}
+
+class Callbacks < Riddl::Implementation #{{{
+  def response
+    controller = @a[0]
+    opts = @a[1]
+    id = @r[0].to_i
+    unless controller[id]
+      @status = 400
+      return
+    end
+    Riddl::Parameter::Complex.new("info","text/xml") do
+      cb = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
+      if opts[:mode] == :debug
+        controller[id].callbacks.each do |k,v|
+          cb.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
+        end  
+      end
+      cb.to_s
+    end  
   end
 end #}}}
 
@@ -367,6 +521,12 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
       domain = Riddl::Protocols::Utils::unescape(domain)
 
       run Show_Domain_Users,controller[domain] if get
+      on resource 'callbacks' do
+        run Callbacks,controller[domain],@riddl_opts if get
+        on resource do
+          run ExCallback,controller[domain] if put
+        end  
+      end  
       on resource do
         on resource 'tasks' do
           run Show_Tasks,controller[domain] if get
