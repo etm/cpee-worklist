@@ -50,9 +50,11 @@ class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase 
       doc = XML::Smart::string(data)
       callback = doc.find("string(/vote/@id)")
       result = doc.find("string(/vote)")
-      @data.callbacks[callback].callback(result == 'true' ? true : false)
+      @data.callbacks[callback].callback([Riddl::Parameter::Simple.new('wsvote',result)])
       @data.callbacks.delete(callback)
-    rescue
+    rescue => e
+      puts e.message
+      puts e.backtrace
       puts "Invalid message over websocket"
     end
   end  
@@ -152,8 +154,14 @@ class ActivityHappens < Riddl::Implementation #{{{
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
       Thread.new do
-        @a[0][domain].notify('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
-        results = @a[0][domain].vote('task/add', :user => user , :index => activity['id'], :instance => @h['CPEE_INSTANCE'].split('/').last, :base => @h['CPEE_BASE'])
+        @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
+        results = @a[0][domain].vote('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
+        if results.length == 1
+          activity["user"] = results[0]
+          callback_id = activity['id']
+          @a[0][domain].activities.serialize
+          @a[0][domain].notify('user/take', :index => callback_id, :user => results[0])
+        end
         # TODO
         # if results is an empty array do nothing, 
         # if results is an array with ONE user give the task to the user
@@ -302,7 +310,7 @@ end #}}}
 class Callbacks < Riddl::Implementation #{{{
   def response
     controller = @a[0]
-    opts = @a[1]
+    opts = @a[0].opts
     id = @r[0].to_i
     unless controller[id]
       @status = 400
@@ -339,7 +347,7 @@ class Activities < Array #{{{
 end #}}}
 
 class ControllerItem #{{{
-  attr_reader :communication, :events, :notifications, :activities, :notifications_handler
+  attr_reader :communication, :events, :notifications, :activities, :notifications_handler, :votes, :votes_results, :mutex, :callbacks, :opts
 
   def initialize(domain,opts)
     @events = {}
@@ -380,12 +388,8 @@ class ControllerItem #{{{
       nil
     end
 
-    def callback(result=nil,options=nil)
-      if options
-        @handler.send @method, result, options, *@data
-      else  
-        @handler.send @method, result, *@data
-      end 
+    def callback(result=nil,options=[])
+      @handler.send @method, result, options, *@data
     end
   end #}}}
 
@@ -404,7 +408,7 @@ class ControllerItem #{{{
           if url.class == String
             client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            params << Riddl::Header.new("WORKLIST_BASE","") # TODO the contents of @opts
+            params << Riddl::Header.new("WORKLIST_BASE",@opts[:url]) 
             params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
             client.post params
           elsif url.class == Riddl::Utils::Notifications::Producer::WS
@@ -433,17 +437,14 @@ class ControllerItem #{{{
           inum += 1 unless url.closed?
         end  
       end
-
       item.each do |key,url|
-
         Thread.new(key,url,content.dup) do |k,u,c|
           callback = Digest::MD5.hexdigest(Kernel::rand().to_s)
-          c['callback'] = callback
-          notf = build_notification(k,what,c,'vote',callback)
+          notf = build_message(k,what,c,'vote',callback)
           if u.class == String
             client = Riddl::Client.new(u,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml',:xmpp => @opts[:xmpp])
             params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            params << Riddl::Header.new("WORKLIST_BASE","") # TODO the contents of @opts
+            params << Riddl::Header.new("WORKLIST_BASE",@opts[:url])
             params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
             @mutex.synchronize do
               status, result, headers = client.post params
@@ -459,7 +460,7 @@ class ControllerItem #{{{
             notf.each do |ke,va|
               e.root.add(ke,va)
             end
-            u.send(e.to_s)
+            u.send(e.to_s) rescue nil
           end
         end
 
@@ -477,7 +478,7 @@ class ControllerItem #{{{
     if result == :DELETE
       @votes_results[voteid] << nil
     else
-      @votes_results[voteid] << result && result[0] ? result[0].value : nil
+      @votes_results[voteid] << ((result && result[0]) ? result[0].value : nil)
     end  
     if (num == @votes_results[voteid].length)
       continue.continue
@@ -514,7 +515,7 @@ class Controller < Hash #{{{
   end
 end #}}}
   
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do 
+Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :host => "solo.wst.univie.ac.at") do 
   accessible_description true
   cross_site_xhr true
 
@@ -528,7 +529,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302 ) do
 
       run Show_Domain_Users,controller[domain] if get
       on resource 'callbacks' do
-        run Callbacks,controller[domain],@riddl_opts if get
+        run Callbacks,controller[domain] if get
         on resource do
           run ExCallback,controller[domain] if put
         end  
