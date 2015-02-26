@@ -168,10 +168,9 @@ class ActivityHappens < Riddl::Implementation #{{{
         else
           @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY']) if @a[0].keys.include? domain
         end
-        @a[0].add_activity domain, activity
-        @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       end
-
+      @a[0].add_activity domain, activity
+      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
       @status = 400
