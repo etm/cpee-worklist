@@ -172,6 +172,7 @@ function subscribe_worklist(){ //{{{
       var subscription = $.parseQuery(ret)[0].value;
       ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
       ws.onmessage = function(e) {
+        console.log(e.data);
         data = $.parseXML(e.data);
         if ($('event > topic',data).length > 0) {
           switch($('event > topic',data).text()) {

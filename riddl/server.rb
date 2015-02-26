@@ -150,10 +150,10 @@ class ActivityHappens < Riddl::Implementation #{{{
         attributes += " and " if activity['unit'] != '*'
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
-      pp "/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]"
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
+      pp user
       if user.empty?
-          @a[0][domain].notify('task/invalid', :callback_id => callback_id) if @a[0].keys.include? domain
+          @a[0][domain].notify('task/invalid', :callback_id => activity['id']) if @a[0].keys.include? domain
           @status = 400 
       end
       Thread.new do

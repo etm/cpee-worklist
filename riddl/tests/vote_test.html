@@ -1,0 +1,82 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Vote for freedom!</title>
+  <link rel="stylesheet" type="text/css" href="http://solo.wst.univie.ac.at/styles/vote.css">
+  <script type="text/javascript" src="worklist/lib/jquery.min.js"></script>
+  <!-- the one from google does not work. XML not well formed -->
+  <script type="text/javascript">
+    $.parseQuery = function(querystring) {                                                                                                                                                                             
+        var ret = [];
+          querystring.replace(/#.*$/,'');
+            querystring.replace(/([^&=]+)=?([^&]*)(?:&+|$)/g, function(match, key, value) {
+                  ret.push( { 'key': key, 'value': value  });
+                    });
+              return ret;
+    }
+
+    $(document).ready(function() {
+
+
+      var url = "http://solo.wst.univie.ac.at:9302/Virtual Business 1/notifications/subscriptions/";
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: "topic=task&votes=add",
+        success: function(ret){
+          var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+          var subscription = $.parseQuery(ret)[0].value;  
+          ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/"); 
+          ws.onmessage = function(e) {
+            data = $.parseXML(e.data);
+            if ($('vote > topic',data).length > 0) {
+              switch($('vote > topic',data).text()) {
+                case 'task':
+                  json = JSON.parse($('vote > notification',data).text());
+                  var vote_container = document.importNode(document.querySelector('#vote').content,true);
+                  vote_container.querySelector('#vote-id').innerHTML=$('vote > callback',data).text();
+                  json.user.forEach(function(uname){
+                    var clone = document.importNode(document.querySelector('#user').content,true);
+                    clone.querySelector('span').innerHTML=uname;
+                    vote_container.querySelector('.flex-container').appendChild(clone);
+                  });
+                  document.querySelector('#votes').appendChild(vote_container);
+                  break;
+              }
+            }
+          };
+        },
+        error: function(){
+          console.log("Subscribing for votes failed. There will be no democracy.");
+        }
+      });
+    });
+    function voting(test){
+        console.log($(test));
+        var user = $(test)
+        console.log("<vote id='"+user.parent().parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
+        ws.send("<vote id='"+user.parent().parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
+        user.parent().parent().parent().empty();
+    }
+  </script>
+</head>
+<body>
+  <template id="user">
+    <div class="flex-item">
+      <span onClick=voting(this) class="voter">ss</span>
+    </div>
+  </template>
+  <template id="vote">
+    <div id="vote-div">
+      <table>
+        <tr>
+          <td>Vote-ID: </td>
+          <td id="vote-id"> Hier wird sie stehen</td>
+        </tr>
+      </table>
+      <div class="flex-container"></div>
+    </div>
+  </template>
+  <div id="votes"></div>
+</body>
+</html>
