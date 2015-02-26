@@ -88,6 +88,11 @@
     <post in="activityhappens"/>
     <resource> <!-- domain -->
       <get out="users"/>
+      <resource relative="tasks"> <!-- all tasks in domain -->
+        <resource> <!-- task -->
+          <delete/>
+        </resource>
+      </resource>
       <resource relative="callbacks">
         <get in="*" out="callbacks"/>
         <resource>
@@ -102,7 +107,6 @@
             <get in="json_details" out="json"/>
             <put in="take"/>
             <put in="giveback"/>
-            <delete/>
           </resource>
         </resource>
       </resource>
