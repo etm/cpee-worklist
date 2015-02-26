@@ -142,35 +142,39 @@ class ActivityHappens < Riddl::Implementation #{{{
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
       xml =  content[0].value.read
-      @a[0].add_activity domain, activity
-      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
-      xml =  XML::Smart.string(xml)
-      xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      org_xml =  XML::Smart.string(xml)
+      org_xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       attributes = ""
       if activity['role'] != '*'
         attributes += "@role='#{activity['role']}'"
         attributes += " and " if activity['unit'] != '*'
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
-      user = xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
+      pp "/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]"
+      user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
+      if user.empty?
+          @a[0][domain].notify('task/invalid', :callback_id => callback_id) if @a[0].keys.include? domain
+          @status = 400 
+      end
       Thread.new do
-        @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
         results = @a[0][domain].vote('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
-        if results.length == 1
+        if (results.length == 1) && (user.include? results[0])
           activity["user"] = results[0]
           callback_id = activity['id']
-          @a[0][domain].activities.serialize
-          @a[0][domain].notify('user/take', :index => callback_id, :user => results[0])
+          if @a[0].keys.include? domain
+            @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
+            @a[0][domain].notify('user/take', :index => callback_id, :user => results[0])
+          end
+        else
+          @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY']) if @a[0].keys.include? domain
         end
-        # TODO
-        # if results is an empty array do nothing, 
-        # if results is an array with ONE user give the task to the user
-        # if results is an arraz with MORE THAN ONE user, do nothing
+        @a[0].add_activity domain, activity
+        @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       end
 
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
-      @status = 501
+      @status = 400
     end
   end
 end #}}} 
@@ -215,6 +219,7 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
+    return @status=404 if @a[0].nil?
     @a[0].activities.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
       next if e == nil
       XML::Smart.open(e) do |doc|
@@ -552,7 +557,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
   interface 'events' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, controller[domain].notifications_handler)
+    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, controller[domain].notifications_handler) if controller.keys.include? domain
   end
 
 end.loop!
