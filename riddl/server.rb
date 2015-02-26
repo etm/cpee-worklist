@@ -219,7 +219,6 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-    return @status=404 if @a[0].nil?
     @a[0].activities.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
       next if e == nil
       XML::Smart.open(e) do |doc|
@@ -531,23 +530,24 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
     on resource do |r|
       domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
       domain = Riddl::Protocols::Utils::unescape(domain)
-
-      run Show_Domain_Users,controller[domain] if get
-      on resource 'callbacks' do
-        run Callbacks,controller[domain] if get
-        on resource do
-          run ExCallback,controller[domain] if put
+      if controller.keys.include? domain
+        run Show_Domain_Users,controller[domain] if get
+        on resource 'callbacks' do
+          run Callbacks,controller[domain] if get
+          on resource do
+            run ExCallback,controller[domain] if put
+          end  
         end  
-      end  
-      on resource do
-        on resource 'tasks' do
-          run Show_Tasks,controller[domain] if get
-          on resource do |r|
-            run JSON_Task_Details,controller[domain] if get 'json_details'
-            run TaskDetails,controller[domain] if get
-            run TaskTake,controller[domain] if put 'take'
-            run TaskGiveBack,controller[domain] if put 'giveback'
-            run TaskDel,controller[domain] if delete
+        on resource do
+          on resource 'tasks' do
+            run Show_Tasks,controller[domain] if get
+            on resource do |r|
+              run JSON_Task_Details,controller[domain] if get 'json_details'
+              run TaskDetails,controller[domain] if get
+              run TaskTake,controller[domain] if put 'take'
+              run TaskGiveBack,controller[domain] if put 'giveback'
+              run TaskDel,controller[domain] if delete
+            end
           end
         end
       end
