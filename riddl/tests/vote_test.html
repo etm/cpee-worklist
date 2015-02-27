@@ -6,18 +6,15 @@
   <script type="text/javascript" src="worklist/lib/jquery.min.js"></script>
   <!-- the one from google does not work. XML not well formed -->
   <script type="text/javascript">
-    $.parseQuery = function(querystring) {                                                                                                                                                                             
+    $.parseQuery = function(querystring) {                                                                                                                                                                              <!--{{{-->
         var ret = [];
           querystring.replace(/#.*$/,'');
             querystring.replace(/([^&=]+)=?([^&]*)(?:&+|$)/g, function(match, key, value) {
                   ret.push( { 'key': key, 'value': value  });
                     });
               return ret;
-    }
-
-    $(document).ready(function() {
-
-
+    } <!--}}}-->
+    $(document).ready(function() { <!--{{{-->
       var url = "http://solo.wst.univie.ac.at:9302/Virtual Business 1/notifications/subscriptions/";
       $.ajax({
         type: "POST",
@@ -50,14 +47,12 @@
           console.log("Subscribing for votes failed. There will be no democracy.");
         }
       });
-    });
-    function voting(test){
-        console.log($(test));
+    }); <!--}}}-->
+    function voting(test){ <!--{{{-->
         var user = $(test)
-        console.log("<vote id='"+user.parent().parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
-        ws.send("<vote id='"+user.parent().parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
+        ws.send("<vote id='"+user.parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
         user.parent().parent().parent().empty();
-    }
+    } <!--}}}-->
   </script>
 </head>
 <body>
@@ -68,15 +63,58 @@
   </template>
   <template id="vote">
     <div id="vote-div">
-      <table>
-        <tr>
-          <td>Vote-ID: </td>
-          <td id="vote-id"> Hier wird sie stehen</td>
-        </tr>
-      </table>
-      <div class="flex-container"></div>
+      <div class="flex-container">
+        <div class="flex-item">
+            <span>Vote-ID: </span>
+            <span id="vote-id"> Hier wird sie stehen</span>
+        </div>
+      </div>
     </div>
   </template>
-  <div id="votes"></div>
+  <div id="votes">
+  
+    <div id="vote-div">
+      <div class="flex-container">
+        <div class="flex-item">
+            <span>Vote-ID: </span>
+            <span id="vote-id"> Hier wird sie stehen</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter" onClick=voting(this)>as</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">bs</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">cs</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">ds</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">es</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">fs</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">gs</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">hs</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">is</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">js</span>
+        </div>
+        <div class="flex-item">
+          <span class="voter">ks</span>
+        </div>
+      </div>
+    </div>
+  
+  </div>
 </body>
 </html>
