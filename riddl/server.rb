@@ -387,7 +387,16 @@ class ControllerItem #{{{
     attr_reader :info, :protocol, :method
 
     def delete_if!(event,key)
-      @handler.send @method, :DELETE, *@data if @key == key && @event == event
+      if @key == key && @event == event
+        puts "====="
+        puts *@data
+        puts *@data.length
+        puts "===="
+        puts @method
+        puts "===="
+        #TODO JUERGEN SOLLTE KONTROLLIEREN
+        @handler.send @method, :DELETE,nil, *@data 
+      end
       nil
     end
 
