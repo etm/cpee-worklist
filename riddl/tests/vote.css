@@ -14,14 +14,19 @@
 }
 .flex-item {
     margin: 1em;
-    background: tomato;
     order: 0;
     flex: 0 1 10em;
     align-self: auto;
     text-align: center;
+    border: ridge;
 }
 .flex-item:nth-child(1) {
+    border: none;
     order: 0;
     flex: 0 1 100%;
     align-self: auto;
+}
+.flex-item input {
+  width: 100%;
+
 }

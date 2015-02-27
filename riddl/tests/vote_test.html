@@ -34,7 +34,7 @@
                   vote_container.querySelector('#vote-id').innerHTML=$('vote > callback',data).text();
                   json.user.forEach(function(uname){
                     var clone = document.importNode(document.querySelector('#user').content,true);
-                    clone.querySelector('span').innerHTML=uname;
+                    clone.querySelector('input').value=uname;
                     vote_container.querySelector('.flex-container').appendChild(clone);
                   });
                   document.querySelector('#votes').appendChild(vote_container);
@@ -50,7 +50,8 @@
     }); <!--}}}-->
     function voting(test){ <!--{{{-->
         var user = $(test)
-        ws.send("<vote id='"+user.parent().parent().find('#vote-id').text()+"'>"+user.text()+"</vote>");
+        console.log("<vote id='"+user.parent().parent().find('#vote-id').text()+"'>"+user.value+"</vote>");
+        ws.send("<vote id='"+user.parent().parent().find('#vote-id').text()+"'>"+user.attr('value')+"</vote>");
         user.parent().parent().parent().empty();
     } <!--}}}-->
   </script>
@@ -58,7 +59,7 @@
 <body>
   <template id="user">
     <div class="flex-item">
-      <span onClick=voting(this) class="voter">ss</span>
+      <input onClick=voting(this) type="button" class="voter"></input>
     </div>
   </template>
   <template id="vote">
@@ -80,37 +81,37 @@
             <span id="vote-id"> Hier wird sie stehen</span>
         </div>
         <div class="flex-item">
-          <span class="voter" onClick=voting(this)>as</span>
+          <input type="button" class="voter" onClick=voting(this) value="as"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">bs</span>
+          <input type="button" class="voter" onClick=voting(this) value="bs"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">cs</span>
+          <input type="button" class="voter" onClick=voting(this) value="cs"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">ds</span>
+          <input type="button" class="voter" onClick=voting(this) value="ds"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">es</span>
+          <input type="button" class="voter" onClick=voting(this) value="es"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">fs</span>
+          <input type="button" class="voter" onClick=voting(this) value="fs"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">gs</span>
+          <input type="button" class="voter" onClick=voting(this) value="gs"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">hs</span>
+          <input type="button" class="voter" onClick=voting(this) value="hs"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">is</span>
+          <input type="button" class="voter" onClick=voting(this) value="is"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">js</span>
+          <input type="button" class="voter" onClick=voting(this) value="js"></input>
         </div>
         <div class="flex-item">
-          <span class="voter">ks</span>
+          <input type="button" class="voter" onClick=voting(this) value="ks"></input>
         </div>
       </div>
     </div>
