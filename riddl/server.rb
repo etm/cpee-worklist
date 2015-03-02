@@ -141,9 +141,17 @@ class ActivityHappens < Riddl::Implementation #{{{
     activity['parameters'] = JSON.generate(@p)
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
-      xml =  content[0].value.read
-      org_xml =  XML::Smart.string(xml)
-      org_xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      begin
+        xml =  content[0].value.read
+        schema = XML::Smart.open(@a[0].opts['ORG_SCHEMA'])
+        org_xml = XML::Smart.string(xml)
+        raise 'a fucked up xml (wink wink)' unless org_xml.validate_against(schema)
+        org_xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      rescue => e
+        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'orgmodel invalid') if @a[0].keys.include? domain
+        @status = 404 
+        return 
+      end
       attributes = ""
       if activity['role'] != '*'
         attributes += "@role='#{activity['role']}'"
@@ -151,29 +159,27 @@ class ActivityHappens < Riddl::Implementation #{{{
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
-      pp user
       if user.empty?
-          @a[0][domain].notify('task/invalid', :callback_id => activity['id']) if @a[0].keys.include? domain
-          @status = 400 
+        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'no users found for this combination of unit/role') if @a[0].keys.include? domain
+        @status = 404 
+        return
       end
+      @a[0].add_activity domain, activity
+      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       Thread.new do
         results = @a[0][domain].vote('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
         if (results.length == 1) && (user.include? results[0])
           activity["user"] = results[0]
-          callback_id = activity['id']
-          if @a[0].keys.include? domain
-            @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
-            @a[0][domain].notify('user/take', :index => callback_id, :user => results[0])
-          end
+          @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
+          @a[0][domain].notify('user/take', :index => activity['id'], :user => results[0])
         else
+          @a[0].add_activity domain, activity
           @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY']) if @a[0].keys.include? domain
         end
       end
-      @a[0].add_activity domain, activity
-      @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
-      @status = 400
+      @status = 404
     end
   end
 end #}}} 
@@ -530,6 +536,8 @@ end #}}}
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :host => "solo.wst.univie.ac.at") do 
   accessible_description true
   cross_site_xhr true
+
+  @riddl_opts['ORG_SCHEMA'] =  ::File.dirname(__FILE__) + '/organisation.rng'
 
   controller = Controller.new(@riddl_opts)
   interface 'main' do
