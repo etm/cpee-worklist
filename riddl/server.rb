@@ -148,6 +148,8 @@ class ActivityHappens < Riddl::Implementation #{{{
         raise 'a fucked up xml (wink wink)' unless org_xml.validate_against(schema)
         org_xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       rescue => e
+        puts e.message
+        puts e.backtrace
         @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'orgmodel invalid') if @a[0].keys.include? domain
         @status = 404 
         return 
@@ -520,6 +522,7 @@ class ControllerItem #{{{
 end #}}}
 
 class Controller < Hash #{{{
+  attr_reader :opts  # geht ohne net
   def initialize(opts)
     super()
     @opts = opts

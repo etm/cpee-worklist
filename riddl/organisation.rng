@@ -52,6 +52,9 @@
       <attribute name="id">
         <data type="string"/>
       </attribute>
+      <attribute name="uid">
+        <data type="string"/>
+      </attribute>
       <oneOrMore>
         <choice>
           <element name='relation'>
