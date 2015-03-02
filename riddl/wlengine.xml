@@ -29,7 +29,7 @@
   </message>
 
   <message name="domains">
-    <parameter name="return" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
+    <parameter name="domains" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
       <element name="domains" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
         <zeroOrMore>
           <element name="domain">
@@ -42,7 +42,20 @@
     </parameter>            
   </message>
   <message name="users">
-    <parameter name="return" mimetype="text/xml"/>
+    <parameter name="users" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
+      <element name="users" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
+        <zeroOrMore>
+          <element name="user">
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>  
+            <attribute name="uid">
+              <data type="string"/>
+            </attribute>  
+          </element>  
+        </zeroOrMore>  
+      </element>
+    </parameter>            
   </message>
   <message name="tasks">
     <parameter name="return" mimetype="text/xml"/>
@@ -107,6 +120,7 @@
             <get in="json_details" out="json"/>
             <put in="take"/>
             <put in="giveback"/>
+            <delete/>
           </resource>
         </resource>
       </resource>

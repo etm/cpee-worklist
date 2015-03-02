@@ -188,10 +188,14 @@ class TaskDel < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |e| e["id"] == @r.last }
     if index 
-      callback_id = @a[0].activities[index]['id']
-      @a[0].activities.delete_at(index)
+      activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
-      @a[0].notify('user/finish', :index => callback_id )
+      if @r[-2] == 'tasks'
+        @a[0].notify('task/delete', :index => activity['callback_id'] )
+        Riddl::Client.new(activity['url']).put
+      else
+        @a[0].notify('user/finish', :index => callback_id, :user => activity['user'])
+      end
     else 
       @status = 404
     end
@@ -202,7 +206,7 @@ class Show_Domains < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<domains/>')
     @a[0].keys.each { |x| out.root.add('domain', :name=> x)}
-    Riddl::Parameter::Complex.new("return","text/xml") do
+    Riddl::Parameter::Complex.new("domains","text/xml") do
       out.to_s
     end
   end
@@ -216,7 +220,7 @@ class Show_Domain_Users < Riddl::Implementation #{{{
     doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
     doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
     doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
-    Riddl::Parameter::Complex.new("return","text/xml", out.to_s) 
+    Riddl::Parameter::Complex.new("users","text/xml", out.to_s) 
   end
 end  #}}} 
 
@@ -553,7 +557,12 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
           on resource do
             run ExCallback,controller[domain] if put
           end  
-        end  
+        end
+        on resource 'tasks' do
+          on resource do
+            run TaskDel,controller[domain] if delete
+          end
+        end
         on resource do
           on resource 'tasks' do
             run Show_Tasks,controller[domain] if get
@@ -562,7 +571,6 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
               run TaskDetails,controller[domain] if get
               run TaskTake,controller[domain] if put 'take'
               run TaskGiveBack,controller[domain] if put 'giveback'
-              run TaskDel,controller[domain] if delete
             end
           end
         end
