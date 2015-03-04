@@ -59,7 +59,7 @@ button.highlight { background-color: #cc0000; }
 #dat_tasks {
   border-collapse:collapse;
   border-spacing:0;
-  border:0 none;
+  border:1em solid white;
   margin:0;
   padding:0;
   width: 100%;

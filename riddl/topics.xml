@@ -22,6 +22,7 @@
   </topic>
   <topic id='task'>
     <event>invalid</event>
+    <event>delete</event>
     <event>add</event>
     <vote>add</vote>
   </topic>

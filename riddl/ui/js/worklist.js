@@ -12,23 +12,21 @@ $(document).ready(function() {// {{{
     get_worklist();
     subscribe_worklist($.cookie("domain"));
   }
-  $('.task_do').on('click',function(){
+  $(document).on('click','.task_do',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
     take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1);
     do_work(taskid,taskidurl); 
   });
-  $('.task_take').on('click',function(){
+  $(document).on('click','.task_take',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
-    console.log(url);
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
     take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1); 
   });
-  $('.task_giveback').on('click',function(){
+  $(document).on('click','.task_giveback',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
-    console.log(url);
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
     take_work(taskidurl,$('.task_giveback',$(this).parent()),$('.task_take',$(this).parent()),0);
@@ -50,7 +48,7 @@ function get_worklist() {// {{{
     dataType: "xml",
     success: function(res){
       
-      $(".tabbed.hidden").removeClass("hidden");
+      $("ui-rest.hidden").removeClass("hidden");
       var ctv = $("#dat_tasks");
       ctv.empty();
       $(res).find('task').each(function(){
@@ -75,14 +73,15 @@ function get_worklist() {// {{{
 }// }}}
   
 function take_work(url,butt,butt2,give_or_take){ //{{{
+
   var op = give_or_take == 1 ? "take" : "giveback";
   $.ajax({
     type: "PUT",
     url: url,
     data:"operation="+op ,
     success: function(){
-      $(butt).prop('disabled',true);
-      $(butt2).prop('disabled',false);
+      $(butt).prop('disabled','true');
+      $(butt2).prop('disabled','false');
     },
     error: function(a,b,c){
       alert("Put didn't work");
@@ -91,9 +90,6 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
 } //}}}
 
 function do_work(taskid,taskidurl) { //{{{
-  // fill the global variable 'global' with the shit that is needed
-  // write form into the tab
-  // ajax get the formhtml
   if(($("#tab_"+taskid).length)){
     $('#tabtask').addClass('inactive');  
     $('#areatask').addClass('inactive');
@@ -118,7 +114,7 @@ function do_work(taskid,taskidurl) { //{{{
           form_html=form;
           postFormStr += form_html + "</form>";
           var data = JSON.parse(res.parameters);
-          var form_area = "#area_"+taskid;
+          var form_area = "ui-area[data-belongs-to-tab="+taskid+"]";
           $(form_area).append(postFormStr);
           eval($('worklist-form-load').text());
           $('worklist-form-load').hide();
@@ -135,7 +131,7 @@ function do_work(taskid,taskidurl) { //{{{
                   type: "DELETE",
                   url: taskidurl,
                   success: function(del){
-                    ui_close_tab('#tab_'+taskid+' .close');
+                    ui_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
                     get_worklist();
                   },
                   error: function(a,b,c){
@@ -166,25 +162,34 @@ function subscribe_worklist(){ //{{{
   $.ajax({
     type: "POST",
     url: url,
-    data: "topic=user&events=take,giveback,finish&topic=task&events=add",
+    data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
       var subscription = $.parseQuery(ret)[0].value;
       ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
       ws.onmessage = function(e) {
-        console.log(e.data);
         data = $.parseXML(e.data);
         if ($('event > topic',data).length > 0) {
+          var cid = JSON.parse($('event > notification',data).text()).index;
+          var tr = $('tr[data-id="'+cid+'"]');
           switch($('event > topic',data).text()) {
             case 'user':
-              cid = JSON.parse($('event > notification',data).text()).index;
-              var tr = $('tr[data-id="'+cid+'"]');
               switch($('event > event',data).text()) {
                 case 'finish':
                   tr.remove();
                   break;
                 default:
                   get_worklist();
+                  break;
+              }
+              break;
+            case 'task':
+              switch($('event > event',data).text()) {
+                case 'add':
+                  get_worklist();
+                  break;
+                case 'delete':
+                  tr.remove();
                   break;
               }
               break;

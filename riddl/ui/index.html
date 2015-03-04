@@ -21,27 +21,21 @@
     <title>Worklist</title>
 
     <!-- libs, do not modify -->
-
-    <script type="text/javascript" src="lib/jquery.min.js"></script>
-    <script type="text/javascript" src="lib/jquery.browser.js"></script>
-    <script type="text/javascript" src="lib/jquery-ui.custom.min.js"></script>
-    <script type="text/javascript" src="lib/util.js"></script>
-    <script type="text/javascript" src="lib/parsequery.js"></script>
-    <script type="text/javascript" src="lib/jquery.cookie.js"></script>
-
-    <script type="text/javascript" src="lib/ui.js"></script>
-
-    <link rel="stylesheet" href="lib/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="http://gruppe.wst.univie.ac.at/js_libs/ui.css" type="text/css"></link>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.min.js"></script>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.browser.js"></script>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/util.js"></script>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/parsequery.js"></script>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.cookie.js"></script>
+    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/ui.js"></script>
 
     <!-- custom stuff, play arround  -->
-    <script type="text/javascript" src="js/ui.js"></script>
-    <link rel="stylesheet" href="css/ui.css" type="text/css"/>
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
     
     <!-- Flos Stuff -->
     <script type="text/javascript" src="js/worklist.js"></script>
   </head>
-  <body data-defaultport="9302">
+  <body data-defaultport="9302" is='x-ui'>
     <!-- The following six are templates that get used during ui generation, change them carefully -->
     <table id="dat_template_tasks" class='hidden'> <!--{{{-->
       <tr class="task">
@@ -55,19 +49,16 @@
       </tr>
     </table> <!--}}}-->
 
-    <div class="tabbed" id="worklist">
-      <table class="tabbar">
-        <tr>
-          <td class="tab switch"                        ><h1></h1></td>
-          <td class="tab"           id="tablogin"       ><h1>Login</h1></td>
-          <td class="tab inactive " id="taborganisation"><h1>Organisation</h1></td>
-          <td class="tab inactive " id="tabconfigure"   ><h1>Configure</h1></td>
-          <td class="tabbehind"><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></td>
-        </tr>
-        <tr class="border hidden"><td colspan="5"></td></tr>
-      </table>
-      <div class="tabbelow">
-        <div id="arealogin"> <!--{ {{-->
+    <ui-tabbed id="worklist">
+      <ui-tabbar>
+        <ui-tab class="switch"                                                ></ui-tab>
+        <ui-tab class=""          data-tab="login"        id="tablogin"       >Login</ui-tab>
+        <ui-tab class="inactive " data-tab="organisation" id="taborganisation">Organisation</ui-tab>
+        <ui-tab class="inactive " data-tab="configure"    id="tabconfigure"   >Configure</ui-tab>
+        <ui-behind><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></ui-behind>
+      </ui-tabbar>
+      <ui-content>
+        <ui-area data-belongs-to-tab="login" id="arealogin"> <!--{ {{-->
           <form>
             <table class='layout'>
             <tr>
@@ -81,9 +72,9 @@
             </tr>
             </table>
           </form>
-        </div> <!--}}}-->
+        </ui-area> <!--}}}-->
 
-        <div id="areaorganisation" class="inactive"> <!--{{{-->
+        <ui-area data-belongs-to-tab="organisation" id="areaorganisation" class="inactive"> <!--{{{-->
           <table class='layout'>
             <tr>
               <td>Organisations URL:</td>
@@ -93,9 +84,9 @@
           </table>
           <div id="orgmodel">
           </div>
-        </div> <!--}}}-->
+        </ui-area> <!--}}}-->
 
-        <div id="areaconfigure" class="inactive"> <!--{{{-->
+        <ui-area data-belongs-to-tab="configure" id="areaconfigure" class="inactive"> <!--{{{-->
           <table class='layout'>
           <tr>
             <td>Base URL:</td>
@@ -106,25 +97,22 @@
             <td><input name="user-url" type="text" value=""/></td>
           </tr>
           </table>
-        </div> <!--}}}-->
-      </div>
-    </div>
+        </ui-area> <!--}}}-->
+      </ui-content>
+    </ui-tabbed>
     
-    <div class="tabbed rest hidden" id='main'>
-      <table class="tabbar">
-        <tr>
-          <td class="tabbefore"               ></td>
-          <td class="tab default" id="tabtask"><h1>Tasks</h1></td>
-          <td class="tabbehind"               ></td>
-        </tr>
-        <tr class="border hidden"><td colspan="4"></td></tr>
-      </table>
-      <div class="tabbelow">
-        <div id="areatask"> <!--{{{-->
-          <table id="dat_tasks"></table>
-        </div> <!--}}}-->
-      </div>
-    </div>
+    <ui-rest class="hidden" id='main'>
+      <ui-tabbar>
+          <ui-before                                          ></ui-before>
+          <ui-tab class="default" data-tab="task" id="tabtask">Tasks</ui-tab>
+          <ui-behind                                          ></ui-behind>
+      </ui-tabbar>
+      <ui-content>
+      <ui-area data-belongs-to-tab="task" id="areatask"> <!--{{{-->
+        <table id="dat_tasks" class="layout"></table>
+      </ui-area> <!--}}}-->
+      </ui-content>
+    </ui-rest>
 
   </body>
 </html>

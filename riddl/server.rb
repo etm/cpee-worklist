@@ -175,7 +175,6 @@ class ActivityHappens < Riddl::Implementation #{{{
           @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY'])
           @a[0][domain].notify('user/take', :index => activity['id'], :user => results[0])
         else
-          @a[0].add_activity domain, activity
           @a[0][domain].notify('task/add', :user => user , :cpee_callback => @h['CPEE_CALLBACK'], :cpee_instance => @h['CPEE_INSTANCE'], :cpee_base => @h['CPEE_BASE'], :cpee_label => @h['CPEE_LABEL'], :cpee_activity => @h['CPEE_ACTIVITY']) if @a[0].keys.include? domain
         end
       end
@@ -254,6 +253,7 @@ end  #}}}
 class TaskTake < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last }                                                 
+    pp @a[0].activities
     if index 
       @a[0].activities[index]["user"] = @r[-3]
       callback_id = @a[0].activities[index]['id']
@@ -272,6 +272,7 @@ end  #}}}
 class TaskGiveBack < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last }
+    pp @a[0].activities
     if index && (@a[0].activities[index]['user'] == @r[-3])
       @a[0].activities[index]["user"] = '*'
       callback_id = @a[0].activities[index]['id']
@@ -356,7 +357,7 @@ class Activities < Array #{{{
 
   def  serialize
     Thread.new do 
-      File.write File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav", JSON.dump(self)
+      File.write File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav", JSON.pretty_generate(self)
     end  
   end
 end #}}}
@@ -574,6 +575,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
               run TaskDetails,controller[domain] if get
               run TaskTake,controller[domain] if put 'take'
               run TaskGiveBack,controller[domain] if put 'giveback'
+              run TaskDel,controller[domain] if delete
             end
           end
         end
