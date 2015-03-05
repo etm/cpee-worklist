@@ -191,7 +191,7 @@ class TaskDel < Riddl::Implementation #{{{
     if index 
       activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
-      if @r[-2] == 'tasks'
+      if @r.length == 3
         @a[0].notify('task/delete', :index => activity['callback_id'] )
         Riddl::Client.new(activity['url']).put
       else

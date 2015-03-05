@@ -90,12 +90,11 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
 } //}}}
 
 function do_work(taskid,taskidurl) { //{{{
-  if(($("#tab_"+taskid).length)){
+  if ($("ui-tab[data-tab="+taskid+"]").length) {
     $('#tabtask').addClass('inactive');  
     $('#areatask').addClass('inactive');
-    $("#tab_"+taskid).removeClass('inactive');
-    $("#area_"+taskid).removeClass('inactive');
-
+    $("ui-tab[data-tab="+taskid+"]").removeClass('inactive');
+    $("ui-area[data-belongs-to-tab="+taskid+"]").removeClass('inactive');
     return;
   }
   var form_html;
@@ -104,7 +103,6 @@ function do_work(taskid,taskidurl) { //{{{
     url: taskidurl,
     data: "operation=json",
     success:function(res) {
-
       ui_add_tab("#main", res.label, taskid, true, '');
       $.ajax({
         type: "GET",
@@ -116,9 +114,10 @@ function do_work(taskid,taskidurl) { //{{{
           var data = JSON.parse(res.parameters);
           var form_area = "ui-area[data-belongs-to-tab="+taskid+"]";
           $(form_area).append(postFormStr);
-          eval($('worklist-form-load').text());
+          eval($('worklist-form-load').text()); //TODO, da werden alle worklist for loads in allen tabs, nur den aktuellen
           $('worklist-form-load').hide();
-          $("#form_"+taskid).on('submit',function(){
+          console.log($("#form_"+taskid));
+          $("#form_"+taskid).on('submit',function(e){
             // Form data
             var form_data = $(this).serialize();
             // res.url == Cpee Callback url
@@ -143,7 +142,7 @@ function do_work(taskid,taskidurl) { //{{{
                 console.log("Put didnt work");
               }
             });
-            return false;
+            e.preventDefault(); 
           });
         },
         error: function(a,b,c){
