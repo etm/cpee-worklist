@@ -22,11 +22,6 @@
   <message name="giveback">
     <parameter name="operation" fixed="giveback"/>
   </message>
-  <message name="tdetails">
-    <parameter name="callbackurl" type="string"/>
-    <parameter name="formurl" type="string"/>
-    <parameter name="parameters" type="string"/>
-  </message>
 
   <message name="domains">
     <parameter name="domains" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
@@ -57,11 +52,8 @@
       </element>
     </parameter>            
   </message>
-  <message name="tasks">
+  <message name="xml">
     <parameter name="return" mimetype="text/xml"/>
-  </message>
-  <message name="json_details">
-    <parameter name="operation" fixed="json"/>
   </message>
   <message name="json">
     <parameter name="data" mimetype="application/json"/>
@@ -101,6 +93,9 @@
     <post in="activityhappens"/>
     <resource> <!-- domain -->
       <get out="users"/>
+      <resource relative="orgmodels">
+        <get out="xml"/>
+      </resource>
       <resource relative="tasks"> <!-- all tasks in domain -->
         <resource> <!-- task -->
           <delete/>
@@ -114,10 +109,9 @@
       </resource>
       <resource> <!-- user -->
         <resource relative="tasks">
-          <get out="tasks"/>
+          <get out="xml"/>
           <resource> <!-- task -->
-            <get out="tdetails"/>
-            <get in="json_details" out="json"/>
+            <get out="json"/>
             <put in="take"/>
             <put in="giveback"/>
             <delete/>

@@ -12,6 +12,11 @@ $(document).ready(function() {// {{{
     get_worklist();
     subscribe_worklist($.cookie("domain"));
   }
+  $(document).on('click','#orgmodels li a.model',function(event){
+    // Tab auf
+    // TODO Hier kommt Raphi
+    event.preventDefault(); 
+  });
   $(document).on('click','.task_do',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
     var taskid = $(this).parents('tr').attr('data-id');
@@ -37,6 +42,9 @@ $(document).ready(function() {// {{{
 function get_worklist() {// {{{
   $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val());
   var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
+  if(!($.cookie("user") && $.cookie("domain"))){
+    subscribe_worklist($("input[name=domain-name]").val());
+  }
   // Set cookies
   $.cookie("user",$("input[name=user-name]").val());
   $.cookie("domain",$("input[name=domain-name]").val());
@@ -48,7 +56,25 @@ function get_worklist() {// {{{
     dataType: "xml",
     success: function(res){
       
-      $("ui-rest.hidden").removeClass("hidden");
+      $('#taborganisation').removeClass("hidden");
+      $.ajax({
+        type: "GET",
+        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/orgmodels',
+        dataType: "xml",
+        success: function(res){
+          var ctv = $("#orgmodels");
+          ctv.empty();
+          $(res).find('orgmodel').each(function(){
+            var uri = decodeURIComponent($(this).text());
+            var node = $("#dat_template_orgmodels li").clone(true);
+            $('.link',node).text(uri);
+            $('.link',node).attr('href',uri);
+            $('.model',node).attr('href',uri);
+            ctv.append(node);
+          });
+        }
+      });
+      $("#main").removeClass("hidden");
       var ctv = $("#dat_tasks");
       ctv.empty();
       $(res).find('task').each(function(){
@@ -101,7 +127,6 @@ function do_work(taskid,taskidurl) { //{{{
   $.ajax({
     type: "GET",
     url: taskidurl,
-    data: "operation=json",
     success:function(res) {
       ui_add_tab("#main", res.label, taskid, true, '');
       $.ajax({
@@ -201,3 +226,5 @@ function subscribe_worklist(){ //{{{
     }
   });
 } //}}}
+
+

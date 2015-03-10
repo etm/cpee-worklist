@@ -49,11 +49,15 @@
       </tr>
     </table> <!--}}}-->
 
+    <ul id="dat_template_orgmodels" class='hidden'> <!--{{{-->
+      <li class="orgmodel"><a class='link' href=""></a> ⇒ [<a class='model' href="">View Model</a>]</li>
+    </ul> <!--}}}-->
+
     <ui-tabbed id="worklist">
       <ui-tabbar>
         <ui-tab class="switch"                                                ></ui-tab>
         <ui-tab class=""          data-tab="login"        id="tablogin"       >Login</ui-tab>
-        <ui-tab class="inactive " data-tab="organisation" id="taborganisation">Organisation</ui-tab>
+        <ui-tab class="inactive hidden" data-tab="organisation" id="taborganisation">Organisation</ui-tab>
         <ui-tab class="inactive " data-tab="configure"    id="tabconfigure"   >Configure</ui-tab>
         <ui-behind><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></ui-behind>
       </ui-tabbar>
@@ -75,15 +79,8 @@
         </ui-area> <!--}}}-->
 
         <ui-area data-belongs-to-tab="organisation" id="areaorganisation" class="inactive"> <!--{{{-->
-          <table class='layout'>
-            <tr>
-              <td>Organisations URL:</td>
-              <td><input name="org-url" type="text" value=""/></td>
-              <td><input name="getOrg" type="submit" value="get Organisationsmodell"/></td>
-            </tr>
-          </table>
-          <div id="orgmodel">
-          </div>
+          <ul id="orgmodels">
+          </ul>
         </ui-area> <!--}}}-->
 
         <ui-area data-belongs-to-tab="configure" id="areaconfigure" class="inactive"> <!--{{{-->
@@ -94,7 +91,7 @@
           </tr>
           <tr>
             <td>User URL:</td>
-            <td><input name="user-url" type="text" value=""/></td>
+            <td><input name="user-url" type="text" value="" readonly='readonly'/></td>
           </tr>
           </table>
         </ui-area> <!--}}}-->

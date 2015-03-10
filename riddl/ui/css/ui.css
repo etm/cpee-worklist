@@ -104,3 +104,6 @@ span.vote {
   text-align: right;
   margin-top: 1.1em;
 }
+ui-area > form {
+  border: 1em solid white;
+}

@@ -195,7 +195,7 @@ class TaskDel < Riddl::Implementation #{{{
         @a[0].notify('task/delete', :index => activity['callback_id'] )
         Riddl::Client.new(activity['url']).put
       else
-        @a[0].notify('user/finish', :index => callback_id, :user => activity['user'])
+        @a[0].notify('user/finish', :index => activity['callback_id'], :user => activity['user'])
       end
     else 
       @status = 404
@@ -216,11 +216,11 @@ end  #}}}
 class Show_Domain_Users < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<users/>')
-    fname = nil
-    @a[0].activities.each{ |e| fname = e['orgmodel'] if e['domain'] == Riddl::Protocols::Utils::unescape(@r.last)}
-    doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{Riddl::Protocols::Utils::escape(fname)}")
-    doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-    doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
+    @a[0].orgmodels.each do |fname|
+      doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{fname}")
+      doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+      doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
+    end  
     Riddl::Parameter::Complex.new("users","text/xml", out.to_s) 
   end
 end  #}}} 
@@ -229,9 +229,8 @@ class Show_Tasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
-    @a[0].activities.map{ |e| e['orgmodel'] if e['domain']==Riddl::Protocols::Utils::unescape(@r[-3])}.uniq.each do |e|
-      next if e == nil
-      XML::Smart.open(e) do |doc|
+    @a[0].orgmodels.each do |e|
+      XML::Smart.open("domains/#{@a[0].domain}/orgmodels/#{e}") do |doc|
         doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
           @a[0].activities.each do |cb| 
@@ -292,17 +291,6 @@ class TaskDetails < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last } 
     if index 
-      [Riddl::Parameter::Simple.new("callbackurl", @a[0].activities[index]['url']), Riddl::Parameter::Simple.new("formurl", @a[0].activities[index]['form']), Riddl::Parameter::Simple.new("parameters", @a[0].activities[index]['parameters'])]
-    else
-      @status = 404
-    end
-  end
-end  #}}} 
-
-class JSON_Task_Details < Riddl::Implementation #{{{
-  def response
-    index = @a[0].activities.index{ |c| c["id"] == @r.last } 
-    if index 
       Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
     else
       @status = 404
@@ -344,6 +332,14 @@ class Callbacks < Riddl::Implementation #{{{
   end
 end #}}}
 
+class GetOrgModels < Riddl::Implementation #{{{
+  def response
+    out = XML::Smart.string('<orgmodels/>')
+    @a[0].orgmodels.each{|e|pp e; out.root.add("orgmodel", e)}
+    Riddl::Parameter::Complex.new "return","text/xml", out.to_s 
+  end
+end #}}}
+
 class Activities < Array #{{{
   def initialize(domain)
     super()
@@ -351,7 +347,6 @@ class Activities < Array #{{{
   end
 
   def unserialize
-    self.clear
     self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav")) rescue []
   end
 
@@ -363,7 +358,7 @@ class Activities < Array #{{{
 end #}}}
 
 class ControllerItem #{{{
-  attr_reader :communication, :events, :notifications, :activities, :notifications_handler, :votes, :votes_results, :mutex, :callbacks, :opts
+  attr_reader :communication, :events, :notifications, :activities, :notifications_handler, :votes, :votes_results, :mutex, :callbacks, :opts, :orgmodels, :domain
 
   def initialize(domain,opts)
     @events = {}
@@ -531,6 +526,9 @@ class Controller < Hash #{{{
       domain = File.basename(f)
       self[domain] = ControllerItem.new(domain,@opts)
       self[domain].activities.unserialize
+      Dir::glob("#{f}/orgmodels/*").each do |g|
+        self[domain].add_orgmodel File.basename(g), File.read(g)
+      end
     end
   end
 
@@ -562,6 +560,9 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
             run ExCallback,controller[domain] if put
           end  
         end
+        on resource 'orgmodels' do
+          run GetOrgModels, controller[domain] if get
+        end
         on resource 'tasks' do
           on resource do
             run TaskDel,controller[domain] if delete
@@ -571,8 +572,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :ho
           on resource 'tasks' do
             run Show_Tasks,controller[domain] if get
             on resource do |r|
-              run JSON_Task_Details,controller[domain] if get 'json_details'
-              run TaskDetails,controller[domain] if get
+              run TaskDetails,controller[domain] if get 
               run TaskTake,controller[domain] if put 'take'
               run TaskGiveBack,controller[domain] if put 'giveback'
               run TaskDel,controller[domain] if delete
