@@ -13,6 +13,16 @@ $(document).ready(function() {// {{{
     subscribe_worklist($.cookie("domain"));
   }
   $(document).on('click','#orgmodels li a.model',function(event){
+    var id = $(this).attr('href').hashCode();
+    if($('#tab_'+id).length){
+      $('#taborganisation').addClass('inactive');  
+      $('#areaorganisation').addClass('inactive');
+      $("ui-tab[data-tab="+id+"]").removeClass('inactive');
+      $("ui-area[data-belongs-to-tab="+id+"]").removeClass('inactive');
+      event.preventDefault(); 
+      return;
+    }
+    ui_add_tab("#worklist", "Orgmodel Oida", id, true, '');
     // Tab auf
     // TODO Hier kommt Raphi
     event.preventDefault(); 
@@ -227,4 +237,13 @@ function subscribe_worklist(){ //{{{
   });
 } //}}}
 
-
+String.prototype.hashCode = function() { //{{{
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}; //}}}
