@@ -107,3 +107,8 @@ span.vote {
 ui-area > form {
   border: 1em solid white;
 }
+#areaorganisation ul{
+  margin: 0;
+  padding: 0;
+  padding-left: 1em;
+}

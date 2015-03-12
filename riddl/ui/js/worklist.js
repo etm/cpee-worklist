@@ -12,18 +12,16 @@ $(document).ready(function() {// {{{
     get_worklist();
     subscribe_worklist($.cookie("domain"));
   }
+  $(document).on('click','.orgmodeltab',function(event){
+    var id = $(this).attr('data-tab');
+    ui_empty_tab_contents(id);
+    // TODO Hier kommt Raphi
+  });
   $(document).on('click','#orgmodels li a.model',function(event){
     var id = $(this).attr('href').hashCode();
-    if($('#tab_'+id).length){
-      $('#taborganisation').addClass('inactive');  
-      $('#areaorganisation').addClass('inactive');
-      $("ui-tab[data-tab="+id+"]").removeClass('inactive');
-      $("ui-area[data-belongs-to-tab="+id+"]").removeClass('inactive');
-      event.preventDefault(); 
-      return;
+    if (!ui_add_tab("#main", "Orgmodel Oida", id, true, 'orgmodeltab')) {
+      ui_empty_tab_contents(id);
     }
-    ui_add_tab("#worklist", "Orgmodel Oida", id, true, '');
-    // Tab auf
     // TODO Hier kommt Raphi
     event.preventDefault(); 
   });
@@ -126,19 +124,12 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
 } //}}}
 
 function do_work(taskid,taskidurl) { //{{{
-  if ($("ui-tab[data-tab="+taskid+"]").length) {
-    $('#tabtask').addClass('inactive');  
-    $('#areatask').addClass('inactive');
-    $("ui-tab[data-tab="+taskid+"]").removeClass('inactive');
-    $("ui-area[data-belongs-to-tab="+taskid+"]").removeClass('inactive');
-    return;
-  }
   var form_html;
   $.ajax({
     type: "GET",
     url: taskidurl,
     success:function(res) {
-      ui_add_tab("#main", res.label, taskid, true, '');
+      if (!ui_add_tab("#main", res.label, taskid, true, '')) return;
       $.ajax({
         type: "GET",
         url: res.form,
