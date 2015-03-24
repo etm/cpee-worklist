@@ -1,5 +1,4 @@
-var Subject = Class.create({
-  initialize: function(shortid){
+var Subject = function(shortid){
     this.shortid    = shortid;
     this.id         = "s"+Subject.counter;
     Subject.counter += 1;

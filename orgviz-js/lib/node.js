@@ -8,14 +8,17 @@ var Node = function(id,type,opts) {
     this.subjects = [];
     this.twidth   = SVG.width_of(id);
     this.theight  = SVG.height_of(id);
-    //TODO new instance variable for all elements of opts
+    //new instance variable for all elements of opts
+    for (var i in opts) {
+      if(opts.hasOwnProperty(i)) eval("this."+i+" = "+opts[i]+";");
+    }
 
-    this.bla = function (bla) {
+   /* this.bla = function (bla) {
       bla().toString.
     }
 
     a(function(){ 
 
   });
-  }
+  }*/
 };

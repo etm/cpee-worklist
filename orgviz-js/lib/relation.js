@@ -1,6 +1,4 @@
-var Relation = Class.create({
-  initialize: function(unit,role){
+var Relation = function(unit, role){
     this.unit = unit;
     this.role = role;
-  }
-});
+};
