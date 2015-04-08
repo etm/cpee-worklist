@@ -539,7 +539,7 @@ class Controller < Hash #{{{
   end
 end #}}}
   
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9302, :host => "solo.wst.univie.ac.at") do 
+Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9398, :host => "leonardo.wst.univie.ac.at") do 
   accessible_description true
   cross_site_xhr true
 

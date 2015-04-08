@@ -2,8 +2,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Vote for freedom!</title>
-  <link rel="stylesheet" type="text/css" href="http://solo.wst.univie.ac.at/styles/vote.css">
-  <script type="text/javascript" src="worklist/lib/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="./vote.css">
+  <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.min.js"></script>
   <!-- the one from google does not work. XML not well formed -->
   <script type="text/javascript">
     $.parseQuery = function(querystring) {                                                                                                                                                                              <!--{{{-->
@@ -15,7 +15,7 @@
               return ret;
     } <!--}}}-->
     $(document).ready(function() { <!--{{{-->
-      var url = "http://solo.wst.univie.ac.at:9302/Virtual Business 1/notifications/subscriptions/";
+      var url = "http://leonardo.wst.univie.ac.at:9398/Virtual Business 1/notifications/subscriptions/";
       $.ajax({
         type: "POST",
         url: url,
