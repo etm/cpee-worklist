@@ -7,6 +7,9 @@ require 'riddl/client'
 require 'riddl/utils/notifications_producer'
 require 'riddl/utils/fileserve'
 
+port = File.read(File.dirname(__FILE__)+'/port')
+lh =   File.read(File.dirname(__FILE__)+'/localhost')
+
 class Continue #{{{
   def initialize
     @q = Queue.new
@@ -539,7 +542,7 @@ class Controller < Hash #{{{
   end
 end #}}}
   
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => 9398, :host => "leonardo.wst.univie.ac.at") do 
+Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :host => lh) do 
   accessible_description true
   cross_site_xhr true
 
