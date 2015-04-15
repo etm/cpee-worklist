@@ -216,15 +216,33 @@ class Show_Domains < Riddl::Implementation #{{{
   end
 end  #}}}  
 
-class Show_Domain_Users < Riddl::Implementation #{{{
+class Show_Domain_Tasks < Riddl::Implementation #{{{
   def response
-    out = XML::Smart.string('<users/>')
+    out = XML::Smart.string('<tasks/>')
     @a[0].orgmodels.each do |fname|
       doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{fname}")
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-      doc.find('/o:organisation/o:subjects/o:subject').each{ |e| out.root.add('user', :name => e.attributes['id'], :uid => e.attributes['uid'] ) }
-    end  
-    Riddl::Parameter::Complex.new("users","text/xml", out.to_s) 
+      @a[0].activities.each do |cb|
+        x = out.root.add "task", :id => cb['id']
+        x.add "label" , cb['label']
+        x.add "role" , cb['role']
+        x.add "unit" , cb['unit']
+
+        if cb['user']!='*'
+          user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{cb['user']}']").first
+          x.add "user", user.attributes['id'], :uid => user.attributes['uid']
+        else
+
+          xpath = ''
+          xpath = "[@role='#{cb['role']}' and @unit='#{cb['unit']}']" if (cb['unit'] != '*' && cb['role'] != '*' )
+          xpath = "[@role='#{cb['role']}']" if (cb['unit'] == '*' && cb['role'] != '*' )
+          xpath = "[@unit='#{cb['unit']}']" if (cb['unit'] != '*' && cb['role'] == '*' )
+
+          doc.find("/o:organisation/o:subjects/o:subject[o:relation#{xpath}]").each{|e| x.add "user", e.attributes['id'], :uid => e.attributes['uid'] }
+        end
+      end
+    end
+    Riddl::Parameter::Complex.new("domain_tasks","text/xml", out.to_s) 
   end
 end  #}}} 
 
@@ -556,7 +574,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :ho
       domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
       domain = Riddl::Protocols::Utils::unescape(domain)
       if controller.keys.include? domain
-        run Show_Domain_Users,controller[domain] if get
+        run Show_Domain_Tasks,controller[domain] if get
         on resource 'callbacks' do
           run Callbacks,controller[domain] if get
           on resource do

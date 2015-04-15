@@ -36,18 +36,32 @@
       </element>
     </parameter>            
   </message>
-  <message name="users">
-    <parameter name="users" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
-      <element name="users" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
+  <message name="domain_tasks">
+    <parameter name="domain_tasks" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
+      <element name="tasks" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
         <zeroOrMore>
-          <element name="user">
-            <attribute name="name">
+          <element name="task">
+            <attribute name="id">
               <data type="string"/>
-            </attribute>  
-            <attribute name="uid">
-              <data type="string"/>
-            </attribute>  
-          </element>  
+            </attribute>
+            <element name="label">
+                  <data type="string"/>
+            </element>
+            <element name="role">
+                  <data type="string"/>
+            </element>
+            <element name="unit">
+                  <data type="string"/>
+            </element>
+            <oneOrMore>
+              <element name="user">
+                    <attribute name="uid">
+                      <data type="string"/>
+                    </attribute>  
+                    <data type="string"/>
+              </element>
+            </oneOrMore>
+          </element>
         </zeroOrMore>  
       </element>
     </parameter>            
@@ -92,7 +106,7 @@
     <get in="*" out="domains"/>
     <post in="activityhappens"/>
     <resource> <!-- domain -->
-      <get out="users"/>
+      <get out="domain_tasks"/>
       <resource relative="orgmodels">
         <get out="xml"/>
       </resource>
