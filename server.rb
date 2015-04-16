@@ -136,8 +136,13 @@ class ActivityHappens < Riddl::Implementation #{{{
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
-    activity['orgmodel'] = @h[ 'CPEE_ATTR_' + @p.shift.value.upcase]
-    domain = activity['domain'] = @p.shift.value
+
+    omo = @p.shift.value
+    activity['orgmodel'] = @h[ 'CPEE_ATTR_' + omo.upcase] || omo
+
+    dom = @p.shift.value
+    domain = activity['domain'] = @h[ 'CPEE_ATTR_' + dom.upcase] || dom
+
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
