@@ -132,7 +132,8 @@ end #}}}
 class ActivityHappens < Riddl::Implementation #{{{
   def response
     activity = {}
-    activity['label'] = "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})"
+    activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
+    pp activity['label']
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
