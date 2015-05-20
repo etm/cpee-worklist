@@ -2,6 +2,7 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){ 
     get_worklist(); 
+    subscribe_worklist($.cookie("domain"));
     ui_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault(); 
   });
@@ -109,6 +110,8 @@ function get_worklist() {// {{{
 function take_work(url,butt,butt2,give_or_take){ //{{{
 
   var op = give_or_take == 1 ? "take" : "giveback";
+  console.log(url);
+  console.log(op);
   $.ajax({
     type: "PUT",
     url: url,

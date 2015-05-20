@@ -133,7 +133,6 @@ class ActivityHappens < Riddl::Implementation #{{{
   def response
     activity = {}
     activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
-    pp activity['label']
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
@@ -279,7 +278,6 @@ end  #}}}
 class TaskTake < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last }                                                 
-    pp @a[0].activities
     if index 
       @a[0].activities[index]["user"] = @r[-3]
       callback_id = @a[0].activities[index]['id']
@@ -298,7 +296,6 @@ end  #}}}
 class TaskGiveBack < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last }
-    pp @a[0].activities
     if index && (@a[0].activities[index]['user'] == @r[-3])
       @a[0].activities[index]["user"] = '*'
       callback_id = @a[0].activities[index]['id']
@@ -362,7 +359,7 @@ end #}}}
 class GetOrgModels < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<orgmodels/>')
-    @a[0].orgmodels.each{|e|pp e; out.root.add("orgmodel", e)}
+    @a[0].orgmodels.each{|e| out.root.add("orgmodel", e)}
     Riddl::Parameter::Complex.new "return","text/xml", out.to_s 
   end
 end #}}}
