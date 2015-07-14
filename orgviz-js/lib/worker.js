@@ -25,8 +25,7 @@ function makeRequest(url, readystatechange) {
 
 var orgfile = "https://raph.cs.univie.ac.at/organisation.xml";
 
-var GraphWorker = Class.create({
-  initialize: function(file,xpath,subjects,nopts) {
+var GraphWorker = function(file,xpath,subjects,nopts){
     this.nodes = [];
 
     var schema;
@@ -43,4 +42,6 @@ var GraphWorker = Class.create({
     makeRequest(orgfile, setSchema);
     if(!schema) return false;
     // validate Schema?
-    
+
+}
+
