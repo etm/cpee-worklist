@@ -27,20 +27,36 @@ var GraphWorker = function(file,xpath,subjects,nopts){
     var evalue = data.evaluate('/o:organisation/o:units/o:unit|/o:organisation/o:roles/o:role',
                                data,
                                nsResolver,
-                               XPathResult.ANY_TYPE,
+                               XPathResult.ORDERED_NODE_ITERATOR_TYPE,
                                null);
-    console.log("blubb")
     var node = evalue.iterateNext();
     for(; node && !node.invalidIteratorState; ) {
-        var curr = Node(node.id, node.prefix ? node.prefix + ":" : "" + node.localName, nopts);
+        var type = node.prefix ? node.prefix + ":" : "" + node.localName
+        var id = node.id
+        var curr = new Node(id, type, nopts);
+        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + '="' + id + '"]])',
+                                        data,
+                                        nsResolver,
+                                        XPathResult.NUMBER_TYPE,
+                                        null);
+        curr.numsubjects = numsubjects.numberValue;
         nodes.push(curr);
+        var parser = new DOMParser();
+        var xmlNode = parser.parseFromString(node.outerHTML, "text/xml");
+        var parentsIterator = xmlNode.evaluate( "//o:parent",
+                                                xmlNode,
+                                                nsResolver,
+                                                XPathResult.ANY_TYPE,
+                                                null);
+        var parents = parentsIterator.iterateNext();
+        for(; parents && !parents.invalidIteratorState; ) {
+          console.log(parents);
+          parents = parentsIterator.iterateNext();
+        }
+
         node = evalue.iterateNext()
     }
     console.log(nodes);
-    console.log(ids);
-    console.log(types);
   }
-
-
 }
 
