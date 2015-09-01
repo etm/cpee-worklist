@@ -1,8 +1,7 @@
 var file = "http://cpee.org/~demo/orgviz/organisation_informatik.xml";                                     var xpath = "/o:organisation/o:units/o:unit|/o:organisation/o:roles/o:role";
-var subjects = "/o:organisation/o:subjects/o:subject";
+var subjectsin = "/o:organisation/o:subjects/o:subject";
 var nopts = null;
 var nodes2 = [];
-var pp = []
 
 var Node = function(id,type,opts) {                                                                                   
     this.type     = type;
@@ -18,61 +17,103 @@ var Node = function(id,type,opts) {
     for (var i in opts) {
       if(opts.hasOwnProperty(i)) eval("this."+i+" = "+opts[i]+";");
     }
+};
+
+var Subject = function(shortid){                                                                                      
+  this.shortid    = shortid;
+  Subject.counter += 1;
+  this.id         = "s"+Subject.counter;
+  this.relations  = [];
+};      
+        
+Subject.counter = 0; 
+
+var Relation = function(unit, role){                                                                                  
+    this.unit = unit;
+    this.role = role;
+};
+
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
 }
 
 var GraphWorker = function(file,xpath,subjects,nopts){
   this.nodes = [];
+  this.subjects = [];
 
   this.nsResolver = function(prefix) {
     return prefix == 'o' ? "http://cpee.org/ns/organisation/1.0" : null ;
-  }
+  };
 
   this.processData = function(data) {
     var evalue = data.evaluate('/o:organisation/o:units/o:unit|/o:organisation/o:roles/o:role',
                                data,
                                nsResolver,
                                XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-                               null);
+                               null);                                                                                 
     var node = evalue.iterateNext();
-    for(; node && !node.invalidIteratorState; ) {
-        var type = node.prefix ? node.prefix + ":" : "" + node.localName
-        var id = node.id
+    for(; node && !evalue.invalidIteratorState; ) {
+        var type = node.prefix ? node.prefix + ":" : "" + node.localName;
+        var id = node.id;
         var curr = new Node(id, type, nopts);
-        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + '="' + id + '"]])',
+        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + 
+                                         '="' + id + '"]])', 
                                         data,
                                         nsResolver,
                                         XPathResult.NUMBER_TYPE,
                                         null);
         curr.numsubjects = numsubjects.numberValue;
-        nodes.push(curr);
         nodes2.push(node);
-        var parser = new DOMParser();
-        var xmlNode = parser.parseFromString(node.outerHTML, "text/xml");
-        var parentsIterator = xmlNode.evaluate( "//o:parent",
-                                                xmlNode,
-                                                nsResolver,
-                                                XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-                                                null);
-        var pidIterator = xmlNode.evaluate( '../*[@id="' + id + '"]',
-                                            xmlNode,
-                                            nsResolver,
-                                            XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-                                            null);
-        var parents = parentsIterator.iterateNext();
-        
-        for(; parents && !parents.invalidIteratorState; ) {
-          console.log(parents);
-          pp.push(parents);
-          parents = parentsIterator.iterateNext();
+        for(var i = 0; i < node.childNodes.length; ++i) {
+          var child = node.childNodes[i];
+            if(child.nodeName == "parent") {
+                var pa = child.textContent;
+                //console.log(node.parentNode.childNodes.length);
+                for(var j = 0; j < node.parentNode.childNodes.length; ++j) {
+                    var pid = node.parentNode.childNodes[j];
+                    //console.log(pid):w
+                    
+                    if(pid.id == pa) {
+                        
+                        curr.parents.push([type, pa]);
+                    }
+                }
+            }
         }
-
-
-        node = evalue.iterateNext()
+        nodes.push(curr);
+        node = evalue.iterateNext();
     }
-    console.log(pp);
-    console.log(nodes2);
-  }
-  
+    var subjectIterator = data.evaluate(subjects.replace(/\/*$/,''),
+                                        data,
+                                        nsResolver,
+                                        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+                                        null);
+    var subject = subjectIterator.iterateNext();
+    for( ; subject && !subjectIterator.invalidIteratorState; ) {
+      var s = new Subject(subject.id);
+      for(var i = 0; i < subject.childNodes.length; ++i) {
+        var child = subject.childNodes[i];
+        if(child.nodeName == "relation") {
+          var unit = nodes.filter(function(e) { return e.id == child.attributes["unit"].nodeValue });
+          var role = nodes.filter(function(e) { return e.id == child.attributes["role"].nodeValue });
+          unit.subjects = [];
+          unit.subjects.push(s);
+          unit = unit.filter( onlyUnique );
+          role.subjects = [];
+          role.subjects.push(s);
+          role = role.filter( onlyUnique );
+          if(unit && role ) {
+            s.relations.push( new Relation(unit,role) );
+          }            
+        }
+      }
+    this.subjects.push(s);
+      subject = subjectIterator.iterateNext();
+    }
+    console.log(this.subjects);
+    console.log(nodes);
+  };
+
   var client = new XMLHttpRequest();
   client.onload = function() {
     if(this.status == 200 )
@@ -80,11 +121,12 @@ var GraphWorker = function(file,xpath,subjects,nopts){
       //console.log(this.responseXML);
       processData(this.responseXML);
     } else {
-      console.log(this)
+      console.log(this);
     }
   };
   client.open("GET", file, true);
   client.send(null);
-}
+};
 
-GraphWorker(file,xpath,subjects,nopts);
+GraphWorker(file,xpath,subjectsin,nopts);
+

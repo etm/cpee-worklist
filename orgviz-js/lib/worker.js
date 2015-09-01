@@ -29,34 +29,39 @@ var GraphWorker = function(file,xpath,subjects,nopts){
                                nsResolver,
                                XPathResult.ORDERED_NODE_ITERATOR_TYPE,
                                null);
+    // Nodes //{{{
     var node = evalue.iterateNext();
     for(; node && !node.invalidIteratorState; ) {
-        var type = node.prefix ? node.prefix + ":" : "" + node.localName
-        var id = node.id
-        var curr = new Node(id, type, nopts);
-        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + '="' + id + '"]])',
-                                        data,
-                                        nsResolver,
-                                        XPathResult.NUMBER_TYPE,
-                                        null);
-        curr.numsubjects = numsubjects.numberValue;
-        nodes.push(curr);
-        var parser = new DOMParser();
-        var xmlNode = parser.parseFromString(node.outerHTML, "text/xml");
-        var parentsIterator = xmlNode.evaluate( "//o:parent",
-                                                xmlNode,
-                                                nsResolver,
-                                                XPathResult.ANY_TYPE,
-                                                null);
-        var parents = parentsIterator.iterateNext();
-        for(; parents && !parents.invalidIteratorState; ) {
-          console.log(parents);
-          parents = parentsIterator.iterateNext();
+      var type = node.prefix ? node.prefix + ":" : "" + node.localName
+      var id = node.id
+      var curr = new Node(id, type, nopts);
+      var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + '="' + id + '"]])',
+                                      data,
+                                      nsResolver,
+                                      XPathResult.NUMBER_TYPE,
+                                      null);
+      curr.numsubjects = numsubjects.numberValue;
+      
+      for(var i = 0; i < node.childNodes.length; ++i) {
+        var child = node.childNodes[i];
+        if(child.nodeName == "parent") {
+          var pa = child.textContent;
+          for(var j = 0; j < node.parentNode.childNodes.length; ++j) {
+            var pid = node.parentNode.childNodes[j];
+            if(pid.id == pa) {
+              curr.parents.push([type, pa]);
+            }
+          }
         }
+      }
 
-        node = evalue.iterateNext()
+      nodes.push(curr);
+      node = evalue.iterateNext()
     }
-    console.log(nodes);
-  }
+  } //}}}
+  
+  // Subjects
+
+
 }
 
