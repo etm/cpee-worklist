@@ -2,6 +2,11 @@ var file = "http://cpee.org/~demo/orgviz/organisation_informatik.xml";          
 var subjectsin = "/o:organisation/o:subjects/o:subject";
 var nopts = null;
 var nodes2 = [];
+if (!Array.prototype.last){
+  Array.prototype.last = function(){
+    return this[this.length - 1];
+  };
+};
 
 var Node = function(id,type,opts) {                                                                                   
     this.type     = type;
@@ -40,6 +45,8 @@ function onlyUnique(value, index, self) {
 var GraphWorker = function(file,xpath,subjects,nopts){
   this.nodes = [];
   this.subjects = [];
+  this.maxsubjects = 0;
+  this.paths = [];
 
   this.nsResolver = function(prefix) {
     return prefix == 'o' ? "http://cpee.org/ns/organisation/1.0" : null ;
@@ -53,7 +60,7 @@ var GraphWorker = function(file,xpath,subjects,nopts){
                                null);                                                                                 
     var node = evalue.iterateNext();
     for(; node && !evalue.invalidIteratorState; ) {
-        var type = node.prefix ? node.prefix + ":" : "" + node.localName;
+        var type = node.localName;
         var id = node.id;
         var curr = new Node(id, type, nopts);
         var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + 
@@ -63,6 +70,8 @@ var GraphWorker = function(file,xpath,subjects,nopts){
                                         XPathResult.NUMBER_TYPE,
                                         null);
         curr.numsubjects = numsubjects.numberValue;
+        if(curr.numsubjects > this.maxsubjects) this.maxsubjects = curr.numsubjects;
+
         nodes2.push(node);
         for(var i = 0; i < node.childNodes.length; ++i) {
           var child = node.childNodes[i];
@@ -71,11 +80,8 @@ var GraphWorker = function(file,xpath,subjects,nopts){
                 //console.log(node.parentNode.childNodes.length);
                 for(var j = 0; j < node.parentNode.childNodes.length; ++j) {
                     var pid = node.parentNode.childNodes[j];
-                    //console.log(pid):w
-                    
                     if(pid.id == pa) {
-                        
-                        curr.parents.push([type, pa]);
+                        curr.parents.push(pid);
                     }
                 }
             }
@@ -83,6 +89,7 @@ var GraphWorker = function(file,xpath,subjects,nopts){
         nodes.push(curr);
         node = evalue.iterateNext();
     }
+
     var subjectIterator = data.evaluate(subjects.replace(/\/*$/,''),
                                         data,
                                         nsResolver,
@@ -107,11 +114,21 @@ var GraphWorker = function(file,xpath,subjects,nopts){
           }            
         }
       }
-    this.subjects.push(s);
+      this.subjects.push(s);
       subject = subjectIterator.iterateNext();
     }
+
     console.log(this.subjects);
     console.log(nodes);
+
+    for(var node in nodes) {
+      this.paths.push([node]);
+      calculate_path(this.paths, this.paths.last());
+    }
+  };
+
+  var calculate_path = function(paths, path) {
+    var parents = path.last().parents
   };
 
   var client = new XMLHttpRequest();
