@@ -2,7 +2,8 @@ var orgfile = "http://cpee.org/~demo/orgviz/organisation_informatik.xml";
 
 var GraphWorker = function(file,xpath,subjects,nopts){
   this.nodes = [];
-  
+  this.subjects = [];
+
   function handler(response) {
     if(this.status == 200 && this.responseXML != null )
     {
