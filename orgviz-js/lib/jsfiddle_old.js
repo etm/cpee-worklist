@@ -1,4 +1,4 @@
-var file = "http://cpee.org/~demo/orgviz/organisation_informatik.xml";                                     var xpath 
+var file = "http://cpee.org/~demo/orgviz/organisation_informatik.xml";                                     var xpath = "/o:organisation/o:units/o:unit|/o:organisation/o:roles/o:role";
 var subjectsin = "/o:organisation/o:subjects/o:subject";
 var nopts = null;
 var nodes2 = [];
@@ -8,33 +8,7 @@ if (!Array.prototype.last){
   };
 };
 
-function objectEquals(x, y) {
-    'use strict';
-
-    if (x === null || x === undefined || y === null || y === undefined) { return x === y; }
-    // after this just checking type of one would be enough
-    if (x.constructor !== y.constructor) { return false; }
-    // if they are functions, they should exactly refer to same one (because of closures)
-    if (x instanceof Function) { return x === y; }
-    // if they are regexps, they should exactly refer to same one (it is hard to better equality check on current ES)
-    if (x instanceof RegExp) { return x === y; }
-    if (x === y || x.valueOf() === y.valueOf()) { return true; }
-    if (Array.isArray(x) && x.length !== y.length) { return false; }
-
-    // if they are dates, they must had equal valueOf
-    if (x instanceof Date) { return false; }
-
-    // if they are strictly equal, they both need to be object at least
-    if (!(x instanceof Object)) { return false; }
-    if (!(y instanceof Object)) { return false; }
-
-    // recursive object equality check
-    var p = Object.keys(x);
-    return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) &&
-        p.every(function (i) { return objectEquals(x[i], y[i]); });
-};
-
-var Node = function(id,type,opts) {                                                                                  
+var Node = function(id,type,opts) {                                                                                   
     this.type     = type;
     this.id       = id;
     this.rank     = 0;
@@ -50,7 +24,7 @@ var Node = function(id,type,opts) {
     }
 };
 
-var Subject = function(shortid){                                                                                     
+var Subject = function(shortid){                                                                                      
   this.shortid    = shortid;
   Subject.counter += 1;
   this.id         = "s"+Subject.counter;
@@ -59,7 +33,7 @@ var Subject = function(shortid){
         
 Subject.counter = 0; 
 
-var Relation = function(unit, role){                                                                                 
+var Relation = function(unit, role){                                                                                  
     this.unit = unit;
     this.role = role;
 };
@@ -83,14 +57,14 @@ var GraphWorker = function(file,xpath,subjects,nopts){
                                data,
                                nsResolver,
                                XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-                               null);
+                               null);                                                                                 
     var node = evalue.iterateNext();
     for(; node && !evalue.invalidIteratorState; ) {
         var type = node.localName;
         var id = node.id;
         var curr = new Node(id, type, nopts);
-        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type +
-                                         '="' + id + '"]])',
+        var numsubjects = data.evaluate('count(' + subjects.replace(/\/*$/,'') + '[o:relation[@' + type + 
+                                         '="' + id + '"]])', 
                                         data,
                                         nsResolver,
                                         XPathResult.NUMBER_TYPE,
@@ -137,7 +111,7 @@ var GraphWorker = function(file,xpath,subjects,nopts){
           role = role.filter( onlyUnique );
           if(unit && role ) {
             s.relations.push( new Relation(unit,role) );
-          }
+          }            
         }
       }
       this.subjects.push(s);
@@ -147,8 +121,7 @@ var GraphWorker = function(file,xpath,subjects,nopts){
     console.log(this.subjects);
     console.log(nodes);
 
-    for(var node of nodes) {
-      console.log(node);
+    for(var node in nodes) {
       this.paths.push([node]);
       calculate_path(this.paths, this.paths.last());
     }
@@ -156,29 +129,6 @@ var GraphWorker = function(file,xpath,subjects,nopts){
 
   var calculate_path = function(paths, path) {
     var parents = path.last().parents
-    console.log(paths, path);
-    if(parents !== undefined && (parents.length == 0 || parents.length == 1) ) {
-        console.log(parents[0]);
-      if( parents[0] === undefined || path.includes(parents[0]) ) {
-          return;
-        }
-        path.push(parents[0]);
-        calculate_path(paths, path);
-    } else {
-        var tpath = $.extend( true, {}, path );
-      for(var p of parents){
-            if(tpath.includes(p)){
-                continue;
-            }
-            if(objectEquals(p, parents[0])){
-                path.push(p);
-                calculate_path(paths, path);
-            } else {
-                paths.push( ($.extend(true, {}, tpath)).push(p) );
-                calculate_path(paths, paths.last());
-            }
-        }
-    }
   };
 
   var client = new XMLHttpRequest();
