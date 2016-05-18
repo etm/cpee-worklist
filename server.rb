@@ -132,11 +132,13 @@ end #}}}
 class ActivityHappens < Riddl::Implementation #{{{
   def response
     activity = {}
+    activity['instance']||= @h['CPEE_INSTANCE']
+    activity['base']||= @h['CPEE_BASE']
+    activity['activity']||= @h['CPEE_ACTIVITY']
     activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK'].split('/').last
-
     omo = @p.shift.value
     activity['orgmodel'] = @h[ 'CPEE_ATTR_' + omo.upcase] || omo
 
@@ -200,10 +202,10 @@ class TaskDel < Riddl::Implementation #{{{
       activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
       if @r.length == 3
-        @a[0].notify('task/delete', :index => activity['callback_id'] )
+        @a[0].notify('task/delete', :index => activity['id'] )
         Riddl::Client.new(activity['url']).put
       else
-        @a[0].notify('user/finish', :index => activity['callback_id'], :user => activity['user'])
+        @a[0].notify('user/finish', :index => activity['id'], :user => activity['user'], :call_id => activity['activity'], :cpee_instance => activity['instance'], :cpee_base => activity['base'], :role => activity['role'])
       end
     else 
       @status = 404
