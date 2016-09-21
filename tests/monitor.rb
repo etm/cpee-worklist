@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 require 'riddl/client'
 
-srv = Riddl::Client.new('http://localhost:9302','http://localhost:9302/?riddl-description')
+srv = Riddl::Client.new('http://localhost:9300','http://localhost:9300/?riddl-description')
 res = srv.resource("/Virtual%20Business%201/notifications/subscriptions")
 status, response = res.get
 sub = ''
@@ -11,7 +11,7 @@ XML::Smart.string(response[0].value.read) do |doc|
     sub = ele.to_s
   end
 end
-
+p sub
 view = srv.resource("/Virtual%20Business%201/notifications/subscriptions/#{sub}/ws/")
 view.ws do |conn|
   conn.stream do |msg|

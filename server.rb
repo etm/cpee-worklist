@@ -231,21 +231,21 @@ class Show_Domain_Tasks < Riddl::Implementation #{{{
     @a[0].orgmodels.each do |fname|
       doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{fname}")
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-      @a[0].activities.each do |cb|
-        x = out.root.add "task", :id => cb['id']
-        x.add "label" , cb['label']
-        x.add "role" , cb['role']
-        x.add "unit" , cb['unit']
+      @a[0].activities.each do |activity|
+        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id']
+        x.add "label" , activity['label']
+        x.add "role" , activity['role']
+        x.add "unit" , activity['unit']
 
-        if cb['user']!='*'
-          user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{cb['user']}']").first
+        if activity['user']!='*'
+          user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").first
           x.add "user", user.attributes['id'], :uid => user.attributes['uid']
         else
 
           xpath = ''
-          xpath = "[@role='#{cb['role']}' and @unit='#{cb['unit']}']" if (cb['unit'] != '*' && cb['role'] != '*' )
-          xpath = "[@role='#{cb['role']}']" if (cb['unit'] == '*' && cb['role'] != '*' )
-          xpath = "[@unit='#{cb['unit']}']" if (cb['unit'] != '*' && cb['role'] == '*' )
+          xpath = "[@role='#{activity['role']}' and @unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] != '*' )
+          xpath = "[@role='#{activity['role']}']" if (activity['unit'] == '*' && activity['role'] != '*' )
+          xpath = "[@unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] == '*' )
 
           doc.find("/o:organisation/o:subjects/o:subject[o:relation#{xpath}]").each{|e| x.add "user", e.attributes['id'], :uid => e.attributes['uid'] }
         end
@@ -263,9 +263,9 @@ class Show_Tasks < Riddl:: Implementation #{{{
       XML::Smart.open("domains/#{@a[0].domain}/orgmodels/#{e}") do |doc|
         doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
-          @a[0].activities.each do |cb|
-            if (cb['role']=='*' || cb['role'].casecmp(rel.attributes['role']) == 0) && (cb['unit'] == '*' || cb['unit'].casecmp(rel.attributes['unit']) == 0) && (cb['user']=='*' || cb['user']==@r[-2])
-              tasks["#{cb['id']}"] = {:uid => cb['user'], :label => cb['label'] }
+          @a[0].activities.each do |activity|
+            if (activity['role']=='*' || activity['role'].casecmp(rel.attributes['role']) == 0) && (activity['unit'] == '*' || activity['unit'].casecmp(rel.attributes['unit']) == 0) && (activity['user']=='*' || activity['user']==@r[-2])
+              tasks["#{activity['id']}"] = {:uid => activity['user'], :label => activity['label'] }
             end
           end
         end
@@ -350,13 +350,13 @@ class Callbacks < Riddl::Implementation #{{{
       return
     end
     Riddl::Parameter::Complex.new("info","text/xml") do
-      cb = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
+      activity = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
       if opts[:mode] == :debug
         controller[id].callbacks.each do |k,v|
-          cb.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
+          activity.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
         end
       end
-      cb.to_s
+      activity.to_s
     end
   end
 end #}}}
