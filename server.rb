@@ -132,9 +132,6 @@ end #}}}
 class ActivityHappens < Riddl::Implementation #{{{
   def response
     activity = {}
-    activity['instance']||= @h['CPEE_INSTANCE']
-    activity['base']||= @h['CPEE_BASE']
-    activity['activity']||= @h['CPEE_ACTIVITY']
     activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
@@ -210,7 +207,7 @@ class TaskDel < Riddl::Implementation #{{{
         @a[0].notify('task/delete', :index => activity['id'] )
         Riddl::Client.new(activity['url']).put
       else
-        @a[0].notify('user/finish', :index => activity['id'], :user => activity['user'], :call_id => activity['activity'], :cpee_instance => activity['instance'], :cpee_base => activity['base'], :role => activity['role'])
+        @a[0].notify('user/finish', :index => activity['id'], :user => activity['user'], :role => activity['role'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
       end
     else
       @status = 404
