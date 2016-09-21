@@ -1,9 +1,8 @@
 var Subject = function(shortid){
-    this.shortid    = shortid;
-    this.id         = "s"+Subject.counter;
-    Subject.counter += 1;
-    this.relations  = [];
-  }
-});
+  this.shortid    = shortid;
+  Subject.counter += 1;
+  this.id         = "s"+Subject.counter;
+  this.relations  = [];
+}
 
 Subject.counter = 0;
