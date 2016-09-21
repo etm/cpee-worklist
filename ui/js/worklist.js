@@ -2,7 +2,7 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){ 
     get_worklist(); 
-    subscribe_worklist($.cookie("domain"));
+    //subscribe_worklist($.cookie("domain"));
     ui_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault(); 
   });
@@ -187,13 +187,18 @@ function do_work(taskid,taskidurl) { //{{{
 
 function subscribe_worklist(){ //{{{
   var url = $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/';
+  console.log("haha");
+  console.log(url);
   $.ajax({
     type: "POST",
     url: url,
     data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
+      console.log("success?");
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
       var subscription = $.parseQuery(ret)[0].value;
+      console.log(subscription);
+      console.log(url.replace(/http/,'ws') + subscription + "/ws/");
       ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
       ws.onmessage = function(e) {
         data = $.parseXML(e.data);
@@ -204,9 +209,14 @@ function subscribe_worklist(){ //{{{
             case 'user':
               switch($('event > event',data).text()) {
                 case 'finish':
+                  console.log("it happened");
+                  console.log($(data).serializeXML());
+                  console.log(JSON.parse($('event > notification',data).text()).user);
                   tr.remove();
                   break;
                 default:
+                  console.log("please not");
+                  tr.remove();
                   get_worklist();
                   break;
               }
@@ -217,6 +227,7 @@ function subscribe_worklist(){ //{{{
                   get_worklist();
                   break;
                 case 'delete':
+                  console.log("it should not happen");
                   tr.remove();
                   break;
               }
@@ -224,6 +235,17 @@ function subscribe_worklist(){ //{{{
           }
         }
       };
+      ws.onopen = function(e){
+        console.log("Open");
+      }
+      ws.onclose = function(e){
+        console.log("Close");
+        console.log(e);
+      }
+      ws.onerror = function(e){
+        console.log("Error");
+        console.log(e);
+      }
     },
     error: function(){
       console.log("Not Successful subscribed");
