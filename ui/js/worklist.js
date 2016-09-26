@@ -203,7 +203,7 @@ function subscribe_worklist(){ //{{{
       ws.onmessage = function(e) {
         data = $.parseXML(e.data);
         if ($('event > topic',data).length > 0) {
-          var cid = JSON.parse($('event > notification',data).text()).index;
+          var cid = JSON.parse($('event > notification',data).text()).callback_id;
           var tr = $('tr[data-id="'+cid+'"]');
           switch($('event > topic',data).text()) {
             case 'user':
