@@ -565,6 +565,24 @@ class Controller < Hash #{{{
   end
 end #}}}
   
+class AssignTask < Riddl::Implementation #{{{
+  def response
+    index = @a[0].activities.index{ |c| c["id"] == @r.last } 
+    if index 
+      @a[0].activities[index]["user"] = @p[0].value
+      callback_id = @a[0].activities[index]['id']
+      @a[0].activities.serialize
+      @a[0].notify('user/take', :index => callback_id, :user => @p[0].value)
+      Riddl::Client.new(@a[0].activities[index]['url']).put [
+        Riddl::Header.new('CPEE_UPDATE','true'),
+        Riddl::Header.new('CPEE_UPDATE_STATUS','take')
+      ]
+    else
+      @status = 404
+    end
+  end
+end  #}}} 
+
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :host => lh) do 
   accessible_description true
   cross_site_xhr true
@@ -591,6 +609,7 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :ho
         end
         on resource 'tasks' do
           on resource do
+            run AssignTask,controller[domain] if put 'uid'
             run TaskDel,controller[domain] if delete
           end
         end

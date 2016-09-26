@@ -16,6 +16,9 @@
     </zeroOrMore>
   </message> <!--}}}-->
 
+  <message name="uid">
+    <parameter name="userid" type="string"/>
+  </message>
   <message name="take">
     <parameter name="operation" fixed="take"/>
   </message>
@@ -113,6 +116,7 @@
       <resource relative="tasks"> <!-- all tasks in domain -->
         <resource> <!-- task -->
           <delete/>
+          <put in="uid"/>
         </resource>
       </resource>
       <resource relative="callbacks">
