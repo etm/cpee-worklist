@@ -44,7 +44,22 @@
       <element name="tasks" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
         <zeroOrMore>
           <element name="task">
-            <attribute name="id">
+            <attribute name="callback_id">
+              <data type="string"/>
+            </attribute>
+            <attribute name="cpee_callback">
+              <data type="string"/>
+            </attribute>
+            <attribute name="cpee_instance">
+              <data type="string"/>
+            </attribute>
+            <attribute name="cpee_base">
+              <data type="string"/>
+            </attribute>
+            <attribute name="cpee_label">
+              <data type="string"/>
+            </attribute>
+            <attribute name="cpee_activity">
               <data type="string"/>
             </attribute>
             <element name="label">
