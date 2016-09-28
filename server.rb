@@ -284,7 +284,7 @@ class TaskTake < Riddl::Implementation #{{{
     index = @a[0].activities.index{ |c| c["id"] == @r.last }
     if index
       activity = @a[0].activities[index]
-      activity["user"] = @r[-3]
+      activity["user"] = @r[-3]	if user_ok(activity,@r[-3])
       @a[0].activities.serialize
       @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
@@ -570,9 +570,10 @@ end #}}}
 
 class AssignTask < Riddl::Implementation #{{{
   def response
-    index = @a[0].activities.index{ |c| c["id"] == @r.last }
-    if index
-      @a[0].activities[index]["user"] = @p[0].value
+   index = @a[0].activities.index{ |c| c["id"] == @r.last } 
+    if index 
+      user = @p[0].value
+      @a[0].activities[index]["user"] = user if user_ok(@a[0].activities[index],user)
       callback_id = @a[0].activities[index]['id']
       @a[0].activities.serialize
       @a[0].notify('user/take', :index => callback_id, :user => @p[0].value)
@@ -585,6 +586,35 @@ class AssignTask < Riddl::Implementation #{{{
     end
   end
 end  #}}}
+
+def user_ok(task,user)
+  orgmodel = XML::Smart.open(task['orgmodel'])
+  orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
+  subjects = orgmodel.find('/o:organisation/o:subjects/o:subject')
+  unit = task['unit']
+  role = task['role']
+  if (unit=='*')
+    if (role=='*')
+      subjects.each{|s| return true if s.attributes['uid']==user}
+    else
+      orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@role='#{role}']").each do |s|
+				return true if user==s.attributes['uid']
+			end	
+		end
+	else
+		if (role=='*')
+			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}']").each do |s|
+        return true if user==s.attributes['uid']
+      end 
+		else
+			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}' and o:relation/@role='#{role}']").each do |s|
+      	return true if user==s.attributes['uid']
+      end
+    end
+  end
+  return false;
+end
+
 
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :host => lh) do
   accessible_description true
