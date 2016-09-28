@@ -162,7 +162,7 @@ class ActivityHappens < Riddl::Implementation #{{{
       rescue => e
         puts e.message
         puts e.backtrace
-        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'orgmodel invalid', :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id']) if @a[0].keys.include? domain
+        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'orgmodel invalid',:domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
         @status = 404
         return
       end
@@ -174,20 +174,20 @@ class ActivityHappens < Riddl::Implementation #{{{
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
       if user.empty?
-        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'no users found for this combination of unit/role', :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id']) if @a[0].keys.include? domain
+        @a[0][domain].notify('task/invalid', :callback_id => activity['id'], :reason => 'no users found for this combination of unit/role',:domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
         @status = 404
         return
       end
       @a[0].add_activity domain, activity
       @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       Thread.new do
-        results = @a[0][domain].vote('task/add', :user => user ,                                      :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+        results = @a[0][domain].vote('task/add', :user => user ,                                      :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         if (results.length == 1) && (user.include? results[0])
           activity["user"] = results[0]
-          @a[0][domain].notify('task/add',       :user => user,                                       :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
-          @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+          @a[0][domain].notify('task/add',       :user => user,                                       :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
+          @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         else
-          @a[0][domain].notify('task/add',       :user => user,                                       :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id']) if @a[0].keys.include? domain
+          @a[0][domain].notify('task/add',       :user => user,                                       :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
         end
       end
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
@@ -204,10 +204,10 @@ class TaskDel < Riddl::Implementation #{{{
       activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
       if @r.length == 3
-        @a[0].notify('task/delete', :callback_id => activity['id'],                                                       :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+        @a[0].notify('task/delete', :callback_id => activity['id'],                                                      :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         Riddl::Client.new(activity['url']).put
       else
-        @a[0].notify('user/finish', :callback_id => activity['id'], :user => activity['user'], :role => activity['role'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+        @a[0].notify('user/finish', :callback_id => activity['id'], :user => activity['user'], :role => activity['role'],:domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
       end
     else
       @status = 404
@@ -232,7 +232,7 @@ class Show_Domain_Tasks < Riddl::Implementation #{{{
       doc = XML::Smart.open(File.dirname(__FILE__) + "/domains/#{Riddl::Protocols::Utils::unescape(@r.last)}/orgmodels/#{fname}")
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       @a[0].activities.each do |activity|
-        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id']
+        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel']
         x.add "label" , activity['label']
         x.add "role" , activity['role']
         x.add "unit" , activity['unit']
@@ -286,7 +286,7 @@ class TaskTake < Riddl::Implementation #{{{
       activity = @a[0].activities[index]
       activity["user"] = @r[-3]
       @a[0].activities.serialize
-      @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+      @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','take')
@@ -305,7 +305,7 @@ class TaskGiveBack < Riddl::Implementation #{{{
       activity["user"] = '*'
       callback_id = @a[0].activities[index]['id']
       @a[0].activities.serialize
-      @a[0].notify('user/giveback', :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'])
+      @a[0].notify('user/giveback', :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','giveback')
@@ -567,11 +567,11 @@ class Controller < Hash #{{{
     self[domain].activities.serialize
   end
 end #}}}
-  
+
 class AssignTask < Riddl::Implementation #{{{
   def response
-    index = @a[0].activities.index{ |c| c["id"] == @r.last } 
-    if index 
+    index = @a[0].activities.index{ |c| c["id"] == @r.last }
+    if index
       @a[0].activities[index]["user"] = @p[0].value
       callback_id = @a[0].activities[index]['id']
       @a[0].activities.serialize
@@ -584,7 +584,7 @@ class AssignTask < Riddl::Implementation #{{{
       @status = 404
     end
   end
-end  #}}} 
+end  #}}}
 
 Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :host => lh) do
   accessible_description true
