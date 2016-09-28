@@ -25,20 +25,24 @@ end
 
 #ON Event
 def on_task_add(notification,rule)
-  do_task_take(notification,rule['action']['user'])
+  if rule['action']['event'] == 'user/take'
+    do_task_take(notification,rule['action']['user'])
+  end
 end
 
 def on_user_take(notification,rule)
   case rule['action']['event']
   when 'user/giveback'
     do_task_giveback(notification)
-  when 'user/finish'
-    do_task_finish(notification)
+  when 'task/finish'
+    do_task_finish(notification,rule)
   end
 
 end
 def on_user_giveback(notification,rule)
-  do_task_take(notification,rule['action']['user'])
+  if rule['action']['event'] == 'user/giveback'
+    do_task_take(notification,rule['action']['user'])
+  end
 end
 
 #DO Action
@@ -49,8 +53,25 @@ end
 def do_task_take(notification,user)
   put_to_wl("/#{notification['domain']}/#{user}/tasks/#{notification['callback_id']}",[Riddl::Parameter::Simple.new("operation","take"),])
 end
-def do_task_finish(notification)
-  pp notification
+def do_task_finish(notification,rule)
+  parameters = YAML.load_file('./parameters/'+rule['action']['data'])
+  pp parameters
+  put_parameters = Array.new
+  parameters['data'].each{ |k,v|
+    put_parameters << Riddl::Parameter::Simple.new(k,v)
+    pp "key #{k} value #{v}"
+  }
+
+  srv = Riddl::Client.new(notification['cpee_callback'])
+  status, response = srv.put put_parameters
+  pp status
+  if status == 200 then
+    resource_url = URI.escape("/#{notification['domain']}/#{notification['user']}/tasks/#{notification['callback_id']}")
+    srv = Riddl::Client.new('http://coms.wst.univie.ac.at:9300')
+    res = srv.resource(resource_url)
+    status, response = res.delete
+    pp status
+  end
 end
 
 def put_to_wl(resource_url,parameters)
@@ -58,8 +79,6 @@ def put_to_wl(resource_url,parameters)
   srv = Riddl::Client.new('http://coms.wst.univie.ac.at:9300')
   res = srv.resource(resource_url)
   status, response = res.put parameters
-
-  pp response
 end
 
 def main()

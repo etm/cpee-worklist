@@ -7,7 +7,7 @@ trigger:
     # user/take     -> we can trigger user/finish
     # user/giveback -> we can trigger user/take
 action:
-  event: "user/giveback"
-  user: "certain user" # optional, is only necessary for user/take
-  data: "http://" # optional, is only necessary for user/finish
+  event: "task/finish"
+  user: ""               # optional, is only necessary for user/take actions
+  data: "parameters.yml" # optional, is only necessary for user/finish
 active: true
