@@ -16,11 +16,9 @@ def get_rule(notification,cat_event, rules)
 
       pp 'yes'
       return r
-    else
-      pp 'no'
-      return nil
     end
   }
+  return nil
 end
 
 #ON Event
@@ -52,6 +50,7 @@ end
 
 def do_task_take(notification,user)
   put_to_wl("/#{notification['domain']}/#{user}/tasks/#{notification['callback_id']}",[Riddl::Parameter::Simple.new("operation","take"),])
+  pp "did user/take"
 end
 def do_task_finish(notification,rule)
   parameters = YAML.load_file('./parameters/'+rule['action']['data'])
@@ -79,6 +78,8 @@ def put_to_wl(resource_url,parameters)
   srv = Riddl::Client.new('http://coms.wst.univie.ac.at:9300')
   res = srv.resource(resource_url)
   status, response = res.put parameters
+  pp resource_url
+  pp status
 end
 
 def main()
@@ -91,7 +92,6 @@ def main()
   Dir.glob(path + '/rules/*.yml') do |yml_file|
     rules << YAML.load_file(yml_file)
   end
-
   srv = Riddl::Client.new('http://coms.wst.univie.ac.at:9300')
   res = srv.resource("/Virtual%20Business%201/notifications/subscriptions/")
   status, response = res.post [

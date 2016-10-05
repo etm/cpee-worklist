@@ -184,10 +184,10 @@ class ActivityHappens < Riddl::Implementation #{{{
         results = @a[0][domain].vote('task/add', :user => user ,                                      :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         if (results.length == 1) && (user.include? results[0])
           activity["user"] = results[0]
-          @a[0][domain].notify('task/add',       :user => user,                                       :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
+          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
           @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         else
-          @a[0][domain].notify('task/add',       :user => user,                                       :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
+          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
         end
       end
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
@@ -570,8 +570,8 @@ end #}}}
 
 class AssignTask < Riddl::Implementation #{{{
   def response
-   index = @a[0].activities.index{ |c| c["id"] == @r.last } 
-    if index 
+   index = @a[0].activities.index{ |c| c["id"] == @r.last }
+    if index
       user = @p[0].value
       @a[0].activities[index]["user"] = user if user_ok(@a[0].activities[index],user)
       callback_id = @a[0].activities[index]['id']
@@ -599,13 +599,13 @@ def user_ok(task,user)
     else
       orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@role='#{role}']").each do |s|
 				return true if user==s.attributes['uid']
-			end	
+			end
 		end
 	else
 		if (role=='*')
 			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}']").each do |s|
         return true if user==s.attributes['uid']
-      end 
+      end
 		else
 			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}' and o:relation/@role='#{role}']").each do |s|
       	return true if user==s.attributes['uid']

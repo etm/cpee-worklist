@@ -1,13 +1,13 @@
 trigger:
   label:                                                              # (optional)
   target: "http://cpee.org/~demo/orgviz/organisation_informatik.xml"  # (optional)
-  event: "user/take"                                                  # task/add, user/take, user/giveback
+  event: "task/add"                                                  # task/add, user/take, user/giveback
     # task/add      -> we can trigger user/take
     # user/take     -> we can trigger user/giveback
     # user/take     -> we can trigger user/finish
     # user/giveback -> we can trigger user/take
 action:
-  event: "task/finish"
-  user:                  # optional, is only necessary for user/take actions
-  data: "parameters.yml" # optional, is only necessary for user/finish
+  event: "user/take"
+  user: "stertzf9"               # optional, is only necessary for user/take actions
+  data:                          # optional, is only necessary for user/finish
 active: true
