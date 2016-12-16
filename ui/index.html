@@ -18,24 +18,69 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Worklist</title>
+    <title>CPEE Cockpit</title>
 
-    <!-- libs, do not modify -->
-    <link rel="stylesheet" href="http://gruppe.wst.univie.ac.at/js_libs/ui.css" type="text/css"></link>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.min.js"></script>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.browser.js"></script>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/util.js"></script>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/parsequery.js"></script>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.cookie.js"></script>
-    <script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/ui.js"></script>
+    <!-- libs, do not modify. When local than load local libs. -->
+    <script type="text/javascript">
+      if ((document.location.hostname == 'localhost') && (document.location.protocol == 'http:')) {
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.browser.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.svg.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.svgdom.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/vkbeautify.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/util.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/printf.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/strftime.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/parsequery.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/underscore.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.caret.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.cookie.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/relaxngui.js">\x3C/script>');
 
+        document.write('<script type="text/javascript" src="http://localhost/js_libs/ui.js">\x3C/script>');
+        document.write('<link rel="stylesheet" href="http://localhost/js_libs/ui.css" type="text/css"/>');
+      } else if ((document.location.hostname == 'localhost') && (document.location.protocol == 'https:')) {
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.browser.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.svg.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.svgdom.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/vkbeautify.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/util.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/printf.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/strftime.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/parsequery.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/underscore.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.caret.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/jquery.cookie.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/relaxngui.js">\x3C/script>');
+
+        document.write('<script type="text/javascript" src="https://localhost/js_libs/ui.js">\x3C/script>');
+        document.write('<link rel="stylesheet" href="https://localhost/js_libs/ui.css" type="text/css"/>');
+      } else {
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.browser.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.svg.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.svgdom.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/vkbeautify.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/util.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/printf.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/strftime.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/parsequery.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/underscore.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.caret.min.js">\x3C/script>');
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/jquery.cookie.js">\x3C/script>');
+
+        document.write('<script type="text/javascript" src="http://gruppe.wst.univie.ac.at/js_libs/ui.js">\x3C/script>');
+        document.write('<link rel="stylesheet" href="http://gruppe.wst.univie.ac.at/js_libs/ui.css" type="text/css"/>');
+      }
+    </script>
     <!-- custom stuff, play arround  -->
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
-    
+
     <!-- Flos Stuff -->
     <script type="text/javascript" src="js/worklist.js"></script>
   </head>
-  <body data-defaultport="9302" is='x-ui'>
+  <body data-defaultport="9398" is='x-ui'>
     <!-- The following six are templates that get used during ui generation, change them carefully -->
     <table id="dat_template_tasks" class='hidden'> <!--{{{-->
       <tr class="task">
@@ -68,6 +113,7 @@
             <tr>
               <td>Domain:</td>
               <td><input name="domain-name" type="text" value=""/></td>
+              <td></td>
             </tr>
             <tr>
               <td>User ID:</td>
@@ -97,7 +143,7 @@
         </ui-area> <!--}}}-->
       </ui-content>
     </ui-tabbed>
-    
+
     <ui-rest class="hidden" id='main'>
       <ui-tabbar>
           <ui-before                                          ></ui-before>

@@ -7,14 +7,14 @@ body {
   font-size: 1em;
 }
 
-button { 
+button {
   padding: .5em 2em .55em;
-  border: 1px solid ButtonShadow;  
+  border: 1px solid ButtonShadow;
   border-radius: 0.2em;
-  padding: 0px; 
-  margin: 0; 
-  font-family: sans-serif; 
-  font-size: 0.9em; 
+  padding: 0px;
+  margin: 0;
+  font-family: sans-serif;
+  font-size: 0.9em;
   background: ButtonFace;
   background: -webkit-gradient(linear, left top, left bottom, from(ButtonHighlight), to(ButtonFace));
   background: -moz-linear-gradient(top, ButtonHighlight, ButtonFace);
@@ -22,28 +22,44 @@ button {
 input { font-family: sans-serif; font-size: 1em; }
 
 
-#areaorganisation                       { height: 7em; } 
-#areaorganisation input                 { width: 100%; } 
+#areaorganisation                       { height: 7em; }
+#areaorganisation input                 {
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
 #areaorganisation td:nth-child(1)       { width: 7em; padding-right: 1em; }
 #areaorganisation td:nth-child(3)       { width: 16em; padding-left: 1em; }
 
 
-#areaconfigure                       { height: 7em; } 
+#areaconfigure                       { height: 7em; }
 #areaconfigure td:nth-child(1)       { width: 7em; padding-right: 1em; }
 #areaconfigure td:nth-child(3)       { width: 16em; padding-left: 1em; }
-#areaconfigure input                 { width: 100%;  }
+#areaconfigure input                 {
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
 #areaconfigure button[name=base]     { width: 100%;  }
 #areaconfigure button[name=instance] { width: 100%;  }
 
-#arealogin                       { height: 7em; } 
+#arealogin                       { height: 7em; }
 #arealogin td:nth-child(1)       { width: 7em; padding-right: 1em; }
 #arealogin td:nth-child(3)       { width: 16em; padding-left: 1em; }
-#arealogin input                 { width: 100%;  }
+#arealogin form                  { border: 0 none; }
+#arealogin input                 {
+  width: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
 #arealogin button[name=getListBt]     { width: 100%;  }
 
-div.tabbed table.tabbar td.tabbehind input { 
-  border: 0 none; 
-  text-align: right; 
+div.tabbed table.tabbar td.tabbehind input {
+  border: 0 none;
+  text-align: right;
   width: 100%;
 }
 
@@ -83,24 +99,24 @@ span.vote {
   color: #73d216;
 }
 
-.ui-resizable-handle { 
-  z-index: 99999; 
+.ui-resizable-handle {
+  z-index: 99999;
   color: ButtonShadow;
   position: absolute;
   white-space:nowrap;
 }
-.ui-resizable-w { 
-  cursor: w-resize; 
-  -webkit-transform: rotate(90deg); 
-  -webkit-transform-origin: 0% 100%; 
-  -moz-transform: rotate(90deg); 
-  -moz-transform-origin: left bottom; 
+.ui-resizable-w {
+  cursor: w-resize;
+  -webkit-transform: rotate(90deg);
+  -webkit-transform-origin: 0% 100%;
+  -moz-transform: rotate(90deg);
+  -moz-transform-origin: left bottom;
   margin-top: -1em;
   margin-left: 0.3em;
 }
-.ui-resizable-s { 
+.ui-resizable-s {
   right:2em;
-  cursor: s-resize; 
+  cursor: s-resize;
   text-align: right;
   margin-top: 1.1em;
 }
