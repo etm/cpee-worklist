@@ -1,10 +1,10 @@
-$(document).ready(function() {// {{{  
+$(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
-  $("#arealogin > form").submit(function(event){ 
-    get_worklist(); 
+  $("#arealogin > form").submit(function(event){
+    get_worklist();
     //subscribe_worklist($.cookie("domain"));
     ui_toggle_vis_tab($("#worklist .switch"));
-    event.preventDefault(); 
+    event.preventDefault();
   });
   if($.cookie("user") && $.cookie("domain")){
     $("input[name=domain-name]").val($.cookie("domain"));
@@ -24,20 +24,20 @@ $(document).ready(function() {// {{{
       ui_empty_tab_contents(id);
     }
     // TODO Hier kommt Raphi
-    event.preventDefault(); 
+    event.preventDefault();
   });
   $(document).on('click','.task_do',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
     take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1);
-    do_work(taskid,taskidurl); 
+    do_work(taskid,taskidurl);
   });
   $(document).on('click','.task_take',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
-    take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1); 
+    take_work(taskidurl,$('.task_take',$(this).parent()),$('.task_giveback',$(this).parent()),1);
   });
   $(document).on('click','.task_giveback',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
@@ -60,11 +60,11 @@ function get_worklist() {// {{{
   // Finished Cookies
 
   $.ajax({
-    type: "GET", 
+    type: "GET",
     url: url,
     dataType: "xml",
     success: function(res){
-      
+
       $('#taborganisation').removeClass("hidden");
       $.ajax({
         type: "GET",
@@ -100,18 +100,16 @@ function get_worklist() {// {{{
         }
         ctv.append(node);
       });
-    },  
+    },
     error: function(a,b,c) {
       alert("Wrong Domain.");
     }
   });
 }// }}}
-  
+
 function take_work(url,butt,butt2,give_or_take){ //{{{
 
   var op = give_or_take == 1 ? "take" : "giveback";
-  console.log(url);
-  console.log(op);
   $.ajax({
     type: "PUT",
     url: url,
@@ -132,7 +130,7 @@ function do_work(taskid,taskidurl) { //{{{
     type: "GET",
     url: taskidurl,
     success:function(res) {
-      if (!ui_add_tab("#main", res.label, taskid, true, '')) return;
+      if (!ui_add_tab("#main", res.label, taskid, true, '')) { return; };
       $.ajax({
         type: "GET",
         url: res.form,
@@ -145,7 +143,7 @@ function do_work(taskid,taskidurl) { //{{{
           $(form_area).append(postFormStr);
           eval($('worklist-form-load').text()); //TODO, da werden alle worklist for loads in allen tabs, nur den aktuellen
           $('worklist-form-load').hide();
-          console.log($("#form_"+taskid));
+          ui_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
             // Form data
             var form_data = $(this).serialize();
@@ -171,7 +169,7 @@ function do_work(taskid,taskidurl) { //{{{
                 console.log("Put didnt work");
               }
             });
-            e.preventDefault(); 
+            e.preventDefault();
           });
         },
         error: function(a,b,c){
@@ -187,18 +185,13 @@ function do_work(taskid,taskidurl) { //{{{
 
 function subscribe_worklist(){ //{{{
   var url = $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/';
-  console.log("haha");
-  console.log(url);
   $.ajax({
     type: "POST",
     url: url,
     data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
-      console.log("success?");
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
       var subscription = $.parseQuery(ret)[0].value;
-      console.log(subscription);
-      console.log(url.replace(/http/,'ws') + subscription + "/ws/");
       ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
       ws.onmessage = function(e) {
         data = $.parseXML(e.data);
@@ -209,13 +202,9 @@ function subscribe_worklist(){ //{{{
             case 'user':
               switch($('event > event',data).text()) {
                 case 'finish':
-                  console.log("it happened");
-                  console.log($(data).serializeXML());
-                  console.log(JSON.parse($('event > notification',data).text()).user);
                   tr.remove();
                   break;
                 default:
-                  console.log("please not");
                   tr.remove();
                   get_worklist();
                   break;
@@ -227,7 +216,6 @@ function subscribe_worklist(){ //{{{
                   get_worklist();
                   break;
                 case 'delete':
-                  console.log("it should not happen");
                   tr.remove();
                   break;
               }
@@ -235,17 +223,9 @@ function subscribe_worklist(){ //{{{
           }
         }
       };
-      ws.onopen = function(e){
-        console.log("Open");
-      }
-      ws.onclose = function(e){
-        console.log("Close");
-        console.log(e);
-      }
-      ws.onerror = function(e){
-        console.log("Error");
-        console.log(e);
-      }
+      ws.onopen  = function(e){ }
+      ws.onclose = function(e){ }
+      ws.onerror = function(e){ }
     },
     error: function(){
       console.log("Not Successful subscribed");
