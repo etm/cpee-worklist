@@ -2,16 +2,16 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){
     get_worklist();
-    //subscribe_worklist($.cookie("domain"));
     ui_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
-  if($.cookie("user") && $.cookie("domain")){
-    $("input[name=domain-name]").val($.cookie("domain"));
-    $("input[name=user-name]").val($.cookie("user"));
+  var q = $.parseQuerySimple();
+  if (q.user && q.domain) {
+    $("input[name=domain-name]").val(q.domain);
+    $("input[name=user-name]").val(q.domain);
     ui_toggle_vis_tab($("#worklist .switch"));
     get_worklist();
-    subscribe_worklist($.cookie("domain"));
+    subscribe_worklist(q.domain);
   }
   $(document).on('click','.orgmodeltab',function(event){
     var id = $(this).attr('data-tab');
@@ -51,13 +51,9 @@ $(document).ready(function() {// {{{
 function get_worklist() {// {{{
   $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val());
   var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
-  if(!($.cookie("user") && $.cookie("domain"))){
-    subscribe_worklist($("input[name=domain-name]").val());
-  }
-  // Set cookies
-  $.cookie("user",$("input[name=user-name]").val());
-  $.cookie("domain",$("input[name=domain-name]").val());
-  // Finished Cookies
+  subscribe_worklist($("input[name=domain-name]").val());
+  // Set url (no more cookie nonsense!)
+  history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val())+'&domain='+encodeURIComponent($("input[name=domain-name]").val()));
 
   $.ajax({
     type: "GET",
