@@ -2,13 +2,14 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){
     get_worklist();
+    subscribe_worklist($("input[name=domain-name]").val());
     ui_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
   var q = $.parseQuerySimple();
   if (q.user && q.domain) {
     $("input[name=domain-name]").val(q.domain);
-    $("input[name=user-name]").val(q.domain);
+    $("input[name=user-name]").val(q.user);
     ui_toggle_vis_tab($("#worklist .switch"));
     get_worklist();
     subscribe_worklist(q.domain);
@@ -51,7 +52,6 @@ $(document).ready(function() {// {{{
 function get_worklist() {// {{{
   $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val());
   var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
-  subscribe_worklist($("input[name=domain-name]").val());
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val())+'&domain='+encodeURIComponent($("input[name=domain-name]").val()));
 
@@ -239,3 +239,4 @@ String.prototype.hashCode = function() { //{{{
   }
   return hash;
 }; //}}}
+
