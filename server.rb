@@ -131,6 +131,8 @@ end #}}}
 
 class ActivityHappens < Riddl::Implementation #{{{
   def response
+    controller = @a[0]
+
     activity = {}
     activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
     activity['user'] = '*'
@@ -148,6 +150,10 @@ class ActivityHappens < Riddl::Implementation #{{{
 
     dom = @p.shift.value
     domain = activity['domain'] = @h[ 'CPEE_ATTR_' + dom.upcase] || dom
+
+
+
+    activity['wl_instance'] = "#{controller.opts[:url]}/#{domain}"
 
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
@@ -187,10 +193,10 @@ class ActivityHappens < Riddl::Implementation #{{{
         if (results.length == 1) && (user.include? results[0])
           activity["user"] = results[0]
           info = user_info(activity,activity["user"])
-          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
-          @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info )
+          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'] )
+          @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
         else
-          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] ) if @a[0].keys.include? domain
+          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance']) if @a[0].keys.include? domain
         end
       end
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
@@ -208,11 +214,11 @@ class TaskDel < Riddl::Implementation #{{{
       activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
       if @r.length == 3
-        @a[0].notify('task/delete', :callback_id => activity['id'],                                                      :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
+        @a[0].notify('task/delete', :callback_id => activity['id'],                                                      :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'],:wl_instance => activity['wl_instance'])
         Riddl::Client.new(activity['url']).put
       else
         info = user_info(activity,activity['user'])
-        @a[0].notify('user/finish', :callback_id => activity['id'], :user => activity['user'], :role => activity['role'],:domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info )
+        @a[0].notify('user/finish', :callback_id => activity['id'], :user => activity['user'], :role => activity['role'],:domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
       end
     else
       @status = 404
@@ -292,7 +298,7 @@ class TaskTake < Riddl::Implementation #{{{
       activity["user"] = @r[-3]	if user_ok(activity,@r[-3])
       info = user_info(activity,@r[-3])
       @a[0].activities.serialize
-      @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
+      @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','take')
@@ -311,7 +317,7 @@ class TaskGiveBack < Riddl::Implementation #{{{
       activity["user"] = '*'
       callback_id = @a[0].activities[index]['id']
       @a[0].activities.serialize
-      @a[0].notify('user/giveback', :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
+      @a[0].notify('user/giveback', :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE_UPDATE','true'),
         Riddl::Header.new('CPEE_UPDATE_STATUS','giveback')
