@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'pp'
+require 'json'
 require 'fileutils'
 require 'rubygems'
 require 'riddl/server'
@@ -588,7 +589,8 @@ class AssignTask < Riddl::Implementation #{{{
 end  #}}}
 
 def user_ok(task,user)
-  orgmodel = XML::Smart.open(task['orgmodel'])
+  status, resp = Riddl::Client.new(task['orgmodel']).resource("/").get
+  orgmodel = XML::Smart.string(resp[0].value.read)
   orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
   subjects = orgmodel.find('/o:organisation/o:subjects/o:subject')
   unit = task['unit']
@@ -612,7 +614,7 @@ def user_ok(task,user)
       end
     end
   end
-  return false;
+  false
 end
 
 
