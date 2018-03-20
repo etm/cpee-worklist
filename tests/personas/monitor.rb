@@ -105,8 +105,9 @@ def main()
   ]
 
     key = response.first.value
+    pp key
     res = srv.resource("/#{domain}/notifications/subscriptions/#{key}/ws/")
-
+    begin
     res.ws do |conn|
 
       conn.stream do |msg|
@@ -141,6 +142,13 @@ def main()
         puts "Got error: #{e}"
       end
 
+    end
+    rescue Interrupt => e
+      pp "close" 
+      srv = Riddl::Client.new('http://coms.wst.univie.ac.at:9300')
+      res = srv.resource("/Virtual%20Business%201/notifications/subscriptions/#{key}")
+      status, response = res.delete
+      pp status
     end
 end
 main()

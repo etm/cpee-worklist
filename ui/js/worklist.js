@@ -2,6 +2,7 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
   $("#arealogin > form").submit(function(event){
     get_worklist();
+    subscribe_worklist($("input[name=domain-name]").val());
     ui_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
@@ -239,3 +240,4 @@ String.prototype.hashCode = function() { //{{{
   }
   return hash;
 }; //}}}
+
