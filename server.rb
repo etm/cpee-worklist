@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'pp'
+require 'json'
 require 'fileutils'
 require 'rubygems'
 require 'riddl/server'
