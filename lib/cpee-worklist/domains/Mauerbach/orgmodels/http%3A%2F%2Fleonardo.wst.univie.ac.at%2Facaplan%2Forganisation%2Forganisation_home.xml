@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="Centers">
+      <permissions/>
+    </unit>
+    <unit id="Management">
+      <parent>Centers</parent>
+      <permissions/>
+    </unit>
+    <unit id="Secretariat">
+      <parent>Centers</parent>
+      <permissions/>
+    </unit>
+    <unit id="Staff">
+      <parent>Centers</parent>
+      <permissions/>
+    </unit>
+    <unit id="StaffA">
+      <parent>Staff</parent>
+      <permissions/>
+    </unit>
+    <unit id="StaffB">
+      <parent>Staff</parent>
+      <permissions/>
+    </unit>
+  </units>
+  <roles>
+    <role id="Nurse">
+      <permissions/>
+    </role>
+    <role id="Nurse in Training">
+      <parent>Nurse</parent>
+      <permissions/>
+    </role>
+    <role id="Doctor">
+      <permissions/>
+    </role>
+    <role id="General">
+      <permissions/>
+    </role>
+    <role id="Administration">
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+    <subject id="Mangler Juergen" uid="manglej6">
+      <relation unit="Staff" role="Nurse"/>
+    </subject>
+    <subject id="Sahann Raphael" uid="sahannr6">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Boehmer Kristof" uid="boehmek2">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Fdhila Walid" uid="fdhilaw7">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Hickisch Raffael" uid="hickisr2">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Hildebrandt Tobias" uid="hildebt6">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Indiono Conrad" uid="indionc5">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Kaes Georg" uid="kaesg9">
+      <relation unit="Staff" role="Nurse"/>
+      <relation unit="Staff" role="General"/>
+      <relation unit="Staff" role="Administration"/>
+    </subject>
+    <subject id="Polaschek Martin" uid="polascm9">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Rinderle-Ma Stefanie" uid="rinders8">
+      <relation unit="Management" role="Administration"/>
+      <relation unit="Management" role="General"/>
+      <relation unit="Management" role="Nurse"/>
+    </subject>
+    <subject id="Schikuta Erich" uid="schikue9">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Schima Heinrich" uid="schimah3">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Stertz Florian" uid="stertzf9">
+      <relation unit="Staff" role="Nurse"/>
+    </subject>
+    <subject id="Wanek Helmut" uid="wanekh2">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Woeber Andreas" uid="woebera8">
+      <relation unit="Staff" role="Nurse in Training"/>
+    </subject>
+    <subject id="Hofer-Mozelt Monika" uid="hofermm2">
+      <relation unit="Secretariat" role="Administration"/>
+      <relation unit="Secretariat" role="General"/>
+    </subject>
+    <subject id="Schwind Tanja" uid="schwint3">
+      <relation unit="Secretariat" role="Administration"/>
+      <relation unit="Secretariat" role="General"/>
+    </subject>
+  </subjects>
+</organisation>

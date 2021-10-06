@@ -14,7 +14,7 @@
   <http://www.gnu.org/licenses/>.
 -->
 
-<topics xmlns='http://riddl.org/ns/common-patterns/notifications-producer/1.0'>
+<topics xmlns='http://riddl.org/ns/common-patterns/notifications-producer/2.0'>
   <topic id='user'>
     <event>take</event>
     <event>giveback</event>

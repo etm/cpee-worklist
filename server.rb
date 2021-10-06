@@ -7,128 +7,16 @@ require 'riddl/server'
 require 'riddl/client'
 require 'riddl/utils/notifications_producer'
 require 'riddl/utils/fileserve'
-
-port = File.read(File.dirname(__FILE__)+'/port').strip
-lh =   File.read(File.dirname(__FILE__)+'/localhost').strip
-
-class Continue #{{{
-  def initialize
-    @q = Queue.new
-    @m = Mutex.new
-  end
-  def waiting?
-    @m.synchronize do
-      !@q.empty?
-    end
-  end
-  def continue(*args)
-    @q.push(args.length <= 1 ? args[0] : args)
-  end
-  def clear
-   @q.clear
-  end
-  def wait
-    @q.deq
-  end
-end #}}}
-
-class NotificationsHandler < Riddl::Utils::Notifications::Producer::HandlerBase #{{{
-  def ws_open(socket)
-    @data.communication[@key] = socket
-    @data.events.each do |a|
-      if a[1].has_key?(@key)
-        a[1][@key] = socket
-      end
-    end
-    @data.votes.each do |a|
-      if a[1].has_key?(@key)
-        a[1][@key] = socket
-      end
-    end
-  end
-  def ws_close
-    delete
-  end
-  def ws_message(data)
-    begin
-      doc = XML::Smart::string(data)
-      callback = doc.find("string(/vote/@id)")
-      result = doc.find("string(/vote)")
-      @data.callbacks[callback].callback([Riddl::Parameter::Simple.new('wsvote',result)])
-      @data.callbacks.delete(callback)
-    rescue => e
-      puts e.message
-      puts e.backtrace
-      puts "Invalid message over websocket"
-    end
-  end
-
-  def create
-    @data.notifications.subscriptions[@key].read do |doc|
-      turl = doc.find('string(/n:subscription/@url)')
-      url = turl == '' ? nil : turl
-      @data.communication[@key] = url
-      doc.find('/n:subscription/n:topic').each do |t|
-        t.find('n:event').each do |e|
-          @data.events["#{t.attributes['id']}/#{e}"] ||= {}
-          @data.events["#{t.attributes['id']}/#{e}"][@key] = (url == "" ? nil : url)
-        end
-        t.find('n:vote').each do |e|
-          @data.votes["#{t.attributes['id']}/#{e}"] ||= {}
-          @data.votes["#{t.attributes['id']}/#{e}"][@key] = (url == "" ? nil : url)
-        end
-      end
-    end
-  end
-  def delete
-    @data.notifications.subscriptions[@key].delete if @data.notifications.subscriptions.include?(@key)
-    @data.communication[@key].io.close_connection if @data.communication[@key].class == Riddl::Utils::Notifications::Producer::WS
-    @data.communication.delete(@key)
-
-    @data.events.each do |eve,keys|
-      keys.delete_if{|k,v| @key == k}
-    end
-    @data.votes.each do |eve,keys|
-      keys.delete_if do |k,v|
-        if @key == k
-          @data.callbacks.each{|voteid,cb|cb.delete_if!(eve,k)}
-          true
-        end
-      end
-    end
-  end
-  def update
-    if @data.notifications.subscriptions.include?(@key)
-      url = @data.communication[@key]
-      evs = []
-      vos = []
-      @data.events.each { |e,v| evs << e }
-      @data.votes.each { |e,v| vos << e }
-      @data.notifications.subscriptions[@key].read do |doc|
-        turl = doc.find('string(/n:subscription/@url)')
-        url = turl == '' ? url : turl
-        @data.communication[@key] = url
-        doc.find('/n:subscription/n:topic').each do |t|
-          t.find('n:event').each do |e|
-            @data.events["#{t.attributes['id']}/#{e}"] ||= {}
-            @data.events["#{t.attributes['id']}/#{e}"][@key] = url
-            evs.delete("#{t.attributes['id']}/#{e}")
-          end
-          t.find('n:vote').each do |e|
-            @data.votes["#{t.attributes['id']}/#{e}"] ||= {}
-            @data.votes["#{t.attributes['id']}/#{e}"][@key] = url
-            vos.delete("#{t.attributes['id']}/#{e}")
-          end
-        end
-      end
-      evs.each { |e| @data.events[e].delete(@key) if @data.events[e] }
-      vos.each do |e|
-        @data.callbacks.each{|voteid,cb|cb.delete_if!(e,@key)}
-        @data.votes[e].delete(@key) if @data.votes[e]
-      end
-    end
-  end
-end #}}}
+require 'cpee/redis'
+require 'cpee/message'
+require 'cpee/persistence'
+require 'cpee/attributes_helper'
+require 'cpee/implementation_notifications'
+require 'cpee/implementation_callbacks'
+require_relative 'lib/cpee-worklist/worklist'
+require_relative 'lib/cpee-worklist/activities'
+require_relative 'lib/cpee-worklist/controller'
+require_relative 'lib/cpee-worklist/utils'
 
 class ActivityHappens < Riddl::Implementation #{{{
   def response
@@ -164,7 +52,7 @@ class ActivityHappens < Riddl::Implementation #{{{
     if status == 200
       begin
         xml =  content[0].value.read
-        schema = XML::Smart.open(@a[0].opts['ORG_SCHEMA'])
+        schema = XML::Smart.open(@a[0].opts[:ORG_SCHEMA])
         org_xml = XML::Smart.string(xml)
         raise 'a fucked up xml (wink wink)' unless org_xml.validate_against(schema)
         org_xml.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
@@ -301,8 +189,8 @@ class TaskTake < Riddl::Implementation #{{{
       @a[0].activities.serialize
       @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
-        Riddl::Header.new('CPEE_UPDATE','true'),
-        Riddl::Header.new('CPEE_UPDATE_STATUS','take')
+        Riddl::Header.new('CPEE-UPDATE','true'),
+        Riddl::Header.new('CPEE-UPDATE-STATUS','take')
       ]
     else
       @status = 404
@@ -320,8 +208,8 @@ class TaskGiveBack < Riddl::Implementation #{{{
       @a[0].activities.serialize
       @a[0].notify('user/giveback', :callback_id => activity['id'], :domain => activity['domain'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
-        Riddl::Header.new('CPEE_UPDATE','true'),
-        Riddl::Header.new('CPEE_UPDATE_STATUS','giveback')
+        Riddl::Header.new('CPEE-UPDATE','true'),
+        Riddl::Header.new('CPEE-UPDATE-STATUS','giveback')
       ]
     else
       @status = 404
@@ -340,244 +228,11 @@ class TaskDetails < Riddl::Implementation #{{{
   end
 end  #}}}
 
-class ExCallback < Riddl::Implementation #{{{
-  def response
-    controller = @a[0]
-    id = @r[0].to_i
-    callback = @r[2]
-    controller[id].mutex.synchronize do
-      if controller[id].callbacks.has_key?(callback)
-        controller[id].callbacks[callback].callback(@p,@h)
-      end
-    end
-  end
-end #}}}
-
-class Callbacks < Riddl::Implementation #{{{
-  def response
-    controller = @a[0]
-    opts = @a[0].opts
-    id = @r[0].to_i
-    unless controller[id]
-      @status = 400
-      return
-    end
-    Riddl::Parameter::Complex.new("info","text/xml") do
-      activity = XML::Smart::string("<callbacks details='#{opts[:mode]}'/>")
-      if opts[:mode] == :debug
-        controller[id].callbacks.each do |k,v|
-          activity.root.add("callback",{"id" => k},"[#{v.protocol.to_s}] #{v.info}")
-        end
-      end
-      activity.to_s
-    end
-  end
-end #}}}
-
 class GetOrgModels < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<orgmodels/>')
     @a[0].orgmodels.each{|e| out.root.add("orgmodel", e)}
     Riddl::Parameter::Complex.new "return","text/xml", out.to_s
-  end
-end #}}}
-
-class Activities < Array #{{{
-  def initialize(domain)
-    super()
-    @domain = domain
-  end
-
-  def unserialize
-    self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav")) rescue []
-  end
-
-  def  serialize
-    Thread.new do
-      File.write File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav", JSON.pretty_generate(self)
-    end
-  end
-end #}}}
-
-class ControllerItem #{{{
-  attr_reader :communication, :events, :notifications, :activities, :notifications_handler, :votes, :votes_results, :mutex, :callbacks, :opts, :orgmodels, :domain
-
-  def initialize(domain,opts)
-    @events = {}
-    @votes = {}
-    @votes_results = {}
-    @mutex = Mutex.new
-    @opts = opts
-    @communication = {}
-    @callbacks = {}
-    @domain = domain
-    @activities = Activities.new(domain)
-    @orgmodels = []
-    @notifications = Riddl::Utils::Notifications::Producer::Backend.new(
-      File.dirname(__FILE__) + "/topics.xml",
-      File.dirname(__FILE__) + "/domains/#{domain}/notifications/"
-    )
-    @notifications_handler = NotificationsHandler.new(self)
-    @notifications.subscriptions.keys.each do |key|
-      @notifications_handler.key(key).create
-    end
-  end
-
-  class Callback #{{{
-    def initialize(info,handler,method,event,key,protocol,*data)
-      @info = info
-      @event = event
-      @key = key
-      @data = data
-      @handler = handler
-      @protocol = protocol
-      @method = method.class == Symbol ? method : :callback
-    end
-
-    attr_reader :info, :protocol, :method
-
-    def delete_if!(event,key)
-      if @key == key && @event == event
-        puts "====="
-        puts *@data
-        puts *@data.length
-        puts "===="
-        puts @method
-        puts "===="
-        #TODO JUERGEN SOLLTE KONTROLLIEREN
-        @handler.send @method, :DELETE,nil, *@data
-      end
-      nil
-    end
-
-    def callback(result=nil,options=[])
-      @handler.send @method, result, options, *@data
-    end
-  end #}}}
-
-  def add_orgmodel(name,content) #{{{
-    FileUtils.mkdir_p(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/")
-    @orgmodels << name unless @orgmodels.include?(name)
-    File.write(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/" + name, content)
-  end #}}}
-
-  def notify(what,content={})# {{{
-    item = @events[what]
-    if item
-      item.each do |ke,ur|
-        Thread.new(ke,ur) do |key,url|
-          notf = build_message(key,what,content)
-          if url.class == String
-            client = Riddl::Client.new(url,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml')
-            params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            params << Riddl::Header.new("WORKLIST_BASE",@opts[:url])
-            params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
-            client.post params
-          elsif url.class == Riddl::Utils::Notifications::Producer::WS
-            e = XML::Smart::string("<event/>")
-            notf.each do |k,v|
-              e.root.add(k,v)
-            end
-            url.send(e.to_s) rescue nil
-          end
-        end
-      end
-    end
-  end # }}}
-
-  def vote(what,content={})# {{{
-    voteid = Digest::MD5.hexdigest(Kernel::rand().to_s)
-    item = @votes[what]
-    if item && item.length > 0
-      continue = Continue.new
-      @votes_results[voteid] = []
-      inum = 0
-      item.each do |key,url|
-        if url.class == String
-          inum += 1
-        elsif url.class == Riddl::Utils::Notifications::Producer::WS
-          inum += 1 unless url.closed?
-        end
-      end
-      item.each do |key,url|
-        Thread.new(key,url,content.dup) do |k,u,c|
-          callback = Digest::MD5.hexdigest(Kernel::rand().to_s)
-          notf = build_message(k,what,c,'vote',callback)
-          if u.class == String
-            client = Riddl::Client.new(u,'http://riddl.org/ns/common-patterns/notifications-consumer/1.0/consumer.xml',:xmpp => @opts[:xmpp])
-            params = notf.map{|ke,va|Riddl::Parameter::Simple.new(ke,va)}
-            params << Riddl::Header.new("WORKLIST_BASE",@opts[:url])
-            params << Riddl::Header.new("WORKLIST_DOMAIN",@domain)
-            @mutex.synchronize do
-              status, result, headers = client.post params
-              if headers["WORKLIST_CALLBACK"] && headers["WORKLIST_CALLBACK"] == 'true'
-                @callbacks[callback] = Callback.new("vote #{notf.find{|a,b| a == 'notification'}[1]}", self, :vote_callback, what, k, :http, continue, voteid, callback, inum)
-              else
-                vote_callback(result,nil,continue,voteid,callback,inum)
-              end
-            end
-          elsif u.class == Riddl::Utils::Notifications::Producer::WS
-            @callbacks[callback] = Callback.new("vote #{notf.find{|a,b| a == 'notification'}[1]}", self, :vote_callback, what, k, :ws, continue, voteid, callback, inum)
-            e = XML::Smart::string("<vote/>")
-            notf.each do |ke,va|
-              e.root.add(ke,va)
-            end
-            u.send(e.to_s) rescue nil
-          end
-        end
-
-      end
-      continue.wait
-
-      @votes_results.delete(voteid).compact.uniq
-    else
-      []
-    end
-  end # }}}
-
-  def vote_callback(result,options,continue,voteid,callback,num)# {{{
-    @callbacks.delete(callback)
-    if result == :DELETE
-      @votes_results[voteid] << nil
-    else
-      @votes_results[voteid] << ((result && result[0]) ? result[0].value : nil)
-    end
-    if (num == @votes_results[voteid].length)
-      continue.continue
-    end
-  end # }}}
-
-  def build_message(key,what,content,type='event',callback=nil)# {{{
-    res = []
-    res << ['key'                             , key]
-    res << ['topic'                           , ::File::dirname(what)]
-    res << [type                              , ::File::basename(what)]
-    res << ['notification'                    , JSON::generate(content)]
-    res << ['callback'                        , callback] unless callback.nil?
-    res << ['fingerprint-with-consumer-secret', Digest::MD5.hexdigest(res.join(''))]
-  end # }}}
-
-end #}}}
-
-class Controller < Hash #{{{
-  attr_reader :opts  # geht ohne net
-  def initialize(opts)
-    super()
-    @opts = opts
-    Dir::glob(File.dirname(__FILE__) + '/domains/*').each do |f|
-      domain = File.basename(f)
-      self[domain] = ControllerItem.new(domain,@opts)
-      self[domain].activities.unserialize
-      Dir::glob("#{f}/orgmodels/*").each do |g|
-        self[domain].add_orgmodel File.basename(g), File.read(g)
-      end
-    end
-  end
-
-  def add_activity(domain,activity)
-    self[domain] ||= ControllerItem.new(domain,@opts)
-    self[domain].activities << activity
-    self[domain].activities.serialize
   end
 end #}}}
 
@@ -592,8 +247,8 @@ class AssignTask < Riddl::Implementation #{{{
       @a[0].activities.serialize
       @a[0].notify('user/take', :index => callback_id, :user => @p[0].value, :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
-        Riddl::Header.new('CPEE_UPDATE','true'),
-        Riddl::Header.new('CPEE_UPDATE_STATUS','take')
+        Riddl::Header.new('CPEE-UPDATE','true'),
+        Riddl::Header.new('CPEE-UPDATE-STATUS','take')
       ]
     else
       @status = 404
@@ -601,63 +256,61 @@ class AssignTask < Riddl::Implementation #{{{
   end
 end  #}}}
 
-def user_ok(task,user)
-  status, resp = Riddl::Client.new(task['orgmodel']).resource("/").get
-  orgmodel = XML::Smart.string(resp[0].value.read)
-  orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-  subjects = orgmodel.find('/o:organisation/o:subjects/o:subject')
-  unit = task['unit']
-  role = task['role']
-  if (unit=='*')
-    if (role=='*')
-      subjects.each{|s| return true if s.attributes['uid']==user}
-    else
-      orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@role='#{role}']").each do |s|
-				return true if user==s.attributes['uid']
-			end
-		end
-	else
-		if (role=='*')
-			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}']").each do |s|
-        return true if user==s.attributes['uid']
-      end
-		else
-			orgmodel.find("/o:organisation/o:subjects/o:subject[o:relation/@unit='#{unit}' and o:relation/@role='#{role}']").each do |s|
-      	return true if user==s.attributes['uid']
-      end
-    end
-  end
-  false
-end
-
-def user_info(task,user)
-  orgmodel = XML::Smart.open(task['orgmodel'])
-  orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-  user = orgmodel.find("/o:organisation/o:subjects/o:subject[@uid='#{user}']/o:relation")
-  {}.tap{ |t| user.map{|u| (t[u.attributes['unit']]||=[]) <<  u.attributes['role']}}
-end
-
-
-Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :host => lh) do
+Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
   accessible_description true
   cross_site_xhr true
 
-  @riddl_opts['ORG_SCHEMA'] =  ::File.dirname(__FILE__) + '/organisation.rng'
+  opts[:ORG_SCHEMA] = ::File.join(__dir__, 'organisation.rng')
+  opts[:domains] = ::File.join(__dir__, 'domains','*')
+  opts[:topics] = ::File.join(__dir__, 'topics.xml')
 
-  controller = Controller.new(@riddl_opts)
+  opts[:watchdog_frequency]         ||= 7
+  opts[:watchdog_start_off]         ||= false
+
+  ### set redis_cmd to nil if you want to do global
+  ### at least redis_path or redis_url and redis_db have to be set if you do global
+  opts[:redis_path]                 ||= 'redis.sock' # use e.g. /tmp/redis.sock for global stuff. Look it up in your redis config
+  opts[:redis_db]                   ||= 0
+  ### optional redis stuff
+  opts[:redis_url]                  ||= nil
+  opts[:redis_cmd]                  ||= 'redis-server --port 0 --unixsocket #redis_path# --unixsocketperm 600 --pidfile #redis_pid# --dir #redis_db_dir# --dbfilename #redis_db_name# --databases 1 --save 900 1 --save 300 10 --save 60 10000 --rdbcompression yes --daemonize yes'
+  opts[:redis_pid]                  ||= 'redis.pid' # use e.g. /var/run/redis.pid if you do global. Look it up in your redis config
+  opts[:redis_db_name]              ||= 'redis.rdb' # use e.g. /var/lib/redis.rdb for global stuff. Look it up in your redis config
+
+  controller = Worklist::Controller.new(opts)
+
+  CPEE::redis_connect opts, 'Server Main'
+
+  opts[:sse_keepalive_frequency]    ||= 10
+  opts[:sse_connections]            = {}
+
+  # parallel do
+  #   Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
+  #   EM.add_periodic_timer(opts[:watchdog_frequency]) do ### start services
+  #     Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
+  #   end
+  #   EM.defer do ### catch all sse connections
+  #     CPEE::Notifications::sse_distributor(opts)
+  #   end
+  #   EM.add_periodic_timer(opts[:sse_keepalive_frequency]) do
+  #     CPEE:Notifications::sse_heartbeat(opts)
+  #   end
+  # end
+
+  # cleanup do
+  #   Worklist::cleanup_services(opts[:watchdog_start_off])
+  # end
+
   interface 'main' do
     run ActivityHappens,controller if post 'activityhappens'
     run Show_Domains,controller if get
-    on resource do |r|
+    on resource "[a-zA-Z0-9]+" do |r|
       domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
       domain = Riddl::Protocols::Utils::unescape(domain)
       if controller.keys.include? domain
         run Show_Domain_Tasks,controller[domain] if get
         on resource 'callbacks' do
-          run Callbacks,controller[domain] if get
-          on resource do
-            run ExCallback,controller[domain] if put
-          end
+          use CPEE::Callbacks::implementation(domain, opts)
         end
         on resource 'orgmodels' do
           run GetOrgModels, controller[domain] if get
@@ -683,10 +336,10 @@ Riddl::Server.new(::File.dirname(__FILE__) + '/worklist.xml', :port => port, :ho
     end
   end
 
-  interface 'events' do |r|
+  interface 'notifications' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use Riddl::Utils::Notifications::Producer::implementation(controller[domain].notifications, controller[domain].notifications_handler) if controller.keys.include? domain
+    use CPEE::Notifications::implementation(domain.to_i, opts)
   end
 
 end.loop!

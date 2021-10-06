@@ -2,15 +2,15 @@
   <interface name="main">
     <xi:include href="wlengine.xml"/>
   </interface>
-  <interface name="events">                                                                                                                                                                                 
-    <xi:include href="http://www.riddl.org/ns/common-patterns/notifications-producer/1.0/producer.xml"/>
+  <interface name="notifications">
+    <xi:include href="http://www.riddl.org/ns/common-patterns/notifications-producer/2.0/producer.xml"/>
   </interface>
 
   <facade>
     <tile>
       <layer name="main"/>
-      <layer name="events">
-        <apply-to>/{}</apply-to>
+      <layer name="notifications">
+        <apply-to>/[a-zA-Z0-9]+</apply-to>
       </layer>
     </tile>
   </facade>

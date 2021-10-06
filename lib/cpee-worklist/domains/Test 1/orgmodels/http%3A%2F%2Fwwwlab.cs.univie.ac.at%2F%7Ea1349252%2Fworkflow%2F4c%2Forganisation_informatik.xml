@@ -1,0 +1,689 @@
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="Dekanat Informatik">
+      <permissions/>
+    </unit>
+    <unit id="Studienservicecenter Informatik">
+      <permissions/>
+    </unit>
+    <unit id="Educational Technologies">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Theory and Applications of Algorithms">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Scientific Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Software Architectures">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Future Communication">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Entertainment Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Multimedia Information Systems">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Knowledge Engineering">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Visualization and Data Analysis">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Workflow Systems and Technology">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Data Analytics and Computing">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Bioinformatics and Computational Biology">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Cooperative Systems">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+    <unit id="Data Mining">
+      <parent>Dekanat Informatik</parent>
+      <permissions/>
+    </unit>
+  </units>
+  <roles>
+    <role id="Teaching">
+      <permissions/>
+    </role>
+    <role id="Regular">
+      <permissions/>
+    </role>
+    <role id="Project">
+      <permissions/>
+    </role>
+    <role id="Senior Lecturer">
+      <permissions/>
+    </role>
+    <role id="Ass.Prof.">
+      <permissions/>
+    </role>
+    <role id="Univ.Prof.">
+      <permissions/>
+    </role>
+    <role id="Assistant">
+      <parent>Project</parent>
+      <parent>Regular</parent>
+      <permissions/>
+    </role>
+    <role id="Staff">
+      <parent>Project</parent>
+      <parent>Regular</parent>
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+    <subject id="Kriglstein Simone" uid="kriglss9">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Mangler Juergen" uid="manglej6">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Weiss Herr" uid="weissh9">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Achtsnit Heinz" uid="achtsnh8">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Haider Nadine" uid="kleinn3">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="L&#xF6;cker Martina" uid="loeckem6">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Schr&#xF6;ttner Werner" uid="schroew3">
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+      <relation unit="Dekanat Informatik" role="Regular"/>
+      <relation unit="Dekanat Informatik" role="Staff"/>
+    </subject>
+    <subject id="Aberham Doris" uid="aberhad3">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Achatz Claudia" uid="achatzc8">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Heichinger Brigitte" uid="heichib5">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Neumeister Melanie" uid="neumeim6">
+      <relation unit="Studienservicecenter Informatik" role="Regular"/>
+      <relation unit="Studienservicecenter Informatik" role="Staff"/>
+    </subject>
+    <subject id="Cenker Christian" uid="cenkerc4">
+      <relation unit="Educational Technologies" role="Ass.Prof."/>
+      <relation unit="Educational Technologies" role="Teaching"/>
+      <relation unit="Data Analytics and Computing" role="Ass.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Teaching"/>
+    </subject>
+    <subject id="Hudec Marcus" uid="hudecm2">
+      <relation unit="Educational Technologies" role="Univ.Prof."/>
+      <relation unit="Educational Technologies" role="Teaching"/>
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Teaching"/>
+    </subject>
+    <subject id="Motschnig Renate" uid="motschr7">
+      <relation unit="Educational Technologies" role="Univ.Prof."/>
+      <relation unit="Educational Technologies" role="Teaching"/>
+    </subject>
+    <subject id="Uchida Gabriele" uid="uchidag4">
+      <relation unit="Educational Technologies" role="Univ.Prof."/>
+      <relation unit="Educational Technologies" role="Teaching"/>
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Teaching"/>
+    </subject>
+    <subject id="Aubrunner Birgit" uid="aubrunb2">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Dvorak Wolfgang" uid="dvorakw6">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Felsner Kastor" uid="felsnek2">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Frolik-Steffan Ulrike" uid="froliku4">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+    </subject>
+    <subject id="Gansterer Wilfried" uid="ganstew8">
+      <relation unit="Theory and Applications of Algorithms" role="Univ.Prof."/>
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+    </subject>
+    <subject id="Goranci Gramoz" uid="gorancig31">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+    </subject>
+    <subject id="Henzinger Monika" uid="henzinm3">
+      <relation unit="Theory and Applications of Algorithms" role="Univ.Prof."/>
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+    </subject>
+    <subject id="Hotop Ewald" uid="hotope3">
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+      <relation unit="Cooperative Systems" role="Teaching"/>
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Staff"/>
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Staff"/>
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Staff"/>
+      <relation unit="Data Mining" role="Teaching"/>
+    </subject>
+    <subject id="H&#xFC;rner Rudolf" uid="huerner9">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Staff"/>
+    </subject>
+    <subject id="Jiamjitrak Wanchote" uid="jiamjitraw43">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Leniowski Dariusz" uid="leniowskid31">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Levonyak Markus" uid="levonyakm65">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+    </subject>
+    <subject id="Loitzenbauer Veronika" uid="loitzev9">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Neumann Stefan" uid="neumanns15">
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Pachajoa Mejia Carlos Andres" uid="pachajoamc78">
+      <relation unit="Theory and Applications of Algorithms" role="Teaching"/>
+      <relation unit="Theory and Applications of Algorithms" role="Project"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Peng Pan" uid="pengp85">
+      <relation unit="Theory and Applications of Algorithms" role="Regular"/>
+      <relation unit="Theory and Applications of Algorithms" role="Assistant"/>
+    </subject>
+    <subject id="Benkner Siegfried" uid="benknes8">
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+      <relation unit="Scientific Computing" role="Teaching"/>
+    </subject>
+    <subject id="Kaniovskyi Yuriy" uid="kaniovy7">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Assistant"/>
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Assistant"/>
+    </subject>
+    <subject id="Mehofer Eduard" uid="mehofee9">
+      <relation unit="Scientific Computing" role="Univ.Prof."/>
+      <relation unit="Scientific Computing" role="Teaching"/>
+    </subject>
+    <subject id="Paul Martin" uid="paulm2">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Redzic Edisa" uid="redzice84">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+    </subject>
+    <subject id="Sandrieser Martin" uid="sandrim5">
+      <relation unit="Scientific Computing" role="Project"/>
+      <relation unit="Scientific Computing" role="Assistant"/>
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Assistant"/>
+    </subject>
+    <subject id="Wiesinger Angelika" uid="wiesina8">
+      <relation unit="Scientific Computing" role="Regular"/>
+      <relation unit="Scientific Computing" role="Staff"/>
+    </subject>
+    <subject id="Czepa Christoph" uid="czepac9">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+    </subject>
+    <subject id="Muga George Otieno" uid="mugag67">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+    </subject>
+    <subject id="Paulweber Philipp" uid="paulweberp28">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+      <relation unit="Software Architectures" role="Teaching"/>
+    </subject>
+    <subject id="Pernecker Gerhard" uid="pernecg5">
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Staff"/>
+    </subject>
+    <subject id="Plakidas Konstantinos" uid="plakidask72">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+      <relation unit="Software Architectures" role="Teaching"/>
+      <relation unit="Software Architectures" role="Regular"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+    </subject>
+    <subject id="Tran Huy" uid="tranh2">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+    </subject>
+    <subject id="Ul Muram Faiz" uid="ulmuraf7">
+      <relation unit="Software Architectures" role="Project"/>
+      <relation unit="Software Architectures" role="Assistant"/>
+    </subject>
+    <subject id="Zdun Uwe" uid="zdunu7">
+      <relation unit="Software Architectures" role="Univ.Prof."/>
+      <relation unit="Software Architectures" role="Teaching"/>
+    </subject>
+    <subject id="Helf Christopher" uid="helfc6">
+      <relation unit="Entertainment Computing" role="Project"/>
+      <relation unit="Entertainment Computing" role="Assistant"/>
+    </subject>
+    <subject id="Hlavacs Helmut" uid="hlavach4">
+      <relation unit="Entertainment Computing" role="Univ.Prof."/>
+      <relation unit="Entertainment Computing" role="Univ.Prof."/>
+      <relation unit="Entertainment Computing" role="Teaching"/>
+    </subject>
+    <subject id="Bruckner Ramona" uid="brucknr6">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Chlap Phillip Carlos" uid="chlapp5">
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+    </subject>
+    <subject id="Diem Lukas" uid="dieml56">
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Kalchgruber Peter" uid="kalchgp5">
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+    </subject>
+    <subject id="Kindermann Peter" uid="kinderp6">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Klas Wolfgang" uid="klasw3">
+      <relation unit="Multimedia Information Systems" role="Univ.Prof."/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Momeni-Ortner Elaheh" uid="momenie4">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Nourizadeh Barabi Manouchehr" uid="nourizadem58">
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+    </subject>
+    <subject id="Quirchmayr Gerald" uid="quirchg8">
+      <relation unit="Multimedia Information Systems" role="Univ.Prof."/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Ramsauer Daniela" uid="ramsauerd89">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Schena Manuela" uid="schenam8">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+      <relation unit="Multimedia Information Systems" role="Project"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+    </subject>
+    <subject id="Schobl Diana" uid="schobld4">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Stankovsky Jan" uid="stankoj7">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Staff"/>
+    </subject>
+    <subject id="Zaharieva Maia" uid="zaharim4">
+      <relation unit="Multimedia Information Systems" role="Regular"/>
+      <relation unit="Multimedia Information Systems" role="Assistant"/>
+      <relation unit="Multimedia Information Systems" role="Teaching"/>
+    </subject>
+    <subject id="Bork Dominik" uid="borkd4">
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Burzynski Patrik" uid="burzynp5">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Doppler Simon" uid="dopplers90">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Kaiser Gabriele" uid="kaiserg7">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Karagiannis Dimitris" uid="karagid3">
+      <relation unit="Knowledge Engineering" role="Univ.Prof."/>
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+    </subject>
+    <subject id="Kunnummel Vimal" uid="kunnummelv51">
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Madlberger-Kleinschmid Verena Lisa" uid="kleinsv5">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Miron Elena-Teodora" uid="mirone2">
+      <relation unit="Knowledge Engineering" role="Project"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Staffel Franz" uid="staffef2">
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Tantouris Nikolaos" uid="tantourisn31">
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Wachauer Karlheinz" uid="wachauk2">
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Staff"/>
+    </subject>
+    <subject id="Walch Michael" uid="walchm66">
+      <relation unit="Knowledge Engineering" role="Teaching"/>
+      <relation unit="Knowledge Engineering" role="Regular"/>
+      <relation unit="Knowledge Engineering" role="Assistant"/>
+    </subject>
+    <subject id="Ghane Alireza" uid="ghanea5">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Assistant"/>
+      <relation unit="Visualization and Data Analysis" role="Teaching"/>
+    </subject>
+    <subject id="Gregor Monika" uid="gregorm7">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Staff"/>
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Staff"/>
+    </subject>
+    <subject id="M&#xF6;ller Torsten" uid="moellet6">
+      <relation unit="Visualization and Data Analysis" role="Univ.Prof."/>
+      <relation unit="Visualization and Data Analysis" role="Teaching"/>
+    </subject>
+    <subject id="Phillips Michael" uid="phillim2">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Assistant"/>
+    </subject>
+    <subject id="Rudkowsky Elena" uid="rudkowskye95">
+      <relation unit="Visualization and Data Analysis" role="Project"/>
+      <relation unit="Visualization and Data Analysis" role="Assistant"/>
+    </subject>
+    <subject id="Sahann Raphael" uid="sahannr6">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Staff"/>
+    </subject>
+    <subject id="Schlereth Johanna" uid="schlerh5">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Staff"/>
+    </subject>
+    <subject id="Sedlmair Michael" uid="sedlmam6">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Assistant"/>
+      <relation unit="Visualization and Data Analysis" role="Teaching"/>
+    </subject>
+    <subject id="Torsney-Weir Thomas" uid="torsnet6">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Assistant"/>
+      <relation unit="Visualization and Data Analysis" role="Teaching"/>
+    </subject>
+    <subject id="Wolf Patrick" uid="patrickw29">
+      <relation unit="Visualization and Data Analysis" role="Regular"/>
+      <relation unit="Visualization and Data Analysis" role="Staff"/>
+    </subject>
+    <subject id="B&#xF6;hmer Kristof" uid="boehmek2">
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Fdhila Walid" uid="fdhilaw7">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Gall Manuel" uid="gallm6">
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Hildebrandt Tobias" uid="hildebt6">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Hofer-Mozelt Monika" uid="hofermm2">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Indiono Conrad" uid="indionc5">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Kaes Georg" uid="kaesg9">
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Lux Marian" uid="luxm25">
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="Polaschek Martin" uid="polascm9">
+      <relation unit="Workflow Systems and Technology" role="Ass.Prof."/>
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+    </subject>
+    <subject id="Rinderle-Ma Stefanie" uid="rinders8">
+      <relation unit="Workflow Systems and Technology" role="Univ.Prof."/>
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+    </subject>
+    <subject id="Schikuta Erich" uid="schikue9">
+      <relation unit="Workflow Systems and Technology" role="Univ.Prof."/>
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+    </subject>
+    <subject id="Schwind Tanja" uid="schwint3">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Staff"/>
+    </subject>
+    <subject id="Stertz Florian" uid="stertzf9">
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+      <relation unit="Workflow Systems and Technology" role="Project"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Wanek Helmut" uid="wanekh2">
+      <relation unit="Workflow Systems and Technology" role="Senior Lecturer"/>
+      <relation unit="Workflow Systems and Technology" role="Teaching"/>
+    </subject>
+    <subject id="Winter Karolin" uid="sporrerk73">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Assistant"/>
+    </subject>
+    <subject id="W&#xF6;ber Andreas" uid="woebera8">
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+      <relation unit="Workflow Systems and Technology" role="Regular"/>
+      <relation unit="Workflow Systems and Technology" role="Staff"/>
+    </subject>
+    <subject id="Fr&#xF6;schl Karl Anton" uid="froesck4">
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+    </subject>
+    <subject id="Hellerschmid Ewald" uid="hellere8">
+      <relation unit="Data Analytics and Computing" role="Regular"/>
+      <relation unit="Data Analytics and Computing" role="Staff"/>
+      <relation unit="Data Analytics and Computing" role="Regular"/>
+      <relation unit="Data Analytics and Computing" role="Staff"/>
+    </subject>
+    <subject id="Winiwarter Werner" uid="winiwaw2">
+      <relation unit="Data Analytics and Computing" role="Univ.Prof."/>
+      <relation unit="Data Analytics and Computing" role="Teaching"/>
+    </subject>
+    <subject id="Findei&#xDF; Sven" uid="findeis2">
+      <relation unit="Bioinformatics and Computational Biology" role="Regular"/>
+      <relation unit="Bioinformatics and Computational Biology" role="Assistant"/>
+      <relation unit="Bioinformatics and Computational Biology" role="Teaching"/>
+    </subject>
+    <subject id="Hammer Stefan" uid="hammers4">
+      <relation unit="Bioinformatics and Computational Biology" role="Project"/>
+      <relation unit="Bioinformatics and Computational Biology" role="Assistant"/>
+    </subject>
+    <subject id="Hofacker Ivo" uid="hofacki5">
+      <relation unit="Bioinformatics and Computational Biology" role="Univ.Prof."/>
+      <relation unit="Bioinformatics and Computational Biology" role="Teaching"/>
+    </subject>
+    <subject id="von Haeseler Arndt" uid="vonhaea6">
+      <relation unit="Bioinformatics and Computational Biology" role="Univ.Prof."/>
+      <relation unit="Bioinformatics and Computational Biology" role="Teaching"/>
+    </subject>
+    <subject id="Hirschl Jakob" uid="hirschlj53">
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="H&#xF6;dl Oliver" uid="oliverh82">
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Ignjatov Nemanja" uid="ignjatovn37">
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Kovacs Gabriel Alexandru" uid="kovacsg46">
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="L&#xF6;w Christian" uid="loewc68">
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Mittendorfer Patrick" uid="patrickm90">
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Moosbrugger Jakob" uid="moosbruggj43">
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Moshuber Lukas" uid="moshuberl92">
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+    </subject>
+    <subject id="Parzer Michaela" uid="parzerm7">
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Staff"/>
+    </subject>
+    <subject id="Reichl Peter" uid="reichlp6">
+      <relation unit="Cooperative Systems" role="Univ.Prof."/>
+      <relation unit="Cooperative Systems" role="Teaching"/>
+    </subject>
+    <subject id="Schr&#xF6;der Svenja" uid="schroeders41">
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+      <relation unit="Cooperative Systems" role="Project"/>
+      <relation unit="Cooperative Systems" role="Assistant"/>
+      <relation unit="Cooperative Systems" role="Teaching"/>
+    </subject>
+    <subject id="Weisgrab Johannes" uid="weisgrj9">
+      <relation unit="Cooperative Systems" role="Teaching"/>
+      <relation unit="Cooperative Systems" role="Regular"/>
+      <relation unit="Cooperative Systems" role="Staff"/>
+    </subject>
+    <subject id="Behzadi Soheil Sahar" uid="saharb63">
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Assistant"/>
+    </subject>
+    <subject id="Perdacher Martin" uid="martinp16">
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Assistant"/>
+    </subject>
+    <subject id="Plant Claudia" uid="plantc59">
+      <relation unit="Data Mining" role="Univ.Prof."/>
+      <relation unit="Data Mining" role="Teaching"/>
+    </subject>
+    <subject id="Schelling Benjamin" uid="a0504312">
+      <relation unit="Data Mining" role="Regular"/>
+      <relation unit="Data Mining" role="Assistant"/>
+    </subject>
+  </subjects>
+</organisation>

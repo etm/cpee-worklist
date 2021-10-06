@@ -10,7 +10,7 @@
         <parameter name="unit" type="string"/>
         <parameter name="role" type="string"/>
       </group>
-    </choice>  
+    </choice>
     <zeroOrMore>
       <parameter name="*" type="string"/>
     </zeroOrMore>
@@ -33,11 +33,11 @@
           <element name="domain">
             <attribute name="name">
               <data type="string"/>
-            </attribute>  
-          </element>  
-        </zeroOrMore>  
+            </attribute>
+          </element>
+        </zeroOrMore>
       </element>
-    </parameter>            
+    </parameter>
   </message>
   <message name="domain_tasks">
     <parameter name="domain_tasks" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
@@ -75,14 +75,14 @@
               <element name="user">
                     <attribute name="uid">
                       <data type="string"/>
-                    </attribute>  
+                    </attribute>
                     <data type="string"/>
               </element>
             </oneOrMore>
           </element>
-        </zeroOrMore>  
+        </zeroOrMore>
       </element>
-    </parameter>            
+    </parameter>
   </message>
   <message name="xml">
     <parameter name="return" mimetype="text/xml"/>
@@ -99,11 +99,11 @@
               <choice>
                 <value>debug</value>
                 <value>production</value>
-              </choice>  
+              </choice>
             </attribute>
             <zeroOrMore>
               <ref name="callback"/>
-            </zeroOrMore>  
+            </zeroOrMore>
           </element>
         </start>
 
@@ -114,7 +114,7 @@
             </attribute>
             <data type="string"/>
           </element>
-        </define>  
+        </define>
 
       </grammar>
     </parameter>
@@ -123,7 +123,7 @@
   <resource>
     <get in="*" out="domains"/>
     <post in="activityhappens"/>
-    <resource> <!-- domain -->
+    <resource relative="[a-zA-Z0-9]+"> <!-- domain -->
       <get out="domain_tasks"/>
       <resource relative="orgmodels">
         <get out="xml"/>

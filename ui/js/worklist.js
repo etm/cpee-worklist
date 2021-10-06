@@ -1,5 +1,5 @@
 $(document).ready(function() {// {{{
-  $("input[name=base-url]").val(location.protocol + "//" + location.host + ":" + $('body').data('defaultport'));
+  $("input[name=base-url]").val(location.protocol + "//" + location.host + '/worklist/server');
   $("#arealogin > form").submit(function(event){
     get_worklist();
     subscribe_worklist($("input[name=domain-name]").val());
@@ -55,6 +55,8 @@ function get_worklist() {// {{{
   // subscribe_worklist($("input[name=domain-name]").val());
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val())+'&domain='+encodeURIComponent($("input[name=domain-name]").val()));
+
+  console.log(url);
 
   $.ajax({
     type: "GET",
@@ -147,7 +149,7 @@ function do_work(taskid,taskidurl) { //{{{
             // res.url == Cpee Callback url
             $.ajax({
               type: "PUT",
-              url: res.url,
+              url: res.url + '/',
               data: form_data,
               success: function(something){
                 $.ajax({
@@ -163,6 +165,18 @@ function do_work(taskid,taskidurl) { //{{{
                 });
               },
               error: function(a,b,c){
+                $.ajax({
+                  type: "DELETE",
+                  url: taskidurl,
+                  success: function(del){
+                    ui_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+                    get_worklist();
+                  },
+                  error: function(a,b,c){
+                    console.log("Delete failed");
+                  }
+                });
+                // TODO
                 console.log("Put didnt work");
               }
             });

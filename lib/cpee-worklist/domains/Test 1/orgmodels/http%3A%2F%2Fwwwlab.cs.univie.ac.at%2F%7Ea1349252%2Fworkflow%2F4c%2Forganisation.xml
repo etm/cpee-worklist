@@ -1,0 +1,55 @@
+<organisation xmlns="http://cpee.org/ns/organisation/1.0">
+  <units>
+    <unit id="OEE">
+      <permissions/>
+    </unit>
+    <unit id="Technical Department">
+      <parent>OEE</parent>
+      <permissions/>
+    </unit>
+      <unit id="Operational Department">
+      <parent>OEE</parent>
+      <permissions/>
+    </unit> 
+      <unit id="Structure Department">
+      <parent>OEE</parent>
+      <permissions/>
+    </unit> 
+  </units>
+  <roles>
+    <role id="Operational Worker">
+      <permissions/>
+    </role>
+        <role id="Operational Manager">
+      <permissions/>
+    </role>
+      <role id="Service Technolog">
+      <permissions/>
+    </role>
+      <role id="Technical Engineer">
+      <permissions/>
+    </role>
+      <role id="Technical Manager">
+      <permissions/>
+    </role>
+  </roles>
+  <subjects>
+      <subject id="Donald Trump" uid="donald123">
+      <relation unit="Structure Department" role="Service Technolog"/>
+      <relation unit="Structure Department" role="Technical Engineer"/>
+    </subject>
+      <subject id="Bernie Sanders" uid="bernie123">
+      <relation unit="Structure Department" role="Technical Engineer"/>
+      <relation unit="Operational Department" role="Operational Manager"/>
+      <relation unit="Operational Department" role="Operational Worker"/>
+    </subject>
+      <subject id="Hans Fischer" uid="fischer123">
+      <relation unit="Structure Department" role="Technical Manager"/>
+    </subject>
+      <subject id="Dick Pickle" uid="dick123">
+      <relation unit="Structure Department" role="Technical Manager"/>
+      <relation unit="Operational Department" role="Operational Manager"/>
+      <relation unit="Operational Department" role="Operational Worker"/>
+    </subject>
+  </subjects>
+</organisation>
