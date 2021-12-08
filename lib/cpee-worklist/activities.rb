@@ -1,17 +1,18 @@
 module Worklist
   class Activities < Array
-    def initialize(domain)
+    def initialize(opts,domain)
       super()
+      @opts = opts
       @domain = domain
     end
 
     def unserialize
-      self.clear.replace JSON.parse!(File.read(File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav")) rescue []
+      self.clear.replace JSON.parse!(File.read(File.join(@opts[:top],@domain,'activities.sav'))) # rescue []
     end
 
     def  serialize
       Thread.new do
-        File.write File.dirname(__FILE__) + "/domains/#{@domain}/activities.sav", JSON.pretty_generate(self)
+        File.write File.join(@opts[:top],@domain,'activities.sav'), JSON.pretty_generate(self)
       end
     end
   end

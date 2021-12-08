@@ -1,5 +1,12 @@
+module CPEE
+  module Message
+    WHO = 'cpee-worklist'
+    TYPE = 'domain'
+  end
+end
+
 module Worklist
-  SERVER = File.expand_path(File.join(__dir__,'..','..','worklist.xml'))
+  SERVER = File.expand_path(File.join(__dir__,'worklist.xml'))
 
   def self::watch_services(watchdog_start_off,url,path,db)
     return if watchdog_start_off

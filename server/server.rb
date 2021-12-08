@@ -13,10 +13,10 @@ require 'cpee/persistence'
 require 'cpee/attributes_helper'
 require 'cpee/implementation_notifications'
 require 'cpee/implementation_callbacks'
-require_relative 'lib/cpee-worklist/worklist'
-require_relative 'lib/cpee-worklist/activities'
-require_relative 'lib/cpee-worklist/controller'
-require_relative 'lib/cpee-worklist/utils'
+require_relative '../lib/cpee-worklist/worklist'
+require_relative '../lib/cpee-worklist/activities'
+require_relative '../lib/cpee-worklist/controller'
+require_relative '../lib/cpee-worklist/utils'
 
 class ActivityHappens < Riddl::Implementation #{{{
   def response
@@ -78,15 +78,16 @@ class ActivityHappens < Riddl::Implementation #{{{
       @a[0].add_activity domain, activity
       @a[0][domain].add_orgmodel Riddl::Protocols::Utils::escape(activity['orgmodel']), xml
       Thread.new do
-        results = @a[0][domain].vote('task/add', :user => user ,                                      :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
-        if (results.length == 1) && (user.include? results[0])
-          activity["user"] = results[0]
-          info = user_info(activity,activity["user"])
-          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'] )
-          @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
-        else
-          @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance']) if @a[0].keys.include? domain
-        end
+        # TODO immediate vote for adding by external subscribers
+        # results = @a[0][domain].vote('task/add', :user => user ,                                      :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
+        # if (results.length == 1) && (user.include? results[0])
+        #   activity["user"] = results[0]
+        #   info = user_info(activity,activity["user"])
+        #   @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'] )
+        #   @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
+        # else
+        a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance']) if @a[0].keys.include? domain
+        # end
       end
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')
     else
@@ -261,6 +262,7 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
   cross_site_xhr true
 
   opts[:ORG_SCHEMA] = ::File.join(__dir__, 'organisation.rng')
+  opts[:top] = ::File.join(__dir__, 'domains')
   opts[:domains] = ::File.join(__dir__, 'domains','*')
   opts[:topics] = ::File.join(__dir__, 'topics.xml')
 
@@ -284,22 +286,22 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
   opts[:sse_keepalive_frequency]    ||= 10
   opts[:sse_connections]            = {}
 
-  # parallel do
-  #   Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
-  #   EM.add_periodic_timer(opts[:watchdog_frequency]) do ### start services
-  #     Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
-  #   end
-  #   EM.defer do ### catch all sse connections
-  #     CPEE::Notifications::sse_distributor(opts)
-  #   end
-  #   EM.add_periodic_timer(opts[:sse_keepalive_frequency]) do
-  #     CPEE:Notifications::sse_heartbeat(opts)
-  #   end
-  # end
+  parallel do
+    Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
+    EM.add_periodic_timer(opts[:watchdog_frequency]) do ### start services
+      Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])
+    end
+    EM.defer do ### catch all sse connections
+      CPEE::Notifications::sse_distributor(opts)
+    end
+    EM.add_periodic_timer(opts[:sse_keepalive_frequency]) do
+      CPEE::Notifications::sse_heartbeat(opts)
+    end
+  end
 
-  # cleanup do
-  #   Worklist::cleanup_services(opts[:watchdog_start_off])
-  # end
+  cleanup do
+    Worklist::cleanup_services(opts[:watchdog_start_off])
+  end
 
   interface 'main' do
     run ActivityHappens,controller if post 'activityhappens'
@@ -339,7 +341,7 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
   interface 'notifications' do |r|
     domain = r[:h]['RIDDL_DECLARATION_PATH'].split('/')[1]
     domain = Riddl::Protocols::Utils::unescape(domain)
-    use CPEE::Notifications::implementation(domain.to_i, opts)
+    use CPEE::Notifications::implementation(domain, opts)
   end
 
 end.loop!

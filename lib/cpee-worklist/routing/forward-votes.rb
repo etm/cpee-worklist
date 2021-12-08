@@ -18,26 +18,26 @@ require 'redis'
 require 'daemonite'
 require 'riddl/client'
 require 'json'
-require_relative 'cpee/message'
-require_relative 'cpee/redis'
+require 'cpee/message'
+require 'cpee/redis'
 
-def persist_handler(domain,key,mess,redis) #{{{
+def persist_handler(instance,key,mess,redis) #{{{
   redis.multi do |multi|
-    multi.sadd("domain:#{domain}/callbacks",key)
-    multi.set("domain:#{domain}/callback/#{key}/subscription",mess.dig('content','subscription'))
-    multi.set("domain:#{domain}/callback/#{key}/uuid",mess.dig('content','activity-uuid'))
-    multi.set("domain:#{domain}/callback/#{key}/label",mess.dig('content','label'))
-    multi.set("domain:#{domain}/callback/#{key}/position",mess.dig('content','activity'))
-    multi.set("domain:#{domain}/callback/#{key}/type",'vote')
+    multi.sadd("instance:#{instance}/callbacks",key)
+    multi.set("instance:#{instance}/callback/#{key}/subscription",mess.dig('content','subscription'))
+    multi.set("instance:#{instance}/callback/#{key}/uuid",mess.dig('content','activity-uuid'))
+    multi.set("instance:#{instance}/callback/#{key}/label",mess.dig('content','label'))
+    multi.set("instance:#{instance}/callback/#{key}/position",mess.dig('content','activity'))
+    multi.set("instance:#{instance}/callback/#{key}/type",'vote')
   end
 end #}}}
 
-def send_response(domain,key,url,value,redis) #{{{
+def send_response(instance,key,url,value,redis) #{{{
   CPEE::Message::send(
     :'vote-response',
     key,
     url,
-    domain,
+    instance,
     {},
     {},
     value,
@@ -66,32 +66,32 @@ Daemonite.new do |opts|
         index = message.index(' ')
         mess = message[index+1..-1]
 
-        domain = message[0...index]
+        instance = message[0...index]
         type = pat[0..-3]
         event = what[(type.length+1)..-1]
         topic = ::File::dirname(event)
         name = ::File::basename(event)
         long = File.join(topic,type,name)
 
-        opts[:redis].smembers("domain:#{domain}/handlers").each do |subscription_key|
-          if opts[:redis].smembers("domain:#{domain}/handlers/#{subscription_key}").include? long
+        opts[:redis].smembers("instance:#{instance}/handlers").each do |subscription_key|
+          if opts[:redis].smembers("instance:#{instance}/handlers/#{subscription_key}").include? long
             m = JSON.parse(mess)
             callback_key = m.dig('content','key')
-            url = opts[:redis].get("domain:#{domain}/handlers/#{subscription_key}/url")
+            url = opts[:redis].get("instance:#{instance}/handlers/#{subscription_key}/url")
 
             if url.nil? || url == ""
-              persist_handler domain, callback_key, m, opts[:redis]
-              opts[:redis].publish("forward:#{domain}/#{subscription_key}",mess)
+              persist_handler instance, callback_key, m, opts[:redis]
+              opts[:redis].publish("forward:#{instance}/#{subscription_key}",mess)
             else
               client = Riddl::Client.new(url)
-              callback = File.join(m['domain-url'],'/callbacks/',subscription_key,'/')
+              callback = File.join(m['instance-url'],'/callbacks/',subscription_key,'/')
               status, result, headers = (client.post [
-                Riddl::Header.new("CPEE-WORKLIST-BASE",File.join(m['cpee'],'/')),
-                Riddl::Header.new("CPEE-WORKLIST-DOMAIN",m['domain']),
-                Riddl::Header.new("CPEE-WORKLIST-DOMAIN-URL",File.join(m['domain-url'],'/')),
-                Riddl::Header.new("CPEE-WORKLIST-DOMAIN-UUID",m['domain-uuid']),
-                Riddl::Header.new("CPEE-WORKLIST-CALLBACK",callback),
-                Riddl::Header.new("CPEE-WORKLIST-CALLBACK-ID",subscription_key),
+                Riddl::Header.new("CPEE-WL-BASE",File.join(m['cpee'],'/')),
+                Riddl::Header.new("CPEE-WL-DOMAIN",m['instance']),
+                Riddl::Header.new("CPEE-WL-DOMAIN-URL",File.join(m['instance-url'],'/')),
+                Riddl::Header.new("CPEE-WL-DOMAIN-UUID",m['instance-uuid']),
+                Riddl::Header.new("CPEE-WL-CALLBACK",callback),
+                Riddl::Header.new("CPEE-WL-CALLBACK-ID",subscription_key),
                 Riddl::Parameter::Simple::new('type',type),
                 Riddl::Parameter::Simple::new('topic',topic),
                 Riddl::Parameter::Simple::new('vote',name),
@@ -104,13 +104,13 @@ Daemonite.new do |opts|
                 else
                   result[0].value.read
                 end
-                if (headers["CPEE_WORKLIST_CALLBACK"] && headers["CPEE_WORKLIST_CALLBACK"] == 'true') || val == 'callback'
-                  persist_handler domain, callback_key, m, opts[:redis]
+                if (headers["CPEE_CALLBACK"] && headers["CPEE_CALLBACK"] == 'true') || val == 'callback'
+                  persist_handler instance, callback_key, m, opts[:redis]
                 else # they may send true or false
-                  send_response domain, callback_key, m['cpee'], val, opts[:redis]
+                  send_response instance, callback_key, m['cpee'], val, opts[:redis]
                 end
               else
-                send_response domain, callback_key, m['cpee'], true, opts[:redis]
+                send_response instance, callback_key, m['cpee'], true, opts[:redis]
               end
             end
           end

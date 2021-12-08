@@ -3,26 +3,26 @@ $(document).ready(function() {// {{{
   $("#arealogin > form").submit(function(event){
     get_worklist();
     subscribe_worklist($("input[name=domain-name]").val());
-    ui_toggle_vis_tab($("#worklist .switch"));
+    uidash_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
   var q = $.parseQuerySimple();
   if (q.user && q.domain) {
     $("input[name=domain-name]").val(q.domain);
     $("input[name=user-name]").val(q.user);
-    ui_toggle_vis_tab($("#worklist .switch"));
+    uidash_toggle_vis_tab($("#worklist .switch"));
     get_worklist();
     subscribe_worklist(q.domain);
   }
   $(document).on('click','.orgmodeltab',function(event){
     var id = $(this).attr('data-tab');
-    ui_empty_tab_contents(id);
+    uidash_empty_tab_contents(id);
     // TODO Hier kommt Raphi
   });
   $(document).on('click','#orgmodels li a.model',function(event){
     var id = $(this).attr('href').hashCode();
-    if (!ui_add_tab("#main", "Orgmodel Oida", id, true, 'orgmodeltab')) {
-      ui_empty_tab_contents(id);
+    if (!uidash_add_tab("#main", "Orgmodel Oida", id, true, 'orgmodeltab')) {
+      uidash_empty_tab_contents(id);
     }
     // TODO Hier kommt Raphi
     event.preventDefault();
@@ -67,7 +67,7 @@ function get_worklist() {// {{{
       $('#taborganisation').removeClass("hidden");
       $.ajax({
         type: "GET",
-        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/orgmodels',
+        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/orgmodels/',
         dataType: "xml",
         success: function(res){
           var ctv = $("#orgmodels");
@@ -129,7 +129,7 @@ function do_work(taskid,taskidurl) { //{{{
     type: "GET",
     url: taskidurl,
     success:function(res) {
-      if (!ui_add_tab("#main", res.label, taskid, true, '')) { return; };
+      if (!uidash_add_tab("#main", res.label, taskid, true, '')) { return; };
       $.ajax({
         type: "GET",
         url: res.form,
@@ -142,7 +142,7 @@ function do_work(taskid,taskidurl) { //{{{
           $(form_area).append(postFormStr);
           eval($('worklist-form-load').text()); //TODO, da werden alle worklist for loads in allen tabs, nur den aktuellen
           $('worklist-form-load').hide();
-          ui_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
+          uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
             // Form data
             var form_data = $(this).serialize();
@@ -156,7 +156,7 @@ function do_work(taskid,taskidurl) { //{{{
                   type: "DELETE",
                   url: taskidurl,
                   success: function(del){
-                    ui_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+                    uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
                     get_worklist();
                   },
                   error: function(a,b,c){
@@ -169,7 +169,7 @@ function do_work(taskid,taskidurl) { //{{{
                   type: "DELETE",
                   url: taskidurl,
                   success: function(del){
-                    ui_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+                    uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
                     get_worklist();
                   },
                   error: function(a,b,c){
@@ -201,17 +201,18 @@ function subscribe_worklist(){ //{{{
     url: url,
     data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
-      var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-      var subscription = $.parseQuery(ret)[0].value;
-      ws = new Socket(url.replace(/http/,'ws') + subscription + "/ws/");
-      ws.onmessage = function(e) {
-        data = $.parseXML(e.data);
-        if ($('event > topic',data).length > 0) {
-          var cid = JSON.parse($('event > notification',data).text()).callback_id;
+      subscription = ret;
+      es = new EventSource(url + subscription + "/sse/");
+      es.onopen = function() { };
+      es.onmessage = function(e) {
+        data = JSON.parse(e.data);
+        if (data['type'] == 'event') {
+          var cid = data.content.callback_id;
           var tr = $('tr[data-id="'+cid+'"]');
-          switch($('event > topic',data).text()) {
+          console.log(data);
+          switch(data['topic']) {
             case 'user':
-              switch($('event > event',data).text()) {
+              switch(data['name']) {
                 case 'finish':
                   tr.remove();
                   break;
@@ -222,7 +223,7 @@ function subscribe_worklist(){ //{{{
               }
               break;
             case 'task':
-              switch($('event > event',data).text()) {
+              switch(data['name']) {
                 case 'add':
                   get_worklist();
                   break;
@@ -234,9 +235,7 @@ function subscribe_worklist(){ //{{{
           }
         }
       };
-      ws.onopen  = function(e){ }
-      ws.onclose = function(e){ }
-      ws.onerror = function(e){ }
+      es.onerror = function(e){ }
     },
     error: function(){
       console.log("Not Successful subscribed");

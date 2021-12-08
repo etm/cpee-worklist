@@ -17,7 +17,7 @@
 require 'redis'
 require 'daemonite'
 require 'riddl/client'
-require_relative '../../lib/cpee/redis'
+require 'cpee/redis'
 
 Daemonite.new do |opts|
   opts[:runtime_opts] += [
@@ -39,17 +39,18 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         index = message.index(' ')
         mess = message[index+1..-1]
-        domain = message[0...index]
+        instance = message[0...index]
         type = pat[0..-3]
         event = what[(type.length+1)..-1]
         topic = ::File::dirname(event)
         name = ::File::basename(event)
         long = File.join(topic,type,name)
-        opts[:redis].smembers("domain:#{domain}/handlers").each do |key|
-          if opts[:redis].smembers("domain:#{domain}/handlers/#{key}").include? long
-            url = opts[:redis].get("domain:#{domain}/handlers/#{key}/url")
+        opts[:redis].smembers("instance:#{instance}/handlers").each do |key|
+          if opts[:redis].smembers("instance:#{instance}/handlers/#{key}").include? long
+            url = opts[:redis].get("instance:#{instance}/handlers/#{key}/url")
+            p url
             if url.nil? || url == ""
-              opts[:redis].publish("forward:#{domain}/#{key}",mess)
+              opts[:redis].publish("forward:#{instance}/#{key}",mess)
             else
               p "#{type}/#{topic}/#{event}-#{url}"
               client = Riddl::Client.new(url)
@@ -60,6 +61,12 @@ Daemonite.new do |opts|
                 Riddl::Parameter::Complex::new('notification','application/json',mess)
               ]
             end
+          end
+        end
+        unless opts[:redis].exists?("instance:#{instance}/state")
+          empt = opts[:redis].keys("instance:#{instance}/*").to_a
+          opts[:redis].multi do |multi|
+            multi.del empt
           end
         end
       rescue => e

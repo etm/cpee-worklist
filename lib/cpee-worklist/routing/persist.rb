@@ -17,12 +17,12 @@
 require 'json'
 require 'redis'
 require 'daemonite'
-require_relative '../../lib/cpee/value_helper'
-require_relative '../../lib/cpee/redis'
+require 'cpee/value_helper'
+require 'cpee/redis'
 
 EVENTS = %w{
+  event:state/change
   event:handler/change
-  callback:activity/content
 }
 
 Daemonite.new do |opts|
@@ -46,32 +46,30 @@ Daemonite.new do |opts|
         mess = JSON.parse(message[message.index(' ')+1..-1])
         domain = mess.dig('domain')
         case what
-          when 'callback:activity/content'
-            key = mess.dig('content','key')
+          when 'event:state/change'
             opts[:redis].multi do |multi|
-              multi.sadd("domain:#{domain}/callbacks",key)
-              multi.set("domain:#{domain}/callback/#{key}/uuid",mess.dig('content','activity-uuid'))
-              multi.set("domain:#{domain}/callback/#{key}/label",mess.dig('content','label'))
-              multi.set("domain:#{domain}/callback/#{key}/position",mess.dig('content','activity'))
-              multi.set("domain:#{domain}/callback/#{key}/type",'callback')
+              unless mess.dig('content','state') == 'purged'
+                multi.set("instance:#{instance}/state",mess.dig('content','state'))
+                multi.set("instance:#{instance}/state/@changed",mess.dig('timestamp'))
+              end
             end
           when 'event:handler/change'
             opts[:redis].multi do |multi|
               mess.dig('content','changed').each do |c|
-                multi.sadd("domain:#{domain}/handlers",mess.dig('content','key'))
-                multi.sadd("domain:#{domain}/handlers/#{mess.dig('content','key')}",c)
-                multi.set("domain:#{domain}/handlers/#{mess.dig('content','key')}/url",mess.dig('content','url'))
-                multi.sadd("domain:#{domain}/handlers/#{c}",mess.dig('content','key'))
+                multi.sadd("instance:#{domain}/handlers",mess.dig('content','key'))
+                multi.sadd("instance:#{domain}/handlers/#{mess.dig('content','key')}",c)
+                multi.set("instance:#{domain}/handlers/#{mess.dig('content','key')}/url",mess.dig('content','url'))
+                multi.sadd("instance:#{domain}/handlers/#{c}",mess.dig('content','key'))
               end
               mess.dig('content','deleted').to_a.each do |c|
-                multi.srem("domain:#{domain}/handlers/#{mess.dig('content','key')}",c)
-                multi.srem("domain:#{domain}/handlers/#{c}",mess.dig('content','key'))
+                multi.srem("instance:#{domain}/handlers/#{mess.dig('content','key')}",c)
+                multi.srem("instance:#{domain}/handlers/#{c}",mess.dig('content','key'))
               end
             end
-            if opts[:redis].scard("domain:#{domain}/handlers/#{mess.dig('content','key')}") < 1
+            if opts[:redis].scard("instance:#{domain}/handlers/#{mess.dig('content','key')}") < 1
               opts[:redis].multi do |multi|
-                multi.del("domain:#{domain}/handlers/#{mess.dig('content','key')}/url")
-                multi.srem("domain:#{domain}/handlers",mess.dig('content','key'))
+                multi.del("instance:#{domain}/handlers/#{mess.dig('content','key')}/url")
+                multi.srem("instance:#{domain}/handlers",mess.dig('content','key'))
               end
             end
         end

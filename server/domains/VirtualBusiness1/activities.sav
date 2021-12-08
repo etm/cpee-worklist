@@ -1,0 +1,19 @@
+[
+  {
+    "label": "OK OR NOT OK (1980)",
+    "user": "*",
+    "url": "https://cpee.org/flow/engine/1980/callbacks/b24380cba47c9cef6cf01ca2e2207f1d/",
+    "id": "b24380cba47c9cef6cf01ca2e2207f1d",
+    "cpee_activity_id": "a1",
+    "cpee_base": "https://cpee.org/flow/engine/",
+    "cpee_instance": "1980",
+    "uuid": "dc5fa5a2-1f19-421c-9acf-f13af7f5cf95",
+    "orgmodel": "http://cpee.org/~demo/orgviz/organisation_informatik.xml",
+    "domain": "VirtualBusiness1",
+    "wl_instance": "http://localhost:9398/VirtualBusiness1",
+    "form": "http://cpee.org/~demo/form/form-f.html",
+    "unit": "*",
+    "role": "Regular",
+    "parameters": "[{\"name\": \"schaden\", \"value\": \"55546\"},{\"name\": \"text\", \"value\": \"fetzen hin\"}]"
+  }
+]

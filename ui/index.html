@@ -18,69 +18,37 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>CPEE Cockpit</title>
+    <title>Worklist</title>
 
     <!-- libs, do not modify. When local than load local libs. -->
-    <script type="text/javascript">
-      if ((document.location.hostname == 'localhost') && (document.location.protocol == 'http:')) {
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.browser.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.svg.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.svgdom.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/vkbeautify.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/util.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/printf.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/strftime.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/parsequery.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/underscore.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.caret.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/jquery.cookie.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/relaxngui.js">\x3C/script>');
+    <script type="text/javascript" src="/js_libs/jquery.min.js"></script>
+    <script type="text/javascript" src="/js_libs/jquery.browser.js"></script>
+    <script type="text/javascript" src="/js_libs/jquery.svg.min.js"></script>
+    <script type="text/javascript" src="/js_libs/jquery.svgdom.min.js"></script>
+    <script type="text/javascript" src="/js_libs/vkbeautify.js"></script>
+    <script type="text/javascript" src="/js_libs/util.js"></script>
+    <script type="text/javascript" src="/js_libs/printf.js"></script>
+    <script type="text/javascript" src="/js_libs/strftime.min.js"></script>
+    <script type="text/javascript" src="/js_libs/parsequery.js"></script>
+    <script type="text/javascript" src="/js_libs/underscore.min.js"></script>
+    <script type="text/javascript" src="/js_libs/jquery.caret.min.js"></script>
+    <script type="text/javascript" src="/js_libs/jquery.cookie.js"></script>
 
-        document.write('<script type="text/javascript" src="http://localhost/js_libs/ui.js">\x3C/script>');
-        document.write('<link rel="stylesheet" href="http://localhost/js_libs/ui.css" type="text/css"/>');
-      } else if ((document.location.hostname == 'localhost') && (document.location.protocol == 'https:')) {
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.browser.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.svg.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.svgdom.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/vkbeautify.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/util.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/printf.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/strftime.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/parsequery.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/underscore.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.caret.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.cookie.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/relaxngui.js">\x3C/script>');
+    <script type="text/javascript" src="https://cpee.org/js_libs/relaxngui.js"></script>
+    <link   rel="stylesheet"      href="/js_libs/relaxngui.css" type="text/css"/>
 
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/ui.js">\x3C/script>');
-        document.write('<link rel="stylesheet" href="https://cpee.org/js_libs/ui.css" type="text/css"/>');
-      } else {
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.browser.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.svg.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.svgdom.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/vkbeautify.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/util.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/printf.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/strftime.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/parsequery.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/underscore.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.caret.min.js">\x3C/script>');
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/jquery.cookie.js">\x3C/script>');
+    <script type="text/javascript" src="/js_libs/uidash.js"></script>
+    <link   rel="stylesheet"      href="/js_libs/uidash.css" type="text/css"/>
 
-        document.write('<script type="text/javascript" src="https://cpee.org/js_libs/ui.js">\x3C/script>');
-        document.write('<link rel="stylesheet" href="https://cpee.org/js_libs/ui.css" type="text/css"/>');
-      }
-    </script>
+    <link rel="stylesheet" href="/global_ui/uicpee.css" type="text/css"/>
+
     <!-- custom stuff, play arround  -->
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
 
     <!-- Flos Stuff -->
     <script type="text/javascript" src="js/worklist.js"></script>
   </head>
-  <body data-defaultport="9398" is='x-ui'>
+  <body data-defaultport="9398" is='x-ui-'>
     <!-- The following six are templates that get used during ui generation, change them carefully -->
     <table id="dat_template_tasks" class='hidden'> <!--{{{-->
       <tr class="task">
@@ -105,6 +73,7 @@
         <ui-tab class="inactive hidden" data-tab="organisation" id="taborganisation">Organisation</ui-tab>
         <ui-tab class="inactive " data-tab="configure"    id="tabconfigure"   >Configure</ui-tab>
         <ui-behind><input name="current-instance" type="text" value="" readonly='readonly' style='display:none'/><a id='current-instance'></a></ui-behind>
+        <ui-last><a class="logo" href=".."></a></ui-last>
       </ui-tabbar>
       <ui-content>
         <ui-area data-belongs-to-tab="login" id="arealogin"> <!--{ {{-->

@@ -34,7 +34,7 @@ module Worklist
 
       @opts = opts
 
-      @activities = Activities.new(domain)
+      @activities = Activities.new(opts,domain)
       @orgmodels = []
 
       @callback_keys = {}
@@ -86,14 +86,17 @@ module Worklist
       base_url
     end
 
+    def info
+      @domain
+    end
+
     def add_orgmodel(name,content) #{{{
-      FileUtils.mkdir_p(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/")
+      FileUtils.mkdir_p(File.join(@opts[:top],@domain,'orgmodels'))
       @orgmodels << name unless @orgmodels.include?(name)
-      File.write(File.dirname(__FILE__) + "/domains/#{@domain}/orgmodels/" + name, content)
+      File.write(File.join(@opts[:top],@domain,'orgmodels',name), content)
     end #}}}
 
     def notify(what,content={})
-      content[:attributes] = attributes_translated
       CPEE::Message::send(:event,what,base,@domain,uuid,info,content,@redis)
     end
 
@@ -104,7 +107,6 @@ module Worklist
       @redis.smembers("instance:#{id}/handlers/#{handler}").each do |client|
         voteid = Digest::MD5.hexdigest(Kernel::rand().to_s)
         content[:key] = voteid
-        content[:attributes] = attributes_translated
         content[:subscription] = client
         votes << voteid
         CPEE::Message::send(:vote,what,base,@domain,uuid,info,content,@redis)

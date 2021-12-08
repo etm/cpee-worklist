@@ -17,7 +17,7 @@
 require 'json'
 require 'redis'
 require 'daemonite'
-require_relative '../../lib/cpee/redis'
+require 'cpee/redis'
 
 Daemonite.new do |opts|
   opts[:runtime_opts] += [
@@ -39,14 +39,14 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         _, key = what.split(':')
         index = message.index(' ')
-        domain = message[0...index]
+        instance = message[0...index]
         opts[:redis].multi do |multi|
-          multi.srem("domain:#{domain}/callbacks",key)
-          multi.del("domain:#{domain}/callback/#{key}/uuid")
-          multi.del("domain:#{domain}/callback/#{key}/label")
-          multi.del("domain:#{domain}/callback/#{key}/position")
-          multi.del("domain:#{domain}/callback/#{key}/type")
-          multi.del("domain:#{domain}/callback/#{key}/subscription")
+          multi.srem("instance:#{instance}/callbacks",key)
+          multi.del("instance:#{instance}/callback/#{key}/uuid")
+          multi.del("instance:#{instance}/callback/#{key}/label")
+          multi.del("instance:#{instance}/callback/#{key}/position")
+          multi.del("instance:#{instance}/callback/#{key}/type")
+          multi.del("instance:#{instance}/callback/#{key}/subscription")
         end
       rescue => e
         puts e.message
