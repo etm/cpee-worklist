@@ -15,5 +15,22 @@
     "unit": "*",
     "role": "Regular",
     "parameters": "[{\"name\": \"schaden\", \"value\": \"55546\"},{\"name\": \"text\", \"value\": \"fetzen hin\"}]"
+  },
+  {
+    "label": "OK OR NOT OK (1984)",
+    "user": "manglej6",
+    "url": "https://cpee.org/flow/engine/1984/callbacks/7426f184d3044c502593012763184b22/",
+    "id": "7426f184d3044c502593012763184b22",
+    "cpee_activity_id": "a1",
+    "cpee_base": "https://cpee.org/flow/engine/",
+    "cpee_instance": "1984",
+    "uuid": "67d6887a-73e0-44cb-b6f8-c1d247d33a90",
+    "orgmodel": "https://cpee.org/~demo/orgviz/organisation_informatik.xml",
+    "domain": "VirtualBusiness1",
+    "wl_instance": "http://localhost:9398/VirtualBusiness1",
+    "form": "https://cpee.org/~demo/form/form-f.html",
+    "unit": "*",
+    "role": "Assistant",
+    "parameters": "{ \"schaden\": 10000, \"text\": \"Müsli\" }"
   }
 ]

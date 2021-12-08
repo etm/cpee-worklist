@@ -40,14 +40,12 @@ class ActivityHappens < Riddl::Implementation #{{{
     dom = @p.shift.value
     domain = activity['domain'] = @h[ 'CPEE_ATTR_' + dom.upcase] || dom
 
-
-
     activity['wl_instance'] = "#{controller.opts[:url]}/#{domain}"
 
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
-    activity['parameters'] = JSON.generate(@p)
+    activity['parameters'] = @p.shift.value rescue '[]'
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
       begin
@@ -86,7 +84,7 @@ class ActivityHappens < Riddl::Implementation #{{{
         #   @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'] )
         #   @a[0][domain].notify('user/take',      :user => results[0], :callback_id => activity['id'], :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
         # else
-        a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance']) if @a[0].keys.include? domain
+        @a[0][domain].notify('task/add',       :user => user,:callback_id => activity['id'],        :domain => activity['domain'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance']) if @a[0].keys.include? domain
         # end
       end
       @headers << Riddl::Header.new('CPEE_CALLBACK','true')

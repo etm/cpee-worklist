@@ -56,8 +56,6 @@ function get_worklist() {// {{{
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val())+'&domain='+encodeURIComponent($("input[name=domain-name]").val()));
 
-  console.log(url);
-
   $.ajax({
     type: "GET",
     url: url,
@@ -209,7 +207,6 @@ function subscribe_worklist(){ //{{{
         if (data['type'] == 'event') {
           var cid = data.content.callback_id;
           var tr = $('tr[data-id="'+cid+'"]');
-          console.log(data);
           switch(data['topic']) {
             case 'user':
               switch(data['name']) {
