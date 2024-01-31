@@ -1,3 +1,5 @@
+require 'cpee/persistence'
+
 module Worklist
 
   class Controller < Hash
@@ -104,7 +106,7 @@ module Worklist
       topic, name = what.split('/')
       handler = File.join(topic,'vote',name)
       votes = []
-      @redis.smembers("instance:#{id}/handlers/#{handler}").each do |client|
+      CPEE::Persistence::extract_handler(id,@opts,handler).each do |client|
         voteid = Digest::MD5.hexdigest(Kernel::rand().to_s)
         content[:key] = voteid
         content[:subscription] = client

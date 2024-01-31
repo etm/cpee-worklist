@@ -56,10 +56,16 @@
             <attribute name="cpee_base">
               <data type="string"/>
             </attribute>
+            <attribute name="instance_uuid">
+              <data type="string"/>
+            </attribute>
             <attribute name="cpee_label">
               <data type="string"/>
             </attribute>
             <attribute name="cpee_activity">
+              <data type="string"/>
+            </attribute>
+            <attribute name="orgmodel">
               <data type="string"/>
             </attribute>
             <element name="label">

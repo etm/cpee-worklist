@@ -20,10 +20,10 @@ $(document).ready(function() {// {{{
     // TODO Hier kommt Raphi
   });
   $(document).on('click','#orgmodels li a.model',function(event){
-    var id = $(this).attr('href').hashCode();
-    if (!uidash_add_tab("#main", "Orgmodel Oida", id, true, 'orgmodeltab')) {
-      uidash_empty_tab_contents(id);
-    }
+    // var id = $(this).attr('href').hashCode();
+    // if (!uidash_add_tab("#main", "Orgmodel", id, true, 'orgmodeltab')) {
+    //   uidash_empty_tab_contents(id);
+    // }
     // TODO Hier kommt Raphi
     event.preventDefault();
   });
@@ -135,7 +135,12 @@ function do_work(taskid,taskidurl) { //{{{
           var postFormStr = "<form id='form_" + taskid + "'>";
           form_html=form;
           postFormStr += form_html + "</form>";
-          var data = JSON.parse(res.parameters);
+          let data;
+          try {
+            data = JSON.parse(res.parameters);
+          } catch (e) {
+            data = {};
+          }
           var form_area = "ui-area[data-belongs-to-tab="+taskid+"]";
           $(form_area).append(postFormStr);
           eval($('worklist-form-load').text()); //TODO, da werden alle worklist for loads in allen tabs, nur den aktuellen
@@ -182,6 +187,17 @@ function do_work(taskid,taskidurl) { //{{{
           });
         },
         error: function(a,b,c){
+          $.ajax({
+            type: "DELETE",
+            url: taskidurl,
+            success: function(del){
+              uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+              get_worklist();
+            },
+            error: function(a,b,c){
+              console.log("Delete failed");
+            }
+          });
           console.log("Error while getting form html");
         }
       });

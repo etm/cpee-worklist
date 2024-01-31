@@ -137,6 +137,8 @@ class Show_Domain_Tasks < Riddl::Implementation #{{{
         x.add "unit" , activity['unit']
 
         if activity['user']!='*'
+          p activity['user']
+          p doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").length
           user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").first
           x.add "user", user.attributes['id'], :uid => user.attributes['uid']
         else
@@ -283,6 +285,7 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
 
   opts[:sse_keepalive_frequency]    ||= 10
   opts[:sse_connections]            = {}
+  CPEE::Message::set_workers(1)
 
   parallel do
     Worklist::watch_services(opts[:watchdog_start_off],opts[:redis_url],File.join(opts[:basepath],opts[:redis_path]),opts[:redis_db])

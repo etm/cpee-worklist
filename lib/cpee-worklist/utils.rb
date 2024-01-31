@@ -1,6 +1,7 @@
 def user_ok(task,user)
-  status, resp = Riddl::Client.new(task['orgmodel']).resource("/").get
-  orgmodel = XML::Smart.string(resp[0].value.read)
+  resp = Typhoeus.get(task['orgmodel'])
+  xml = resp.body
+  orgmodel = XML::Smart.string(xml)
   orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
   subjects = orgmodel.find('/o:organisation/o:subjects/o:subject')
   unit = task['unit']
