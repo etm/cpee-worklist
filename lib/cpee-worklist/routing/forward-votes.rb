@@ -23,12 +23,12 @@ require 'cpee/redis'
 
 def persist_handler(instance,key,mess,redis) #{{{
   redis.multi do |multi|
-    multi.sadd("instance:#{instance}/callbacks",key)
-    multi.set("instance:#{instance}/callback/#{key}/subscription",mess.dig('content','subscription'))
-    multi.set("instance:#{instance}/callback/#{key}/uuid",mess.dig('content','activity-uuid'))
-    multi.set("instance:#{instance}/callback/#{key}/label",mess.dig('content','label'))
-    multi.set("instance:#{instance}/callback/#{key}/position",mess.dig('content','activity'))
-    multi.set("instance:#{instance}/callback/#{key}/type",'vote')
+    multi.sadd("worklist:#{instance}/callbacks",key)
+    multi.set("worklist:#{instance}/callback/#{key}/subscription",mess.dig('content','subscription'))
+    multi.set("worklist:#{instance}/callback/#{key}/uuid",mess.dig('content','activity-uuid'))
+    multi.set("worklist:#{instance}/callback/#{key}/label",mess.dig('content','label'))
+    multi.set("worklist:#{instance}/callback/#{key}/position",mess.dig('content','activity'))
+    multi.set("worklist:#{instance}/callback/#{key}/type",'vote')
   end
 end #}}}
 
@@ -61,23 +61,21 @@ Daemonite.new do |opts|
   end
 
   run do
-    opts[:pubsubredis].psubscribe('vote:*') do |on|
+    opts[:pubsubredis].psubscribe('vote:00:*') do |on|
       on.pmessage do |pat, what, message|
         index = message.index(' ')
         mess = message[index+1..-1]
-
         instance = message[0...index]
-        type = pat[0..-3]
-        event = what[(type.length+1)..-1]
+        type, worker, event = what.split(':',3)
         topic = ::File::dirname(event)
         name = ::File::basename(event)
         long = File.join(topic,type,name)
 
-        opts[:redis].smembers("instance:#{instance}/handlers").each do |subscription_key|
-          if opts[:redis].smembers("instance:#{instance}/handlers/#{subscription_key}").include? long
+        opts[:redis].smembers("worklist:#{instance}/handlers").each do |subscription_key|
+          if opts[:redis].smembers("worklist:#{instance}/handlers/#{subscription_key}").include? long
             m = JSON.parse(mess)
             callback_key = m.dig('content','key')
-            url = opts[:redis].get("instance:#{instance}/handlers/#{subscription_key}/url")
+            url = opts[:redis].get("worklist:#{instance}/handlers/#{subscription_key}/url")
 
             if url.nil? || url == ""
               persist_handler instance, callback_key, m, opts[:redis]

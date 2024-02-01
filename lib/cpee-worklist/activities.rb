@@ -6,7 +6,7 @@ module Worklist
     end
 
     def unserialize
-      self.clear.replace JSON.parse!(File.read(File.join(@opts[:top],'activities.sav'))) # rescue []
+      self.clear.replace JSON.parse!(File.read(File.join(@opts[:top],'activities.sav'))) rescue []
     end
 
     def  serialize

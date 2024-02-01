@@ -6,19 +6,20 @@ module Worklist
 
   def self::watch_services(watchdog_start_off,url,path,db)
     return if watchdog_start_off
-     EM.defer do
-       Dir[File.join(__dir__,'routing','*.rb')].each do |s|
-         s = s.sub(/\.rb$/,'')
-         pid = (File.read(s + '.pid').to_i rescue nil)
-         if (pid.nil? || !(Process.kill(0, pid) rescue false)) && !File.exist?(s + '.lock')
-           if url.nil?
-             system "#{s}.rb -p \"#{path}\" -d #{db} restart 1>/dev/null 2>&1"
-           else
-             system "#{s}.rb -u \"#{url}\" -d #{db} restart 1>/dev/null 2>&1"
-           end
-           puts "➡ Service #{File.basename(s,'.rb')} started ..."
-         end
-       end
+    EM.defer do
+      Dir[File.join(__dir__,'routing','*.rb')].each do |s|
+        s = s.sub(/\.rb$/,'')
+        pid = (File.read(s + '.pid').to_i rescue nil)
+        cmd = if url.nil?
+          "-p \"#{path}\" -d #{db} restart"
+        else
+          "-u \"#{url}\" -d #{db} restart"
+        end
+        if (pid.nil? || !(Process.kill(0, pid) rescue false)) && !File.exist?(s + '.lock')
+          system "#{s}.rb " + cmd + " 1>/dev/null 2>&1"
+          puts "➡ Service #{File.basename(s)} (-v #{cmd}) started ..."
+        end
+      end
     end
   end
   def self::cleanup_services(watchdog_start_off)

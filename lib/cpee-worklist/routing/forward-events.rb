@@ -40,15 +40,13 @@ Daemonite.new do |opts|
         index = message.index(' ')
         mess = message[index+1..-1]
         instance = message[0...index]
-        type = pat[0..-3]
-        event = what[(type.length+1)..-1]
+        type, worker, event = what.split(':',3)
         topic = ::File::dirname(event)
         name = ::File::basename(event)
         long = File.join(topic,type,name)
-        opts[:redis].smembers("instance:#{instance}/handlers").each do |key|
-          if opts[:redis].smembers("instance:#{instance}/handlers/#{key}").include? long
-            url = opts[:redis].get("instance:#{instance}/handlers/#{key}/url")
-            p url
+        opts[:redis].smembers("worklist:#{instance}/handlers").each do |key|
+          if opts[:redis].smembers("worklist:#{instance}/handlers/#{key}").include? long
+            url = opts[:redis].get("worklist:#{instance}/handlers/#{key}/url")
             if url.nil? || url == ""
               opts[:redis].publish("forward:#{instance}/#{key}",mess)
             else
@@ -63,8 +61,8 @@ Daemonite.new do |opts|
             end
           end
         end
-        unless opts[:redis].exists?("instance:#{instance}/state")
-          empt = opts[:redis].keys("instance:#{instance}/*").to_a
+        unless opts[:redis].exists?("worklist:#{instance}/state")
+          empt = opts[:redis].keys("worklist:#{instance}/*").to_a
           opts[:redis].multi do |multi|
             multi.del empt
           end

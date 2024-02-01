@@ -37,16 +37,16 @@ Daemonite.new do |opts|
   run do
     opts[:pubsubredis].psubscribe('callback-end:*') do |on|
       on.pmessage do |pat, what, message|
-        _, key = what.split(':')
+        _, worker, key = what.split(':',3)
         index = message.index(' ')
         instance = message[0...index]
         opts[:redis].multi do |multi|
-          multi.srem("instance:#{instance}/callbacks",key)
-          multi.del("instance:#{instance}/callback/#{key}/uuid")
-          multi.del("instance:#{instance}/callback/#{key}/label")
-          multi.del("instance:#{instance}/callback/#{key}/position")
-          multi.del("instance:#{instance}/callback/#{key}/type")
-          multi.del("instance:#{instance}/callback/#{key}/subscription")
+          multi.srem("worklist:#{instance}/callbacks",key)
+          multi.del("worklist:#{instance}/callback/#{key}/uuid")
+          multi.del("worklist:#{instance}/callback/#{key}/label")
+          multi.del("worklist:#{instance}/callback/#{key}/position")
+          multi.del("worklist:#{instance}/callback/#{key}/type")
+          multi.del("worklist:#{instance}/callback/#{key}/subscription")
         end
       rescue => e
         puts e.message

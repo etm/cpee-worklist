@@ -61,7 +61,6 @@ class ActivityHappens < Riddl::Implementation #{{{
         attributes += "@role='#{activity['role']}'"
         attributes += " and " if activity['unit'] != '*'
       end
-      pp activity
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       pp attributes
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
