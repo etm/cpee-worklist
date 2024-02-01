@@ -44,32 +44,31 @@ Daemonite.new do |opts|
     opts[:pubsubredis].subscribe(EVENTS) do |on|
       on.message do |what, message|
         mess = JSON.parse(message[message.index(' ')+1..-1])
-        domain = mess.dig('domain')
         case what
           when 'event:state/change'
             opts[:redis].multi do |multi|
               unless mess.dig('content','state') == 'purged'
-                multi.set("instance:#{instance}/state",mess.dig('content','state'))
-                multi.set("instance:#{instance}/state/@changed",mess.dig('timestamp'))
+                multi.set("worklist:#{instance}/state",mess.dig('content','state'))
+                multi.set("worklist:#{instance}/state/@changed",mess.dig('timestamp'))
               end
             end
           when 'event:handler/change'
             opts[:redis].multi do |multi|
               mess.dig('content','changed').each do |c|
-                multi.sadd("instance:#{domain}/handlers",mess.dig('content','key'))
-                multi.sadd("instance:#{domain}/handlers/#{mess.dig('content','key')}",c)
-                multi.set("instance:#{domain}/handlers/#{mess.dig('content','key')}/url",mess.dig('content','url'))
-                multi.sadd("instance:#{domain}/handlers/#{c}",mess.dig('content','key'))
+                multi.sadd("worklist:handlers",mess.dig('content','key'))
+                multi.sadd("worklist:handlers/#{mess.dig('content','key')}",c)
+                multi.set("worklist:#handlers/#{mess.dig('content','key')}/url",mess.dig('content','url'))
+                multi.sadd("worklist:handlers/#{c}",mess.dig('content','key'))
               end
               mess.dig('content','deleted').to_a.each do |c|
-                multi.srem("instance:#{domain}/handlers/#{mess.dig('content','key')}",c)
-                multi.srem("instance:#{domain}/handlers/#{c}",mess.dig('content','key'))
+                multi.srem("worklist:handlers/#{mess.dig('content','key')}",c)
+                multi.srem("worklist:handlers/#{c}",mess.dig('content','key'))
               end
             end
-            if opts[:redis].scard("instance:#{domain}/handlers/#{mess.dig('content','key')}") < 1
+            if opts[:redis].scard("worklist:handlers/#{mess.dig('content','key')}") < 1
               opts[:redis].multi do |multi|
-                multi.del("instance:#{domain}/handlers/#{mess.dig('content','key')}/url")
-                multi.srem("instance:#{domain}/handlers",mess.dig('content','key'))
+                multi.del("worklist:handlers/#{mess.dig('content','key')}/url")
+                multi.srem("worklist:handlers",mess.dig('content','key'))
               end
             end
         end

@@ -10,7 +10,7 @@
     <tile>
       <layer name="main"/>
       <layer name="notifications">
-        <apply-to>/[a-zA-Z0-9]+</apply-to>
+        <apply-to>/</apply-to>
       </layer>
     </tile>
   </facade>

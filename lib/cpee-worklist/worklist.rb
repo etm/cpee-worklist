@@ -1,9 +1,5 @@
-module CPEE
-  module Message
-    WHO = 'cpee-worklist'
-    TYPE = 'domain'
-  end
-end
+CPEE::Message::who = 'cpee-worklist'
+CPEE::Message::type = 'worklist'
 
 module Worklist
   SERVER = File.expand_path(File.join(__dir__,'worklist.xml'))

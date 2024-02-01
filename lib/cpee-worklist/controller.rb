@@ -1,46 +1,30 @@
 require 'cpee/persistence'
+CPEE::Persistence::obj = 'worklist'
 
 module Worklist
 
-  class Controller < Hash
-    attr_reader :opts  # geht ohne net
+  class Controller
+    attr_reader :communication, :events, :notifications, :activities, :callback_keys, :votes, :opts, :orgmodels
+
     def initialize(opts)
-      super()
       CPEE::redis_connect(opts,"Main")
       @opts = opts
-      Dir::glob(opts[:domains]).each do |f|
-        domain = File.basename(f)
-        self[domain] = ControllerItem.new(domain,@opts)
-        self[domain].activities.unserialize
-        Dir::glob("#{f}/orgmodels/*").each do |g|
-          self[domain].add_orgmodel File.basename(g), File.read(g)
-        end
-      end
-    end
 
-    def add_activity(domain,activity)
-      self[domain] ||= ControllerItem.new(domain,@opts)
-      self[domain].activities << activity
-      self[domain].activities.serialize
-    end
-  end
-
-  class ControllerItem
-    attr_reader :communication, :events, :notifications, :activities, :callback_keys, :votes, :opts, :orgmodels, :domain
-
-    def initialize(domain,opts)
       @redis = opts[:redis]
       @votes = []
 
-      @domain = domain
+      @activities = Activities.new(opts)
+      @activities.unserialize
 
-      @opts = opts
+      CPEE::Persistence::new_static_object(CPEE::Persistence::obj,opts)
 
-      @activities = Activities.new(opts,domain)
       @orgmodels = []
+      Dir::glob(File.join(@opts[:top],'orgmodels','*')).each do |g|
+        add_orgmodel File.basename(g), File.read(g)
+      end
 
       @callback_keys = {}
-      @psredis = @opts[:redis_dyn].call "Comain #{@id} Callback Response"
+      @psredis = @opts[:redis_dyn].call "Callback Response"
 
       Thread.new do
         @psredis.psubscribe('callback-response:*','callback-end:*') do |on|
@@ -68,9 +52,11 @@ module Worklist
       end
     end
 
-    attr_reader :id
+    def id
+      'worklist'
+    end
     def uuid
-      @domain
+      @id
     end
     def host
       @opts[:host]
@@ -79,27 +65,27 @@ module Worklist
       File.join(@opts[:url],'/')
     end
     def instance_url
-      File.join(@opts[:url].to_s,@domain.to_s,'/')
+      File.join(@opts[:url].to_s,'/')
     end
     def instance_id
-      @domain
+      @id
     end
     def base
       base_url
     end
 
     def info
-      @domain
+      'worklist'
     end
 
     def add_orgmodel(name,content) #{{{
-      FileUtils.mkdir_p(File.join(@opts[:top],@domain,'orgmodels'))
+      FileUtils.mkdir_p(File.join(@opts[:top],'orgmodels'))
       @orgmodels << name unless @orgmodels.include?(name)
-      File.write(File.join(@opts[:top],@domain,'orgmodels',name), content)
+      File.write(File.join(@opts[:top],'orgmodels',name), content)
     end #}}}
 
     def notify(what,content={})
-      CPEE::Message::send(:event,what,base,@domain,uuid,info,content,@redis)
+      CPEE::Message::send(:event,what,base,info,uuid,info,content,@redis)
     end
 
     def vote(what,content={})
@@ -111,12 +97,12 @@ module Worklist
         content[:key] = voteid
         content[:subscription] = client
         votes << voteid
-        CPEE::Message::send(:vote,what,base,@domain,uuid,info,content,@redis)
+        CPEE::Message::send(:vote,what,base,info,uuid,info,content,@redis)
       end
 
       if votes.length > 0
         @votes += votes
-        psredis = @opts[:redis_dyn].call "Domain #{@domain} Vote"
+        psredis = @opts[:redis_dyn].call "Vote"
         collect = []
         psredis.subscribe(votes.map{|e| ['vote-response:' + e.to_s] }.flatten) do |on|
           on.message do |what, message|
@@ -138,13 +124,19 @@ module Worklist
     end
 
     def callback(hw,key,content)
-      CPEE::Message::send(:callback,'activity/content',base,@domain,uuid,info,content.merge(:key => key),@redis)
+      CPEE::Message::send(:callback,'activity/content',base,info,uuid,info,content.merge(:key => key),@redis)
       @callback_keys[key] = hw
     end
 
     def cancel_callback(key)
-      CPEE::Message::send(:'callback-end',key,base,@domain,uuid,info,{},@redis)
+      CPEE::Message::send(:'callback-end',key,base,info,uuid,info,{},@redis)
     end
+
+    def add_activity(activity)
+      @activities << activity
+      @activities.serialize
+    end
+
   end
 
 end

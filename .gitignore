@@ -5,4 +5,8 @@ lib/cpee-worklist/routing/persist.pid
 server/redis.pid
 server/redis.rdb
 server/server.pid
-
+server/lib
+server/data
+server/domains
+redis.rdb
+resources/

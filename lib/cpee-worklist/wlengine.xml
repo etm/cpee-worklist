@@ -1,7 +1,6 @@
 <description xmlns="http://riddl.org/ns/description/1.0" xmlns:ann="http://riddl.org/ns/annotation/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <message name="activityhappens"> <!--{{{-->
     <parameter name="orgmodel" type="string"/>
-    <parameter name="domain" type="string"/>
     <parameter name="form" type="string"/>
     <choice>
       <parameter name="unit" type="string"/>
@@ -26,21 +25,8 @@
     <parameter name="operation" fixed="giveback"/>
   </message>
 
-  <message name="domains">
-    <parameter name="domains" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
-      <element name="domains" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
-        <zeroOrMore>
-          <element name="domain">
-            <attribute name="name">
-              <data type="string"/>
-            </attribute>
-          </element>
-        </zeroOrMore>
-      </element>
-    </parameter>
-  </message>
-  <message name="domain_tasks">
-    <parameter name="domain_tasks" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
+  <message name="tasks">
+    <parameter name="tasks" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
       <element name="tasks" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
         <zeroOrMore>
           <element name="task">
@@ -127,34 +113,31 @@
   </message>
 
   <resource>
-    <get in="*" out="domains"/>
     <post in="activityhappens"/>
-    <resource relative="[a-zA-Z0-9]+"> <!-- domain -->
-      <get out="domain_tasks"/>
-      <resource relative="orgmodels">
+    <get out="tasks"/>
+    <resource relative="orgmodels">
+      <get out="xml"/>
+    </resource>
+    <resource relative="tasks"> <!-- all tasks in domain -->
+      <resource> <!-- task -->
+        <delete/>
+        <put in="uid"/>
+      </resource>
+    </resource>
+    <resource relative="callbacks">
+      <get in="*" out="callbacks"/>
+      <resource>
+        <put in="*"/>
+      </resource>
+    </resource>
+    <resource> <!-- user -->
+      <resource relative="tasks">
         <get out="xml"/>
-      </resource>
-      <resource relative="tasks"> <!-- all tasks in domain -->
         <resource> <!-- task -->
+          <get out="json"/>
+          <put in="take"/>
+          <put in="giveback"/>
           <delete/>
-          <put in="uid"/>
-        </resource>
-      </resource>
-      <resource relative="callbacks">
-        <get in="*" out="callbacks"/>
-        <resource>
-          <put in="*"/>
-        </resource>
-      </resource>
-      <resource> <!-- user -->
-        <resource relative="tasks">
-          <get out="xml"/>
-          <resource> <!-- task -->
-            <get out="json"/>
-            <put in="take"/>
-            <put in="giveback"/>
-            <delete/>
-          </resource>
         </resource>
       </resource>
     </resource>

@@ -34,16 +34,16 @@
     <script type="text/javascript" src="/js_libs/jquery.caret.min.js"></script>
     <script type="text/javascript" src="/js_libs/jquery.cookie.js"></script>
 
-    <script type="text/javascript" src="https://cpee.org/js_libs/relaxngui.js"></script>
-    <link   rel="stylesheet"      href="/js_libs/relaxngui.css" type="text/css"/>
+    <script type="text/javascript" src="/js_libs/relaxngui.js"></script>
 
     <script type="text/javascript" src="/js_libs/uidash.js"></script>
     <link   rel="stylesheet"      href="/js_libs/uidash.css" type="text/css"/>
 
-    <link rel="stylesheet" href="/global_ui/uicpee.css" type="text/css"/>
+    <link   rel="stylesheet"      href="/js_libs/relaxngui.css" type="text/css"/>
 
     <!-- custom stuff, play arround  -->
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
+    <link rel="stylesheet" href="/global_ui/uicpee.css" type="text/css"/>
 
     <!-- Flos Stuff -->
     <script type="text/javascript" src="js/worklist.js"></script>
@@ -80,13 +80,12 @@
           <form>
             <table class='layout'>
             <tr>
-              <td>Domain:</td>
-              <td><input name="domain-name" type="text" value=""/></td>
-              <td></td>
+              <td>User Name:</td>
+              <td><input name="user-name" type="text" value=""/></td>
             </tr>
             <tr>
-              <td>User ID:</td>
-              <td><input name="user-name" type="text" value=""/></td>
+              <td>User Name:</td>
+              <td><input name="pass" disabled="disabled" type="text" value="Not necessary in this demo."/></td>
               <td><input name="getListBt" type="submit" value="get Worklist"/></td>
             </tr>
             </table>

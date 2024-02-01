@@ -2,17 +2,16 @@ $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + '/worklist/server');
   $("#arealogin > form").submit(function(event){
     get_worklist();
-    subscribe_worklist($("input[name=domain-name]").val());
+    subscribe_worklist();
     uidash_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
   var q = $.parseQuerySimple();
-  if (q.user && q.domain) {
-    $("input[name=domain-name]").val(q.domain);
+  if (q.user) {
     $("input[name=user-name]").val(q.user);
     uidash_toggle_vis_tab($("#worklist .switch"));
     get_worklist();
-    subscribe_worklist(q.domain);
+    subscribe_worklist();
   }
   $(document).on('click','.orgmodeltab',function(event){
     var id = $(this).attr('data-tab');
@@ -50,11 +49,11 @@ $(document).ready(function() {// {{{
 });// }}}
 
 function get_worklist() {// {{{
-  $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val());
-  var url =$("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
+  $("input[name=user-url]").val($("input[name=base-url]").val()+'/'+$("input[name=user-name]").val());
+  var url =$("input[name=base-url]").val()+'/'+$("input[name=user-name]").val()+'/tasks';
   // subscribe_worklist($("input[name=domain-name]").val());
   // Set url (no more cookie nonsense!)
-  history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val())+'&domain='+encodeURIComponent($("input[name=domain-name]").val()));
+  history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val()));
 
   $.ajax({
     type: "GET",
@@ -65,7 +64,7 @@ function get_worklist() {// {{{
       $('#taborganisation').removeClass("hidden");
       $.ajax({
         type: "GET",
-        url: $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/orgmodels/',
+        url: $("input[name=base-url]").val()+'/orgmodels/',
         dataType: "xml",
         success: function(res){
           var ctv = $("#orgmodels");
@@ -99,7 +98,7 @@ function get_worklist() {// {{{
       });
     },
     error: function(a,b,c) {
-      alert("Wrong Domain.");
+      alert("Server not running.");
     }
   });
 }// }}}
@@ -209,7 +208,7 @@ function do_work(taskid,taskidurl) { //{{{
 } //}}}
 
 function subscribe_worklist(){ //{{{
-  var url = $("input[name=base-url]").val()+'/'+$("input[name=domain-name]").val()+'/notifications/subscriptions/';
+  var url = $("input[name=base-url]").val()+'/notifications/subscriptions/';
   $.ajax({
     type: "POST",
     url: url,
