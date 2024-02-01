@@ -1,7 +1,0 @@
-<subscription xmlns="http://riddl.org/ns/common-patterns/notifications-producer/1.0" url="http://cpee.org:9129">
-  <topic id="user">
-    <event>take</event>
-    <event>giveback</event>
-    <event>finish</event>
-  </topic>
-</subscription>
