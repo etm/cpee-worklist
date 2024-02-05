@@ -130,20 +130,23 @@ function do_work(taskid,taskidurl) { //{{{
       $.ajax({
         type: "GET",
         url: res.form,
-        success: function(form) {
-          var postFormStr = "<form id='form_" + taskid + "'>";
-          form_html=form;
-          postFormStr += form_html + "</form>";
+        dataType: 'html',
+        success: function(iform) {
+          let iform_element = $("<form id='form_" + taskid + "'></form>");
+          iform_element.append(iform);
+          const iform_evaltext = $('worklist-form-load',iform_element).text();
+          $('worklist-form-load',iform_element).remove()
+
+          let form = $("ui-area[data-belongs-to-tab="+taskid+"]");
           let data;
-          try {
-            data = JSON.parse(res.parameters);
-          } catch (e) {
-            data = {};
-          }
-          var form_area = "ui-area[data-belongs-to-tab="+taskid+"]";
-          $(form_area).append(postFormStr);
-          eval($('worklist-form-load').text()); //TODO, da werden alle worklist for loads in allen tabs, nur den aktuellen
-          $('worklist-form-load').hide();
+          try { data = JSON.parse(res.parameters); } catch (e) { data = {}; }
+          form.append(iform_element);
+
+          console.log("ui-area[data-belongs-to-tab="+taskid+"]");
+          console.log(iform_evaltext);
+
+          eval(iform_evaltext); // investigate indirect eval and strict
+
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
             // Form data

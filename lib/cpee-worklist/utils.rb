@@ -16,10 +16,9 @@
 # cpee-worklist (file COPYING in the main directory).  If not, see
 # <http://www.gnu.org/licenses/>.
 
-def user_ok(task,user)
-  resp = Typhoeus.get(task['orgmodel'])
-  xml = resp.body
-  orgmodel = XML::Smart.string(xml)
+def user_ok(opts,task,user)
+  fname = File.join(opts[:top],'orgmodels',Riddl::Protocols::Utils::escape(task['orgmodel']))
+  orgmodel = XML::Smart.open_unprotected(fname)
   orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
   subjects = orgmodel.find('/o:organisation/o:subjects/o:subject')
   unit = task['unit']
@@ -46,11 +45,8 @@ def user_ok(task,user)
   false
 end
 
-def user_info(task,user)
-  fname = File.join('data','orgmodels',Riddl::Protocols::Utils::escape(task['orgmodel']))
-  p task['orgmodel']
-  p fname
-
+def user_info(opts,task,user)
+  fname = File.join(opts[:top],'orgmodels',Riddl::Protocols::Utils::escape(task['orgmodel']))
   orgmodel = XML::Smart.open_unprotected(fname)
   orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
   user = orgmodel.find("/o:organisation/o:subjects/o:subject[@uid='#{user}']/o:relation")

@@ -23,7 +23,9 @@ class ActivityHappens < Riddl::Implementation #{{{
     controller = @a[0]
 
     activity = {}
-    activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY LABEL"
+    pp @h
+    activity['process'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY LABEL'
+    activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY LABEL'
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK_ID']
@@ -77,7 +79,7 @@ class ActivityHappens < Riddl::Implementation #{{{
         # results = @a[0].vote('task/add', :user => user ,                                      :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         # if (results.length == 1) && (user.include? results[0])
         #   activity["user"] = results[0]
-        #   info = user_info(activity,activity["user"])
+        #   info = user_info(@a[0].opts,activity,activity["user"])
         #   @a[0].notify('task/add',       :user => user,:callback_id => activity['id'],        :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :wl_instance => activity['wl_instance'] )
         #   @a[0].notify('user/take',      :user => results[0], :callback_id => activity['id'], :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info, :wl_instance => activity['wl_instance'])
         # else
@@ -102,7 +104,7 @@ class TaskDel < Riddl::Implementation #{{{
         @a[0].notify('task/delete', :callback_id => activity['id'],                                                      :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
         Riddl::Client.new(activity['url']).put
       else
-        info = user_info(activity,activity['user'])
+        info = user_info(@a[0].opts,activity,activity['user'])
         @a[0].notify('user/finish', :callback_id => activity['id'], :user => activity['user'], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
       end
     else
@@ -125,8 +127,6 @@ class ShowTasks < Riddl::Implementation #{{{
         x.add "unit" , activity['unit']
 
         if activity['user']!='*'
-          p activity['user']
-          p doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").length
           user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").first
           x.add "user", user.attributes['id'], :uid => user.attributes['uid']
         else
@@ -173,8 +173,8 @@ class TaskTake < Riddl::Implementation #{{{
     index = @a[0].activities.index{ |c| c["id"] == @r.last }
     if index
       activity = @a[0].activities[index]
-      activity["user"] = @r[-3]	if user_ok(activity,@r[-3])
-      info = user_info(activity,@r[-3])
+      activity["user"] = @r[-3]	if user_ok(@a[0].opts,activity,@r[-3])
+      info = user_info(@a[0].opts,activity,@r[-3])
       @a[0].activities.serialize
       @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
@@ -230,9 +230,9 @@ class AssignTask < Riddl::Implementation #{{{
    index = @a[0].activities.index{ |c| c["id"] == @r.last }
     if index
       user = @p[0].value
-      @a[0].activities[index]["user"] = user if user_ok(@a[0].activities[index],user)
+      @a[0].activities[index]["user"] = user if user_ok(@a[0].opts,@a[0].activities[index],user)
       callback_id = @a[0].activities[index]['id']
-      info = user_info(@a[0].activities[index],user)
+      info = user_info(@a[0].opts,@a[0].activities[index],user)
       @a[0].activities.serialize
       @a[0].notify('user/take', :index => callback_id, :user => @p[0].value, :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
