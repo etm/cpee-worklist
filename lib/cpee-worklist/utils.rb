@@ -47,7 +47,11 @@ def user_ok(task,user)
 end
 
 def user_info(task,user)
-  orgmodel = XML::Smart.open_unprotected(task['orgmodel'])
+  fname = File.join('data','orgmodels',Riddl::Protocols::Utils::escape(task['orgmodel']))
+  p task['orgmodel']
+  p fname
+
+  orgmodel = XML::Smart.open_unprotected(fname)
   orgmodel.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
   user = orgmodel.find("/o:organisation/o:subjects/o:subject[@uid='#{user}']/o:relation")
   {}.tap{ |t| user.map{|u| (t[u.attributes['unit']]||=[]) <<  u.attributes['role']}}
