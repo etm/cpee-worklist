@@ -23,7 +23,6 @@ require 'cpee/value_helper'
 require 'cpee/redis'
 
 EVENTS = %w{
-  event:00:state/change
   event:00:handler/change
 }
 
@@ -47,13 +46,6 @@ Daemonite.new do |opts|
       on.message do |what, message|
         mess = JSON.parse(message[message.index(' ')+1..-1])
         case what
-          when 'event:00:state/change'
-            opts[:redis].multi do |multi|
-              unless mess.dig('content','state') == 'purged'
-                multi.set("worklist:worklist/state",mess.dig('content','state'))
-                multi.set("worklist:worklist/state/@changed",mess.dig('timestamp'))
-              end
-            end
           when 'event:00:handler/change'
             opts[:redis].multi do |multi|
               mess.dig('content','changed').each do |c|
