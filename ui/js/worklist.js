@@ -142,20 +142,23 @@ function do_work(taskid,taskidurl) { //{{{
           try { data = JSON.parse(res.parameters); } catch (e) { data = {}; }
           form.append(iform_element);
 
-          console.log("ui-area[data-belongs-to-tab="+taskid+"]");
-          console.log(iform_evaltext);
-
           eval(iform_evaltext); // investigate indirect eval and strict
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
-            // Form data
-            var form_data = $(this).serialize();
-            // res.url == Cpee Callback url
+            var form_data = $(this).serializeArray();
+            var send_data = {};
+            send_data['user'] = $("input[name=user-name]").val();
+            send_data['raw'] = form_data;
+            send_data['data'] = {};
+            $.map(send_data['raw'], function(n, i){
+                send_data['data'][n['name']] = n['value'];
+            });
             $.ajax({
               type: "PUT",
               url: res.url + '/',
-              data: form_data,
+              contentType: "application/json",
+              data: JSON.stringify(send_data),
               success: function(something){
                 $.ajax({
                   type: "DELETE",

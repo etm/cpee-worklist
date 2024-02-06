@@ -28,6 +28,14 @@
         <parameter name="role" type="string"/>
       </group>
     </choice>
+    <!--optional>
+      <zeroOrMore>
+        <parameter name="user" type="string"/>
+      </zeroOrMore>
+      <parameter name="user_mode" type="string">
+        <param name="pattern">set|exclude</param>
+      </parameter>
+    </optional-->
     <zeroOrMore>
       <parameter name="*" type="string"/>
     </zeroOrMore>

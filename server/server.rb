@@ -23,9 +23,8 @@ class ActivityHappens < Riddl::Implementation #{{{
     controller = @a[0]
 
     activity = {}
-    pp @h
-    activity['process'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY LABEL'
-    activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY LABEL'
+    activity['process'] = @h.keys.include?('CPEE_ATTR_INFO') ? "#{@h['CPEE_ATTR_INFO']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY PROCESS'
+    activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']}" : 'DUMMY LABEL'
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
     activity['id']  = @h['CPEE_CALLBACK_ID']
@@ -64,7 +63,6 @@ class ActivityHappens < Riddl::Implementation #{{{
         attributes += " and " if activity['unit'] != '*'
       end
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
-      pp attributes
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
 
       if user.empty?
@@ -97,7 +95,6 @@ class TaskDel < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |e| e["id"] == @r.last }
     if index
-
       activity = @a[0].activities.delete_at(index)
       @a[0].activities.serialize
       if @r.length == 3
@@ -121,7 +118,8 @@ class ShowTasks < Riddl::Implementation #{{{
 
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
       @a[0].activities.each do |activity|
-        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'],:instance_uuid => activity['uuid'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel']
+        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :instance_uuid => activity['uuid'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel']
+        x.add "process" , activity['process']
         x.add "label" , activity['label']
         x.add "role" , activity['role']
         x.add "unit" , activity['unit']
@@ -144,7 +142,7 @@ class ShowTasks < Riddl::Implementation #{{{
   end
 end  #}}}
 
-class ShowUserTasks < Riddl:: Implementation #{{{
+ class ShowUserTasks < Riddl:: Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
     tasks = {}
@@ -154,7 +152,7 @@ class ShowUserTasks < Riddl:: Implementation #{{{
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
           @a[0].activities.each do |activity|
             if (activity['role']=='*' || activity['role'].casecmp(rel.attributes['role']) == 0) && (activity['unit'] == '*' || activity['unit'].casecmp(rel.attributes['unit']) == 0) && (activity['user']=='*' || activity['user']==@r[-2])
-              tasks["#{activity['id']}"] = {:uid => activity['user'], :label => activity['label'] }
+              tasks["#{activity['id']}"] = {:uid => activity['user'], :label => activity['process'] + ': ' + activity['label'] }
             end
           end
         end
