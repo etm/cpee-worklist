@@ -127,15 +127,34 @@ function do_work(taskid,taskidurl) { //{{{
     url: taskidurl,
     success:function(res) {
       if (!uidash_add_tab("#main", res.label, taskid, true, '')) { return; };
-      console.log(res.form);
       $.ajax({
         type: "GET",
         url: res.form,
         dataType: 'text',
-        success: function(iform) {
-          let matches = iform.match(/<worklist-form-load>(.*?)<\/worklist-form-load>/ms);
-          const iform_evaltext = matches[1];
-          iform = iform.replace(matches[0],'');
+        success: async (iform) => {
+          let end = false;
+          let iform_evaltext = '';
+          while (!end) {
+            let matches = iform.match(/<worklist-form-load>(.*?)<\/worklist-form-load>/ms);
+            if (matches && matches.length > 0) {
+              iform_evaltext += matches[1];
+              iform = iform.replace(matches[0],'');
+            } else {
+              let includes = iform.match(/<worklist-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/\s*>/ms);
+              if (includes && includes.length > 0) {
+                await $.ajax({
+                  type: "GET",
+                  url: includes[3],
+                  dataType: 'text',
+                  success: function(inctext) {
+                    iform = iform.replace(includes[0],inctext);
+                  }
+                });
+              } else {
+                end = true;
+              }
+            }
+          }
 
           let iform_element = $("<form id='form_" + taskid + "'></form>");
           iform_element.append(iform);
