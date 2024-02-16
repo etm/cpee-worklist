@@ -41,7 +41,8 @@ class ActivityHappens < Riddl::Implementation #{{{
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
-    activity['parameters'] = @p.shift.value rescue '[]'
+    activity['restrictions'] = JSON::parse(@p.shift.value) rescue {}
+    activity['parameters'] = JSON::parse(@p.shift.value) rescue {}
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
       begin

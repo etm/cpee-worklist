@@ -127,19 +127,22 @@ function do_work(taskid,taskidurl) { //{{{
     url: taskidurl,
     success:function(res) {
       if (!uidash_add_tab("#main", res.label, taskid, true, '')) { return; };
+      console.log(res.form);
       $.ajax({
         type: "GET",
         url: res.form,
-        dataType: 'html',
+        dataType: 'text',
         success: function(iform) {
+          let matches = iform.match(/<worklist-form-load>(.*?)<\/worklist-form-load>/ms);
+          const iform_evaltext = matches[1];
+          iform = iform.replace(matches[0],'');
+
           let iform_element = $("<form id='form_" + taskid + "'></form>");
           iform_element.append(iform);
-          const iform_evaltext = $('worklist-form-load',iform_element).text();
-          $('worklist-form-load',iform_element).remove()
 
           let form = $("ui-area[data-belongs-to-tab="+taskid+"]");
           let data;
-          try { data = JSON.parse(res.parameters); } catch (e) { data = {}; }
+          try { data = res.parameters; } catch (e) { data = {}; }
           form.append(iform_element);
 
           eval(iform_evaltext); // investigate indirect eval and strict
