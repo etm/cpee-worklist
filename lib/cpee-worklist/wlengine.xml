@@ -28,6 +28,15 @@
         <parameter name="role" type="string"/>
       </group>
     </choice>
+    <optional>
+      <parameter name="priority" type="positiveInteger"/>
+    </optional>
+    <optional>
+      <parameter name="collect" type="nonNegativeInteger"/>
+    </optional>
+    <optional>
+      <parameter name="deadline" type="string"/>
+    </optional>
     <parameter name="restrictions" type="string"/>
     <parameter name="data" type="string"/>
   </message> <!--}}}-->

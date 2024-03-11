@@ -23,7 +23,7 @@ class ActivityHappens < Riddl::Implementation #{{{
     controller = @a[0]
 
     activity = {}
-    activity['process'] = @h.keys.include?('CPEE_ATTR_INFO') ? "#{@h['CPEE_ATTR_INFO']} (#{@h['CPEE_INSTANCE'].split('/').last})" : 'DUMMY PROCESS'
+    activity['process'] = @h.keys.include?('CPEE_ATTR_INFO') ? "#{@h['CPEE_ATTR_INFO']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY PROCESS (#{@h['CPEE_INSTANCE'].split('/').last})"
     activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']}" : 'DUMMY LABEL'
     activity['user'] = '*'
     activity['url'] = @h['CPEE_CALLBACK']
@@ -41,6 +41,9 @@ class ActivityHappens < Riddl::Implementation #{{{
     activity['form'] = @p.shift.value
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
+    activity['priority'] = @p.first.name == 'priority' ? @p.shift.value.to_i : 1
+    activity['collect'] = @p.first.name == 'collect' ? @p.shift.value : nil
+    activity['deadline'] = @p.first.name == 'deadline' ? @p.shift.value : nil
     activity['restrictions'] = JSON::parse(@p.shift.value) rescue {}
     activity['parameters'] = JSON::parse(@p.shift.value) rescue {}
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
@@ -153,13 +156,13 @@ end  #}}}
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
           @a[0].activities.each do |activity|
             if (activity['role']=='*' || activity['role'].casecmp(rel.attributes['role']) == 0) && (activity['unit'] == '*' || activity['unit'].casecmp(rel.attributes['unit']) == 0) && (activity['user']=='*' || activity['user']==@r[-2])
-              tasks["#{activity['id']}"] = {:uid => activity['user'], :label => activity['process'] + ': ' + activity['label'] }
+              tasks["#{activity['id']}"] = {:uid => activity['user'], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
             end
           end
         end
       end
     end
-    tasks.each{|k,v| out.root.add("task", :id => k, :uid => v[:uid], :label => v[:label])}
+    tasks.sort_by{ |k,e| e[:priority] }.each{|k,v| out.root.add("task", :priority => v[:priority], :id => k, :uid => v[:uid], :label => v[:label])}
     x = Riddl::Parameter::Complex.new("return","text/xml") do
       out.to_s
     end

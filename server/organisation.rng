@@ -58,16 +58,17 @@
         </attribute>
       </optional>
       <oneOrMore>
-        <choice>
-          <element name='relation'>
-            <attribute name="role">
-              <data type="string"/>
-            </attribute>
-            <attribute name="unit">
-              <data type="string"/>
-            </attribute>
-          </element>
-        </choice>
+        <element name='relation'>
+          <attribute name="role">
+            <data type="string"/>
+          </attribute>
+          <attribute name="unit">
+            <data type="string"/>
+          </attribute>
+        </element>
+      </oneOrMore>
+      <oneOrMore>
+        <element><anyName/><data type="string"/></element>
       </oneOrMore>
     </element>
   </define>

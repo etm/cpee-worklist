@@ -88,6 +88,7 @@ function get_worklist() {// {{{
         var tasklabel = $(this).attr('label');
         node.attr('data-id',taskidurl);
         node.attr('data-id',taskidurl);
+        node.addClass('priority_' + $(this).attr('priority'));
         $('.name',node).text(tasklabel);
         if ($(this).attr('uid')=='*') {
           $('.task_giveback',node).prop('disabled', true);
@@ -121,7 +122,6 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
 } //}}}
 
 function do_work(taskid,taskidurl) { //{{{
-  var form_html;
   $.ajax({
     type: "GET",
     url: taskidurl,
@@ -133,14 +133,14 @@ function do_work(taskid,taskidurl) { //{{{
         dataType: 'text',
         success: async (iform) => {
           let end = false;
-          let iform_evaltext = '';
+          let evaltext = '';
           while (!end) {
             let matches = iform.match(/<worklist-form-load>(.*?)<\/worklist-form-load>/ms);
             if (matches && matches.length > 0) {
-              iform_evaltext += matches[1];
+              evaltext += matches[1];
               iform = iform.replace(matches[0],'');
             } else {
-              let includes = iform.match(/<worklist-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/\s*>/ms);
+              let includes = iform.match(/<\/?worklist-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
               if (includes && includes.length > 0) {
                 await $.ajax({
                   type: "GET",
@@ -155,16 +155,28 @@ function do_work(taskid,taskidurl) { //{{{
               }
             }
           }
+          {
+            let replaces = iform.match(/form="worklist-form"/ms);
+            if (replaces && replaces.length > 0) {
+              iform = iform.replaceAll(replaces[0],'form="form_' + taskid + '"');
+            }
+          }
+          {
+            let replaces = iform.match(/div.task.current/ms);
+            if (replaces && replaces.length > 0) {
+              iform = iform.replaceAll(replaces[0],'div.task.task_' + taskid);
+            }
+          }
 
-          let iform_element = $("<form id='form_" + taskid + "'></form>");
-          iform_element.append(iform);
+          let container = $("<div class='task task_" + taskid + "'><form id='form_" + taskid + "'></form></div>");
+          container.append(iform);
 
           let form = $("ui-area[data-belongs-to-tab="+taskid+"]");
           let data;
           try { data = res.parameters; } catch (e) { data = {}; }
-          form.append(iform_element);
+          form.append(container);
 
-          eval(iform_evaltext); // investigate indirect eval and strict
+          eval(evaltext); // investigate indirect eval and strict
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
