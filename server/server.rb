@@ -117,28 +117,35 @@ end  #}}}
 class ShowTasks < Riddl::Implementation #{{{
   def response
     out = XML::Smart.string('<tasks/>')
-    @a[0].orgmodels.each do |fname|
-      doc = XML::Smart.open(File.join(@a[0].opts[:top],'orgmodels',fname))
-
+    umodels = @a[0].orgmodels.map do |fname|
+      doc = XML::Smart.open_unprotected(File.join(@a[0].opts[:top],'orgmodels',fname))
       doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
-      @a[0].activities.each do |activity|
-        x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :instance_uuid => activity['uuid'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel']
-        x.add "process" , activity['process']
-        x.add "label" , activity['label']
-        x.add "role" , activity['role']
-        x.add "unit" , activity['unit']
+      doc
+    end
+    @a[0].activities.each do |activity|
+      x = out.root.add "task", :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :instance_uuid => activity['uuid'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel']
+      x.add "process" , activity['process']
+      x.add "label" , activity['label']
+      x.add "role" , activity['role']
+      x.add "unit" , activity['unit']
 
-        if activity['user']!='*'
-          user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").first
-          x.add "user", user.attributes['id'], :uid => user.attributes['uid']
-        else
+      if activity['user'] != '*'
+        umodels.each do |doc|
+          if user = doc.find("/o:organisation/o:subjects/o:subject[@uid='#{activity['user']}']").first
+            x.add "user", user.attributes['id'], :uid => user.attributes['uid']
+            break
+          end
+        end
+      else
+        xpath = ''
+        xpath = "[@role='#{activity['role']}' and @unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] != '*' )
+        xpath = "[@role='#{activity['role']}']" if (activity['unit'] == '*' && activity['role'] != '*' )
+        xpath = "[@unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] == '*' )
 
-          xpath = ''
-          xpath = "[@role='#{activity['role']}' and @unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] != '*' )
-          xpath = "[@role='#{activity['role']}']" if (activity['unit'] == '*' && activity['role'] != '*' )
-          xpath = "[@unit='#{activity['unit']}']" if (activity['unit'] != '*' && activity['role'] == '*' )
-
-          doc.find("/o:organisation/o:subjects/o:subject[o:relation#{xpath}]").each{|e| x.add "user", e.attributes['id'], :uid => e.attributes['uid'] }
+        umodels.each do |doc|
+          if (tmp = doc.find("/o:organisation/o:subjects/o:subject[o:relation#{xpath}]")).length > 0
+            tmp.each{|e| x.add "user", e.attributes['id'], :uid => e.attributes['uid'] }
+          end
         end
       end
     end
