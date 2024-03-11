@@ -67,9 +67,9 @@
           </attribute>
         </element>
       </oneOrMore>
-      <oneOrMore>
+      <zeroOrMore>
         <element><anyName/><data type="string"/></element>
-      </oneOrMore>
+      </zeroOrMore>
     </element>
   </define>
 
