@@ -49,22 +49,34 @@
     <script type="text/javascript" src="js/worklist.js"></script>
   </head>
   <body data-defaultport="9398" is='x-ui-'>
-    <!-- The following six are templates that get used during ui generation, change them carefully -->
-    <table id="dat_template_tasks" class='hidden'> <!--{{{-->
-      <tr class="task">
+    <!-- The following are templates that get used during ui generation, change them carefully -->
+    <template id="dat_template_tasks_single">
+      <tr class="task"> <!--{{{-->
         <td class='name'></td>
         <td class='sep'>⇒</td>
+        <td class='deadline'><em>No deadline.</em></td>
         <td class='buttons'>
           <button class='task_take' value=''>Take</button>
           <button class='task_giveback' value=''>Give Back</button>
           <button class='task_do' value=''>Do it!</button>
         </td>
       </tr>
-    </table> <!--}}}-->
-
-    <ul id="dat_template_orgmodels" class='hidden'> <!--{{{-->
+    </template>   <!--}}}-->
+    <template id="dat_template_tasks_multi"> <!--{{{-->
+      <tr class="task">
+        <td class='name'></td>
+        <td class='sep'>⇒</td>
+        <td class='deadline'><em>No Deadline.</em></td>
+        <td class='buttons'>
+          <button class='task_take' value='' style="visibility: hidden">Take</button>
+          <button class='task_giveback' value='' style="visibility: hidden">Give Back</button>
+          <button class='task_do' value=''>Do it!</button>
+        </td>
+      </tr>
+    </template>   <!--}}}-->
+    <template id="dat_template_orgmodels"> <!--{{{-->
       <li class="orgmodel"><a class='link' href=""></a> ⇒ [<a class='model' href="">View Model</a>]</li>
-    </ul> <!--}}}-->
+    </template>   <!--}}}-->
 
     <ui-tabbed id="worklist">
       <ui-tabbar>

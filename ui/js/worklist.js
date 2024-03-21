@@ -71,7 +71,7 @@ function get_worklist() {// {{{
           ctv.empty();
           $(res).find('orgmodel').each(function(){
             var uri = decodeURIComponent($(this).text());
-            var node = $("#dat_template_orgmodels li").clone(true);
+            var node = $($("#dat_template_orgmodels")[0].content.cloneNode(true));
             $('.link',node).text(uri);
             $('.link',node).attr('href',uri);
             $('.model',node).attr('href',uri);
@@ -83,7 +83,13 @@ function get_worklist() {// {{{
       var ctv = $("#dat_tasks");
       ctv.empty();
       $(res).find('task').each(function(){
-        var node = $("#dat_template_tasks tr").clone(true);
+        console.log($(this).attr('all'));
+        if ($(this).attr('all') == "true") {
+          var node = $($("#dat_template_tasks_multi")[0].content.cloneNode(true));
+        } else {
+          var node = $($("#dat_template_tasks_single")[0].content.cloneNode(true));
+          $('.deadline',node).text($(this).attr('deadline'));
+        }
         var taskidurl = $(this).attr('id');
         var tasklabel = $(this).attr('label');
         node.attr('data-id',taskidurl);

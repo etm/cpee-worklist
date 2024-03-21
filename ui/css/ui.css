@@ -86,7 +86,8 @@ button.highlight { background-color: #cc0000; }
 #dat_tasks td:nth-child(1)         { padding: 0.4em 0; }
 #dat_tasks td:nth-child(1)         { min-width: 32ex; white-space: nowrap; padding: 0.4em 0; padding-left: 1em; padding-right: 1em; }
 #dat_tasks td:nth-child(2)         { width: 1em; padding-right: 1em; }
-#dat_tasks td:nth-child(3)         { width: 100%}
+#dat_tasks td:nth-child(3)         { white-space: nowrap; padding-right: 1em; }
+#dat_tasks td:nth-child(4)         { width: 100%}
 #dat_tasks tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
 #dat_tasks tr:nth-child(odd) input { background-color: ButtonFace; }
 
