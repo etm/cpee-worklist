@@ -43,9 +43,11 @@ class ActivityHappens < Riddl::Implementation #{{{
     activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
     activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
     activity['priority'] = @p.first.name == 'priority' ? @p.shift.value.to_i : 1
-    activity['collect'] = @p.first.name == 'collect' ? @p.shift.value : nil
+    activity['collect'] = @p.first.name == 'collect' ? @p.shift.value.to_i : nil
     activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
-    activity['restrictions'] = JSON::parse(@p.shift.value) rescue {}
+    activity['restrictions'] = []
+    rests = JSON::parse(@p.shift.value) rescue nil
+    activity['restrictions'] << rests unless rests.nil?
     activity['parameters'] = JSON::parse(@p.shift.value) rescue {}
     status, content, headers = Riddl::Client.new(activity['orgmodel']).get
     if status == 200
@@ -100,14 +102,23 @@ class TaskDel < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |e| e["id"] == @r.last }
     if index
-      activity = @a[0].activities.delete_at(index)
-      @a[0].activities.serialize
-      if @r.length == 3
-        @a[0].notify('task/delete', :callback_id => activity['id'],                                             :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
-        Riddl::Client.new(activity['url']).put
+      activity = @a[0].activities[index]
+      if activity['collect'] && activity['collect'] > 1
+        activity['collect'] -= 1
+        activity['restrictions'] << { "restriction" => { "mode" => "prohibit", "id" => @r[-3] } }
+        @a[0].activities.serialize
+        @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       else
-        info = user_info(@a[0].opts,activity,@r[-3])
-        @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
+        p 'weg'
+        activity = @a[0].activities.delete_at(index)
+        @a[0].activities.serialize
+        if @r.length == 3
+          @a[0].notify('task/delete', :callback_id => activity['id'],                                             :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+          Riddl::Client.new(activity['url']).put
+        else
+          info = user_info(@a[0].opts,activity,@r[-3])
+          @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+        end
       end
     else
       @status = 404
@@ -165,7 +176,21 @@ end  #}}}
         doc.register_namespace 'o', 'http://cpee.org/ns/organisation/1.0'
         doc.find("/o:organisation/o:subjects/o:subject[@uid='#{@r[-2]}']/o:relation").each do |rel|
           @a[0].activities.each do |activity|
-            if (activity['role']=='*' || activity['role'].casecmp(rel.attributes['role']) == 0) && (activity['unit'] == '*' || activity['unit'].casecmp(rel.attributes['unit']) == 0) && (activity['collect'] || activity['user'].empty? || activity['user'].include?(@r[-2]))
+            restrict = false
+            activity['restrictions'].each do |restriction|
+              restrict = true if restriction['restriction']['mode'] == 'prohibit' && restriction['restriction']['id'] == @r[-2]
+            end
+            if (
+                 activity['role']=='*' ||
+                 activity['role'].casecmp(rel.attributes['role']) == 0
+               ) && (
+                 activity['unit'] == '*' ||
+                 activity['unit'].casecmp(rel.attributes['unit']) == 0
+               ) && (
+                 activity['collect'] ||
+                 activity['user'].empty? ||
+                 activity['user'].include?(@r[-2])
+               ) && !restrict
               tasks["#{activity['id']}"] = { :all => activity.has_key?('collect') && !activity['collect'].nil?, :uid => @r[-2], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
               tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
             end
@@ -192,7 +217,8 @@ class TaskTake < Riddl::Implementation #{{{
       @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','take')
+        Riddl::Header.new('CPEE-UPDATE-STATUS','take'),
+        Riddl::Header.new('CPEE-EVENT','take')
       ]
     else
       @status = 404
@@ -211,7 +237,8 @@ class TaskGiveBack < Riddl::Implementation #{{{
       @a[0].notify('user/giveback', :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','giveback')
+        Riddl::Header.new('CPEE-UPDATE-STATUS','giveback'),
+        Riddl::Header.new('CPEE-EVENT','giveback')
       ]
     else
       @status = 404
@@ -223,7 +250,7 @@ class TaskDetails < Riddl::Implementation #{{{
   def response
     index = @a[0].activities.index{ |c| c["id"] == @r.last }
     if index
-      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
+      Riddl::Parameter::Complex.new "data","application/json", JSON.generate({:collect => @a[0].activities[index].has_key?('collect') && !@a[0].activities[index]['collect'].nil?, 'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
     else
       @status = 404
     end
@@ -250,7 +277,8 @@ class AssignTask < Riddl::Implementation #{{{
       @a[0].notify('user/take', :index => callback_id, :user => @p[0].value, :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','take')
+        Riddl::Header.new('CPEE-UPDATE-STATUS','take'),
+        Riddl::Header.new('CPEE-EVENT','take')
       ]
     else
       @status = 404

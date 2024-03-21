@@ -83,7 +83,6 @@ function get_worklist() {// {{{
       var ctv = $("#dat_tasks");
       ctv.empty();
       $(res).find('task').each(function(){
-        console.log($(this).attr('all'));
         if ($(this).attr('all') == "true") {
           var node = $($("#dat_template_tasks_multi")[0].content.cloneNode(true));
         } else {
@@ -92,9 +91,9 @@ function get_worklist() {// {{{
         }
         var taskidurl = $(this).attr('id');
         var tasklabel = $(this).attr('label');
-        node.attr('data-id',taskidurl);
-        node.attr('data-id',taskidurl);
-        node.addClass('priority_' + $(this).attr('priority'));
+        node.find('tr').attr('data-id',taskidurl);
+        node.find('tr').attr('data-label',tasklabel);
+        node.find('tr').addClass('priority_' + $(this).attr('priority'));
         $('.name',node).text(tasklabel);
         if ($(this).attr('uid')=='*') {
           $('.task_giveback',node).prop('disabled', true);
@@ -185,9 +184,12 @@ function do_work(taskid,taskidurl) { //{{{
           eval(evaltext); // investigate indirect eval and strict
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
+          console.log('registering it');
           $("#form_"+taskid).on('submit',function(e){
             var form_data = $(this).serializeArray();
             var send_data = {};
+            var headers = {};
+            if (res.collect) { headers['CPEE-UPDATE'] = 'true'; }
             send_data['user'] = $("input[name=user-name]").val();
             send_data['raw'] = form_data;
             send_data['data'] = {};
@@ -196,10 +198,12 @@ function do_work(taskid,taskidurl) { //{{{
             });
             $.ajax({
               type: "PUT",
-              url: res.url + '/',
+              url: res.url,
+              headers: headers,
               contentType: "application/json",
               data: JSON.stringify(send_data),
               success: function(something){
+                console.log('submitting itter');
                 $.ajax({
                   type: "DELETE",
                   url: taskidurl,
@@ -272,7 +276,9 @@ function subscribe_worklist(){ //{{{
             case 'user':
               switch(data['name']) {
                 case 'finish':
-                  tr.remove();
+                  if (data.content.user == $("input[name=user-name]").val()) {
+                    tr.remove();
+                  }
                   break;
                 default:
                   tr.remove();
