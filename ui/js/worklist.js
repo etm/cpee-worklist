@@ -184,7 +184,6 @@ function do_work(taskid,taskidurl) { //{{{
           eval(evaltext); // investigate indirect eval and strict
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
-          console.log('registering it');
           $("#form_"+taskid).on('submit',function(e){
             var form_data = $(this).serializeArray();
             var send_data = {};
@@ -203,7 +202,6 @@ function do_work(taskid,taskidurl) { //{{{
               contentType: "application/json",
               data: JSON.stringify(send_data),
               success: function(something){
-                console.log('submitting itter');
                 $.ajax({
                   type: "DELETE",
                   url: taskidurl,

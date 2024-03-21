@@ -109,7 +109,6 @@ class TaskDel < Riddl::Implementation #{{{
         @a[0].activities.serialize
         @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       else
-        p 'weg'
         activity = @a[0].activities.delete_at(index)
         @a[0].activities.serialize
         if @r.length == 3
