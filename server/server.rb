@@ -216,7 +216,7 @@ class TaskTake < Riddl::Implementation #{{{
       @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','take'),
+        Riddl::Header.new('CPEE-STATUS','take'),
         Riddl::Header.new('CPEE-EVENT','take')
       ]
     else
@@ -236,7 +236,7 @@ class TaskGiveBack < Riddl::Implementation #{{{
       @a[0].notify('user/giveback', :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','giveback'),
+        Riddl::Header.new('CPEE-STATUS','giveback'),
         Riddl::Header.new('CPEE-EVENT','giveback')
       ]
     else
@@ -276,7 +276,7 @@ class AssignTask < Riddl::Implementation #{{{
       @a[0].notify('user/take', :index => callback_id, :user => @p[0].value, :organisation => info)
       Riddl::Client.new(@a[0].activities[index]['url']).put [
         Riddl::Header.new('CPEE-UPDATE','true'),
-        Riddl::Header.new('CPEE-UPDATE-STATUS','take'),
+        Riddl::Header.new('CPEE-STATUS','take'),
         Riddl::Header.new('CPEE-EVENT','take')
       ]
     else

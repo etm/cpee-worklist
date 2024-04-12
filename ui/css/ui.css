@@ -151,3 +151,14 @@ div.task {
 #dat_tasks tr.priority_42:nth-child(even) input { background-color: #99c1f130; }
 #dat_tasks tr.priority_42:nth-child(odd)        { background-color: #99c1f180; color: ButtonText; }
 #dat_tasks tr.priority_42:nth-child(odd) input  { background-color: #99c1f180; }
+
+.pulseit{
+	animation: pulse linear 2s 3;
+}
+@keyframes pulse {
+	0%   { background-color: #ebdef0; }
+	25%  { background-color: red; }
+	50%  { background-color: #ebdef0; }
+	75%  { background-color: red; }
+	100%  { background-color: #ebdef0; }
+}

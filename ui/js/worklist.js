@@ -185,6 +185,20 @@ function do_work(taskid,taskidurl) { //{{{
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
           $("#form_"+taskid).on('submit',function(e){
+            let scount = 0;
+            $('select[required][form="form_' + taskid + '"]').each((_,e) => {
+              if ($(e).val() == null) { scount += 1; }
+              if (scount == 1) {
+                $(e).focus();
+                $(e).removeClass('pulseit');
+
+                setTimeout(()=>{$(e).addClass('pulseit')},100);;
+              }
+            });
+            if (scount > 0) {
+              e.preventDefault();
+              return false;
+            }
             var form_data = $(this).serializeArray();
             var send_data = {};
             var headers = {};
