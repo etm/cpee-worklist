@@ -1,3 +1,20 @@
+function toggle_message() {
+  var url =$("input[name=base-url]").val()+'/'+$("input[name=user-name]").val()+'/';
+  if ($("#dat_tasks tr").length == 0) {
+    $.ajax({
+      type: "GET",
+      url: url,
+      success: function(res){
+        console.log(res);
+        $("#dat_message").text(res);
+        $("#dat_message").show();
+      }
+    });
+  } else {
+    $("#dat_message").hide();
+  }
+}
+
 $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + '/worklist/server');
   $("#arealogin > form").submit(function(event){
@@ -85,9 +102,9 @@ function get_worklist() {// {{{
       $(res).find('task').each(function(){
         if ($(this).attr('all') == "true") {
           var node = $($("#dat_template_tasks_multi")[0].content.cloneNode(true));
+          $('.deadline',node).text($(this).attr('deadline'));
         } else {
           var node = $($("#dat_template_tasks_single")[0].content.cloneNode(true));
-          $('.deadline',node).text($(this).attr('deadline'));
         }
         var taskidurl = $(this).attr('id');
         var tasklabel = $(this).attr('label');
@@ -102,6 +119,7 @@ function get_worklist() {// {{{
         }
         ctv.append(node);
       });
+      toggle_message();
     },
     error: function(a,b,c) {
       alert("Server not running.");
@@ -110,7 +128,6 @@ function get_worklist() {// {{{
 }// }}}
 
 function take_work(url,butt,butt2,give_or_take){ //{{{
-
   var op = give_or_take == 1 ? "take" : "giveback";
   $.ajax({
     type: "PUT",
@@ -290,6 +307,7 @@ function subscribe_worklist(){ //{{{
                 case 'finish':
                   if (data.content.user == $("input[name=user-name]").val()) {
                     tr.remove();
+                    toggle_message();
                   }
                   break;
                 default:
@@ -305,6 +323,7 @@ function subscribe_worklist(){ //{{{
                   break;
                 case 'delete':
                   tr.remove();
+                  toggle_message();
                   break;
               }
               break;

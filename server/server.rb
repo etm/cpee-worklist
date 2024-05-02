@@ -19,6 +19,19 @@ require_relative '../lib/cpee-worklist/activities'
 require_relative '../lib/cpee-worklist/controller'
 require_relative '../lib/cpee-worklist/utils'
 
+class GetStatus < Riddl::Implementation
+  def response
+    status = File.read(File.join(@a[0],'users','status.txt')) rescue 'Currently no tasks available.'
+    Riddl::Parameter::Simple.new("status",status)
+  end
+end
+
+class SetStatus < Riddl::Implementation
+  def response
+    File.write(File.join(@a[0],'users','status.txt'),@p[0].value)
+  end
+end
+
 class ActivityHappens < Riddl::Implementation #{{{
   def response
     controller = @a[0]
@@ -72,6 +85,11 @@ class ActivityHappens < Riddl::Implementation #{{{
       attributes += "@unit='#{activity['unit']}'" if activity['unit'] != '*'
       user = org_xml.find("/o:organisation/o:subjects/o:subject[o:relation[#{attributes}]]").map{ |e| e.attributes['uid'] }
 
+      if activity['collect']
+        activity['collect_max'] = user.length
+        activity['collected'] = 0
+      end
+
       if user.empty?
         @a[0].notify('task/invalid', :callback_id => activity['id'], :reason => 'no users found for this combination of unit/role',:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'] )
         @status = 404
@@ -103,8 +121,8 @@ class TaskDel < Riddl::Implementation #{{{
     index = @a[0].activities.index{ |e| e["id"] == @r.last }
     if index
       activity = @a[0].activities[index]
-      if activity['collect'] && activity['collect'] > 1
-        activity['collect'] -= 1
+      if activity['collected'] && (activity['collected'] + 1) < activity['collect_max']
+        activity['collected'] += 1
         activity['restrictions'] << { "restriction" => { "mode" => "prohibit", "id" => @r[-3] } }
         @a[0].activities.serialize
         @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
@@ -312,6 +330,9 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
 
   opts[:sse_keepalive_frequency]    ||= 10
   opts[:sse_connections]            = {}
+
+  opts[:finalize_frequency]         ||= 10
+
   CPEE::Message::set_workers(1)
 
   parallel do
@@ -324,6 +345,21 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
     end
     EM.add_periodic_timer(opts[:sse_keepalive_frequency]) do
       CPEE::Notifications::sse_heartbeat(opts)
+    end
+    EM.add_periodic_timer(opts[:finalize_frequency]) do
+      controller.activities.each_with_index do |activity,index|
+        begin
+          if activity['collect'] && activity['collected'] && activity['deadline'] && activity['collected'] >= activity['collect'] && Time.parse(activity['deadline'].to_s) < Time.now
+            activity = controller.activities.delete_at(index)
+            controller.activities.serialize
+            controller.notify('user/finish', :callback_id => activity['id'], :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+            Riddl::Client.new(activity['url']).put
+          end
+        rescue => e
+          puts e.message
+          puts e.backtrace
+        end
+      end
     end
   end
 
@@ -338,7 +374,7 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
       use CPEE::Callbacks::implementation(opts)
     end
     on resource 'orgmodels' do
-      run GetOrgModels, controller if get
+      run GetOrgModels,controller if get
     end
     on resource 'tasks' do
       on resource do
@@ -347,6 +383,8 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
       end
     end
     on resource do
+      run SetStatus, opts[:top] if put 'status'
+      run GetStatus, opts[:top] if get
       on resource 'tasks' do
         run ShowUserTasks,controller if get
         on resource do |r|

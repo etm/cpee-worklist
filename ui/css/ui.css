@@ -74,6 +74,9 @@ button.highlight { background-color: #cc0000; }
 #parameters .tabbelow { height: 9em; min-height: 1.7em; }
 
 #areatasks { height: 100%; overflow-x: hidden; overflow-y: scroll; }
+#dat_message {
+  border:1em solid white;
+}
 #dat_tasks {
   border-collapse:collapse;
   border-spacing:0;

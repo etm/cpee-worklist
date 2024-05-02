@@ -44,6 +44,9 @@
   <message name="uid">
     <parameter name="userid" type="string"/>
   </message>
+  <message name="status">
+    <parameter name="status" type="string"/>
+  </message>
   <message name="take">
     <parameter name="operation" fixed="take"/>
   </message>
@@ -157,6 +160,8 @@
       </resource>
     </resource>
     <resource> <!-- user -->
+      <put in="status"/>
+      <get out="status"/>
       <resource relative="tasks">
         <get out="xml"/>
         <resource> <!-- task -->
