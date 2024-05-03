@@ -28,7 +28,8 @@ end
 
 class SetStatus < Riddl::Implementation
   def response
-    File.write(File.join(@a[0],'users','status.txt'),@p[0].value)
+    @a[0].notify('user/status', { 'status' => @p[0].value })
+    File.write(File.join(@a[1],'users','status.txt'),@p[0].value)
   end
 end
 
@@ -383,7 +384,7 @@ Riddl::Server.new(Worklist::SERVER, :port => 9398) do |opts|
       end
     end
     on resource do
-      run SetStatus, opts[:top] if put 'status'
+      run SetStatus, controller, opts[:top] if put 'status'
       run GetStatus, opts[:top] if get
       on resource 'tasks' do
         run ShowUserTasks,controller if get

@@ -1,19 +1,23 @@
-function toggle_message() {
+function toggle_message(message=undefined) { //{{{
   var url =$("input[name=base-url]").val()+'/'+$("input[name=user-name]").val()+'/';
   if ($("#dat_tasks tr").length == 0) {
-    $.ajax({
-      type: "GET",
-      url: url,
-      success: function(res){
-        console.log(res);
-        $("#dat_message").text(res);
-        $("#dat_message").show();
-      }
-    });
+    if (message != undefined) {
+      $("#dat_message").text(message);
+      $("#dat_message").show();
+    } else {
+      $.ajax({
+        type: "GET",
+        url: url,
+        success: function(res){
+          $("#dat_message").text(res);
+          $("#dat_message").show();
+        }
+      });
+    }
   } else {
     $("#dat_message").hide();
   }
-}
+} //}}}
 
 $(document).ready(function() {// {{{
   $("input[name=base-url]").val(location.protocol + "//" + location.host + '/worklist/server');
@@ -291,7 +295,7 @@ function subscribe_worklist(){ //{{{
   $.ajax({
     type: "POST",
     url: url,
-    data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
+    data: "topic=user&events=status,take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
       subscription = ret;
       es = new EventSource(url + subscription + "/sse/");
@@ -310,6 +314,8 @@ function subscribe_worklist(){ //{{{
                     toggle_message();
                   }
                   break;
+                case 'status':
+                  toggle_message(data.content.status);
                 default:
                   tr.remove();
                   get_worklist();

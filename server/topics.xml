@@ -16,6 +16,7 @@
 
 <topics xmlns='http://riddl.org/ns/common-patterns/notifications-producer/2.0'>
   <topic id='user'>
+    <event>status</event>
     <event>take</event>
     <event>giveback</event>
     <event>finish</event>
