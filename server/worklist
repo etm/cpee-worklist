@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+#
 # This file is part of CPEE-WORKLIST
 #
 # CPEE-WORKLIST is free software: you can redistribute it and/or modify it
@@ -14,23 +16,22 @@
 # along with CPEE-WORKLIST (file LICENSE in the main directory). If not, see
 # <http://www.gnu.org/licenses/>.
 
-module CPEE
-  module Worklist
-    class Activities < Array
-      def initialize(opts)
-        super()
-        @opts = opts
-      end
-
-      def unserialize
-        self.clear.replace JSON.parse!(File.read(File.join(@opts[:top],'activities.sav'))) rescue []
-      end
-
-      def  serialize
-        Thread.new do
-          File.write File.join(@opts[:top],'activities.sav'), JSON.pretty_generate(self)
-        end
-      end
-    end
-  end
+require 'rubygems'
+if File.exist? File.join(__dir__,'../lib/cpee-worklist/implementation.rb')
+  require_relative '../lib/cpee-worklist/implementation'
+else
+  require 'cpee-worklist/implementation'
 end
+
+options = {
+  :host => 'localhost',
+  :port => 9398,
+  :secure => false
+}
+
+Riddl::Server.new(CPEE::Worklist::SERVER, options) do |opts|
+  accessible_description true
+  cross_site_xhr true
+
+  use CPEE::Worklist::implementation(opts)
+end.loop!
