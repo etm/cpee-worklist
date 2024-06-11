@@ -2,7 +2,7 @@ Gem::Specification.new do |s|
   s.name             = "cpee-worklist"
   s.version          = "1.0.0"
   s.platform         = Gem::Platform::RUBY
-  s.license          = "LGPL-3.0"
+  s.license          = "LGPL-3.0-or-later"
   s.summary          = "Worklist for the cloud process execution engine (cpee.org)"
 
   s.description      = "see http://cpee.org"

@@ -1,7 +1,7 @@
 require 'rake'
 require 'rubygems/package_task'
 
-spec = eval(File.read('cpee-logging-xes-yaml.gemspec'))
+spec = eval(File.read('cpee-worklist.gemspec'))
 Gem::PackageTask.new(spec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
@@ -13,9 +13,9 @@ end
 task :default => [:gem]
 
 task :push => :gem do |r|
-  `gem push pkg/cpee-logging-xes-yaml.gem`
+  `gem push pkg/cpee-worklist.gem`
 end
 
 task :install => :gem do |r|
-  `gem install pkg/cpee-logging-xes-yaml.gem`
+  `gem install pkg/cpee-worklist.gem`
 end
