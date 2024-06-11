@@ -8,7 +8,7 @@ Tested for MRI > 2.7
 Clone. Install dependencies:
 
 ```bash
-gem install --user cpee
+gem install --user cpee cpee-worklist
 ```
 
 # Run
