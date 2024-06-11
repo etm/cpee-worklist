@@ -330,8 +330,9 @@ module CPEE
 
     def self::implementation(opts)
       opts[:ORG_SCHEMA] = ::File.join(__dir__, 'organisation.rng')
-      opts[:top] = ::File.join(__dir__, 'data')
       opts[:topics] = ::File.join(__dir__, 'topics.xml')
+
+      opts[:top] ||= ::File.join(__dir__, 'data')
 
       opts[:watchdog_frequency]         ||= 7
       opts[:watchdog_start_off]         ||= false
