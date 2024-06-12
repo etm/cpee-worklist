@@ -41,6 +41,7 @@ else
 end
 
 insta = "#{curpath}/../server/"
+FileUtils.mkdir(p1) rescue nil
 if !File.exist?(p1)
   FileUtils.cp_r(insta,p1)
 else
