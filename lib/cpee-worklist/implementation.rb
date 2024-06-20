@@ -271,7 +271,8 @@ module CPEE
     class TaskGiveBack < Riddl::Implementation #{{{
       def response
         index = @a[0].activities.index{ |c| c["id"] == @r.last }
-        if index && (@a[0].activities[index]['user'] == @r[-3])
+
+        if index && (@a[0].activities[index]['user'].include?(@r[-3]))
           activity = @a[0].activities[index]
           activity['user'] = []
           callback_id = @a[0].activities[index]['id']
@@ -312,7 +313,7 @@ module CPEE
        index = @a[0].activities.index{ |c| c["id"] == @r.last }
         if index
           user = @p[0].value
-          @a[0].activities[index]["user"] = user if CPEE::Worklist::User::ok?(@a[0].opts,@a[0].activities[index],user)
+          @a[0].activities[index]["user"] << user if CPEE::Worklist::User::ok?(@a[0].opts,@a[0].activities[index],user)
           callback_id = @a[0].activities[index]['id']
           info = CPEE::Worklist::User::info(@a[0].opts,@a[0].activities[index],user)
           @a[0].activities.serialize
