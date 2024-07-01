@@ -77,10 +77,11 @@ if command == 'new'
     puts 'Directory already exists, updating ...'
   end
 elsif command == 'cpui'
+  insta = "#{curpath}/../ui/"
   if !File.exist?(p1)
-    FileUtils.cp_r(ui,p1)
+    FileUtils.cp_r(insta,p1)
   else
-    FileUtils.cp_r(Dir.glob(File.join(ui,'*')),p1,remove_destination: true)
+    FileUtils.cp_r(Dir.glob(File.join(insta,'*')),p1,remove_destination: true)
     puts "Directory already exists, updating ..."
   end
   js_libs(p1)
