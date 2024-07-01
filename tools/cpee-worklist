@@ -3,6 +3,7 @@ curpath = __dir__
 require 'rubygems'
 require 'optparse'
 require 'fileutils'
+require 'typhoeus'
 require 'xml/smart'
 
 def wrap(s, width=78, indent=18)
