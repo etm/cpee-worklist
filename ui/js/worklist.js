@@ -76,8 +76,6 @@ function get_worklist() {// {{{
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val()));
 
-  console.log(url);
-
   $.ajax({
     type: "GET",
     url: url,
@@ -118,7 +116,6 @@ function get_worklist() {// {{{
         node.find('tr').attr('data-label',tasklabel);
         node.find('tr').addClass('priority_' + $(this).attr('priority'));
         $('.name',node).text(tasklabel);
-        console.log($(this));
         if ($(this).attr('own')=='true') {
           $('.task_take',node).prop('disabled', true);
         } else {
@@ -141,8 +138,11 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
     url: url,
     data:"operation="+op ,
     success: function(){
+      console.log(butt);
+      console.log(butt2);
       $(butt).prop('disabled','true');
       $(butt2).prop('disabled','false');
+      $(butt2).removeAttr('disabled');
     },
     error: function(a,b,c){
       alert("Put didn't work");
@@ -332,6 +332,14 @@ function subscribe_worklist(){ //{{{
                   break;
                 case 'status':
                   toggle_message(data.content.status);
+                  break;
+                case 'take':
+                case 'giveback':
+                  if (data.content.user != $("input[name=user-name]").val()) {
+                    tr.remove();
+                    get_worklist();
+                  }
+                  break;
                 default:
                   tr.remove();
                   get_worklist();
