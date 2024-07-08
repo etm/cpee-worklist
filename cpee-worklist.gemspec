@@ -1,13 +1,13 @@
 Gem::Specification.new do |s|
   s.name             = "cpee-worklist"
-  s.version          = "1.0.2"
+  s.version          = "1.0.6"
   s.platform         = Gem::Platform::RUBY
   s.license          = "LGPL-3.0-or-later"
   s.summary          = "Worklist for the cloud process execution engine (cpee.org)"
 
   s.description      = "see http://cpee.org"
 
-  s.files            = Dir['{server/worklist,server/worklist.conf,lib/**/*}'] + %w(LICENSE Rakefile cpee-worklist.gemspec README.md AUTHORS)
+  s.files            = Dir['{server/worklist,server/worklist.conf,lib/**/*,ui/**/*,tools/**/*}'] + %w(LICENSE Rakefile cpee-worklist.gemspec README.md AUTHORS)
   s.require_path     = 'lib'
   s.extra_rdoc_files = ['README.md']
   s.bindir           = 'tools'
