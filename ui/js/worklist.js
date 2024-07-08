@@ -76,6 +76,8 @@ function get_worklist() {// {{{
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val()));
 
+  console.log(url);
+
   $.ajax({
     type: "GET",
     url: url,
@@ -116,10 +118,11 @@ function get_worklist() {// {{{
         node.find('tr').attr('data-label',tasklabel);
         node.find('tr').addClass('priority_' + $(this).attr('priority'));
         $('.name',node).text(tasklabel);
-        if ($(this).attr('uid')=='*') {
-          $('.task_giveback',node).prop('disabled', true);
-        } else {
+        console.log($(this));
+        if ($(this).attr('own')=='true') {
           $('.task_take',node).prop('disabled', true);
+        } else {
+          $('.task_giveback',node).prop('disabled', true);
         }
         ctv.append(node);
       });
@@ -193,11 +196,24 @@ function do_work(taskid,taskidurl) { //{{{
               iform = iform.replaceAll(replaces[0],'div.task.task_' + taskid);
             }
           }
+          {
+            let replaces = iform.match(/worklist-item/ms);
+            if (replaces && replaces.length > 0) {
+              iform = iform.replaceAll(replaces[0],'div.task.task_' + taskid);
+            }
+          }
+          {
+            let replaces = evaltext.match(/worklist-item/ms);
+            if (replaces && replaces.length > 0) {
+              evaltext = evaltext.replaceAll(replaces[0],'div.task.task_' + taskid);
+            }
+          }
 
           let container = $("<div class='task task_" + taskid + "'><form id='form_" + taskid + "'></form></div>");
           container.append(iform);
 
           let form = $("ui-area[data-belongs-to-tab="+taskid+"]");
+              form.addClass('areataskitem');
           let data;
           try { data = res.parameters; } catch (e) { data = {}; }
           form.append(container);

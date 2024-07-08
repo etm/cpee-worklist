@@ -234,6 +234,7 @@ module CPEE
                      activity['user'].include?(@r[-2])
                    ) && !restrict
                   tasks["#{activity['id']}"] = { :all => activity.has_key?('collect') && !activity['collect'].nil?, :uid => @r[-2], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
+                  tasks["#{activity['id']}"][:own] = activity['user'].include?(@r[-2])
                   tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
                 end
               end
