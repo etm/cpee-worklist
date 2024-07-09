@@ -138,8 +138,6 @@ function take_work(url,butt,butt2,give_or_take){ //{{{
     url: url,
     data:"operation="+op ,
     success: function(){
-      console.log(butt);
-      console.log(butt2);
       $(butt).prop('disabled','true');
       $(butt2).prop('disabled','false');
       $(butt2).removeAttr('disabled');
