@@ -261,7 +261,8 @@ module CPEE
           Riddl::Client.new(@a[0].activities[index]['url']).put [
             Riddl::Header.new('CPEE-UPDATE','true'),
             Riddl::Header.new('CPEE-STATUS','take'),
-            Riddl::Header.new('CPEE-EVENT','take')
+            Riddl::Header.new('CPEE-EVENT','take'),
+            Riddl::Parameter::Simple.new('user',@r[-3])
           ]
         else
           @status = 404
@@ -282,7 +283,8 @@ module CPEE
           Riddl::Client.new(@a[0].activities[index]['url']).put [
             Riddl::Header.new('CPEE-UPDATE','true'),
             Riddl::Header.new('CPEE-STATUS','giveback'),
-            Riddl::Header.new('CPEE-EVENT','giveback')
+            Riddl::Header.new('CPEE-EVENT','giveback'),
+            Riddl::Parameter::Simple.new('user',@r[-3])
           ]
         else
           @status = 404
@@ -322,7 +324,8 @@ module CPEE
           Riddl::Client.new(@a[0].activities[index]['url']).put [
             Riddl::Header.new('CPEE-UPDATE','true'),
             Riddl::Header.new('CPEE-STATUS','take'),
-            Riddl::Header.new('CPEE-EVENT','take')
+            Riddl::Header.new('CPEE-EVENT','take'),
+            Riddl::Parameter::Simple.new('user',@p[0].value)
           ]
         else
           @status = 404
