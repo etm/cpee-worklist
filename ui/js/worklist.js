@@ -168,6 +168,11 @@ function do_work(taskid,taskidurl) { //{{{
               iform = iform.replace(matches[0],'');
             } else {
               let includes = iform.match(/<\/?worklist-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
+              let rincludes = iform.match(/<\/?worklist-relative-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
+              let pos = res.form.match(/.*\//);
+              rincludes.forEach((a) => {
+                includes.push(pos + a);
+              });
               if (includes && includes.length > 0) {
                 await $.ajax({
                   type: "GET",
