@@ -159,24 +159,27 @@ function do_work(taskid,taskidurl) { //{{{
         url: res.form,
         dataType: 'text',
         success: async (iform) => {
-          let end = false;
+          let end = false;;
           let evaltext = '';
+          let rel = res.form.match(/.*\//)[0];
+
           while (!end) {
             let matches = iform.match(/<worklist-form-load>(.*?)<\/worklist-form-load>/ms);
             if (matches && matches.length > 0) {
               evaltext += matches[1];
               iform = iform.replace(matches[0],'');
             } else {
-              let includes = iform.match(/<\/?worklist-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
-              let rincludes = iform.match(/<\/?worklist-relative-include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
-              let pos = res.form.match(/.*\//);
-              rincludes.forEach((a) => {
-                includes.push(pos + a);
-              });
+              let includes = iform.match(/<\/?worklist-(relative-)?include\s+href=(("([^"]*)")|('([^']*)'))\s*\/?\s*>/ms);
               if (includes && includes.length > 0) {
+                let inc;
+                if (includes[1]) {
+                  inc = rel + includes[4];
+                } else {
+                  inc = includes[4];
+                }
                 await $.ajax({
                   type: "GET",
-                  url: includes[3],
+                  url: inc,
                   dataType: 'text',
                   success: function(inctext) {
                     iform = iform.replace(includes[0],inctext);
