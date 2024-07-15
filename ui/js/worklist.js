@@ -191,104 +191,100 @@ function do_work(taskid,taskidurl) { //{{{
             }
           }
           {
-            let replaces = iform.match(/form="worklist-form"/ms);
-            if (replaces && replaces.length > 0) {
-              iform = iform.replaceAll(replaces[0],'form="form_' + taskid + '"');
-            }
-          }
-          {
-            let replaces = iform.match(/div.task.current/ms);
-            if (replaces && replaces.length > 0) {
-              iform = iform.replaceAll(replaces[0],'div.task.task_' + taskid);
-            }
-          }
-          {
             let replaces = iform.match(/worklist-item/ms);
             if (replaces && replaces.length > 0) {
-              iform = iform.replaceAll(replaces[0],'div.task.task_' + taskid);
+              iform = iform.replaceAll(replaces[0],'body');
             }
           }
           {
             let replaces = evaltext.match(/worklist-item/ms);
             if (replaces && replaces.length > 0) {
-              evaltext = evaltext.replaceAll(replaces[0],'div.task.task_' + taskid);
+              evaltext = evaltext.replaceAll(replaces[0],'body');
             }
           }
 
-          let container = $("<div class='task task_" + taskid + "'><form id='form_" + taskid + "'></form></div>");
-          container.append(iform);
+          let worklist_form = $("<form id='worklist-form'></form></div>");
 
-          let form = $("ui-area[data-belongs-to-tab="+taskid+"]");
-              form.addClass('areataskitem');
           let data;
           try { data = res.parameters; } catch (e) { data = {}; }
-          form.append(container);
 
-          eval(evaltext); // investigate indirect eval and strict
+          let iframe= $('<iframe src="container.html"></iframe>')[0];
+              iframe.onload = () => {
+                $(iframe.contentDocument.body).append(worklist_form);
+                $(iframe.contentDocument.body).append(iform);
+                iframe.contentWindow.data = data;
+                iframe.contentWindow.form = $(iframe.contentDocument.body);
+                iframe.contentWindow.eval(evaltext); // investigate indirect eval and strict
+                $("#worklist-form",iframe.contentWindow.form).on('submit',function(e){
+
+                  let scount = 0;
+                  $('select[required][form="worklist-form"]',iframe.contentWindow.form).each((_,e) => {
+                    if ($(e).val() == null) { scount += 1; }
+                    if (scount == 1) {
+                      $(e).focus();
+                      $(e).removeClass('pulseit');
+
+                      setTimeout(()=>{$(e).addClass('pulseit')},100);;
+                    }
+                  });
+                  if (scount > 0) {
+                    e.preventDefault();
+                    return false;
+                  }
+                  var form_data = $(this).serializeArray();
+                  var send_data = {};
+                  var headers = {};
+                  if (res.collect) { headers['CPEE-UPDATE'] = 'true'; }
+                  send_data['user'] = $("input[name=user-name]").val();
+                  send_data['raw'] = form_data;
+                  send_data['data'] = {};
+                  $.map(send_data['raw'], function(n, i){
+                      send_data['data'][n['name']] = n['value'];
+                  });
+                  $.ajax({
+                    type: "PUT",
+                    url: res.url,
+                    headers: headers,
+                    contentType: "application/json",
+                    data: JSON.stringify(send_data),
+                    success: function(something){
+                      $.ajax({
+                        type: "DELETE",
+                        url: taskidurl,
+                        success: function(del){
+                          uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+                          get_worklist();
+                        },
+                        error: function(a,b,c){
+                          console.log("Delete failed");
+                        }
+                      });
+                    },
+                    error: function(a,b,c){
+                      $.ajax({
+                        type: "DELETE",
+                        url: taskidurl,
+                        success: function(del){
+                          uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
+                          get_worklist();
+                        },
+                        error: function(a,b,c){
+                          console.log("Delete failed");
+                        }
+                      });
+                      // TODO
+                      console.log("Put didnt work");
+                    }
+                  });
+                  e.preventDefault();
+                });
+              }
+
+          let taskitem = $("ui-area[data-belongs-to-tab="+taskid+"]");
+              taskitem.addClass('areataskitem');
+          taskitem.append(iframe);
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
-          $("#form_"+taskid).on('submit',function(e){
-            let scount = 0;
-            $('select[required][form="form_' + taskid + '"]').each((_,e) => {
-              if ($(e).val() == null) { scount += 1; }
-              if (scount == 1) {
-                $(e).focus();
-                $(e).removeClass('pulseit');
-
-                setTimeout(()=>{$(e).addClass('pulseit')},100);;
-              }
-            });
-            if (scount > 0) {
-              e.preventDefault();
-              return false;
-            }
-            var form_data = $(this).serializeArray();
-            var send_data = {};
-            var headers = {};
-            if (res.collect) { headers['CPEE-UPDATE'] = 'true'; }
-            send_data['user'] = $("input[name=user-name]").val();
-            send_data['raw'] = form_data;
-            send_data['data'] = {};
-            $.map(send_data['raw'], function(n, i){
-                send_data['data'][n['name']] = n['value'];
-            });
-            $.ajax({
-              type: "PUT",
-              url: res.url,
-              headers: headers,
-              contentType: "application/json",
-              data: JSON.stringify(send_data),
-              success: function(something){
-                $.ajax({
-                  type: "DELETE",
-                  url: taskidurl,
-                  success: function(del){
-                    uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
-                    get_worklist();
-                  },
-                  error: function(a,b,c){
-                    console.log("Delete failed");
-                  }
-                });
-              },
-              error: function(a,b,c){
-                $.ajax({
-                  type: "DELETE",
-                  url: taskidurl,
-                  success: function(del){
-                    uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
-                    get_worklist();
-                  },
-                  error: function(a,b,c){
-                    console.log("Delete failed");
-                  }
-                });
-                // TODO
-                console.log("Put didnt work");
-              }
-            });
-            e.preventDefault();
-          });
         },
         error: function(a,b,c){
           $.ajax({

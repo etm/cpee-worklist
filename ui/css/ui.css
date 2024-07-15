@@ -136,8 +136,14 @@ ui-area > form {
   padding-left: 1em;
 }
 
-div.task {
-  padding: 1em;
+.areataskitem iframe {
+  width: 100%;
+  border:0 none;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: block;
 }
 
 #dat_tasks tr.priority_1:nth-child(even)       { background-color: #dc8add30; color: ButtonText; }
@@ -164,3 +170,5 @@ div.task {
 	75%  { background-color: red; }
 	100%  { background-color: #ebdef0; }
 }
+
+
