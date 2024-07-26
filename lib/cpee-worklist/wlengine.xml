@@ -37,6 +37,9 @@
     <optional>
       <parameter name="deadline" type="string"/>
     </optional>
+    <optional>
+      <parameter name="prioritization" type="string"/>
+    </optional>
     <parameter name="restrictions" type="string"/>
     <parameter name="data" type="string"/>
   </message> <!--}}}-->

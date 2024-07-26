@@ -1,3 +1,20 @@
+/*
+  This file is part of CPEE-WORKLIST.
+
+  CPEE-WORKLIST is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the Free
+  Software Foundation, either version 3 of the License, or (at your option) any
+  later version.
+
+  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  CPEE-WORKLIST (file LICENSE in the main directory).  If not, see
+  <http://www.gnu.org/licenses/>.
+*/
+
 function toggle_message(message=undefined) { //{{{
   var url =$("input[name=base-url]").val()+'/'+$("input[name=user-name]").val()+'/';
   if ($("#dat_tasks tr").length == 0) {
@@ -203,7 +220,7 @@ function do_work(taskid,taskidurl) { //{{{
             }
           }
 
-          let worklist_form = $("<form id='worklist-form'></form></div>");
+          let worklist_form = $("<form id='worklist-form'></form>");
 
           let data;
           try { data = res.parameters; } catch (e) { data = {}; }
@@ -212,9 +229,18 @@ function do_work(taskid,taskidurl) { //{{{
               iframe.onload = () => {
                 $(iframe.contentDocument.body).append(worklist_form);
                 $(iframe.contentDocument.body).append(iform);
+
+                console.log(worklist_form);
+                console.log(iform);
+
                 iframe.contentWindow.data = data;
                 iframe.contentWindow.form = $(iframe.contentDocument.body);
-                iframe.contentWindow.eval(evaltext); // investigate indirect eval and strict
+
+                // investigate indirect eval and strict
+                iframe.contentWindow.eval(evaltext),
+
+                console.log('rrrr');
+
                 $("#worklist-form",iframe.contentWindow.form).on('submit',function(e){
 
                   let scount = 0;

@@ -82,6 +82,7 @@ module CPEE
         activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
         activity['priority'] = @p.first.name == 'priority' ? @p.shift.value.to_i : 1
         activity['collect'] = @p.first.name == 'collect' ? @p.shift.value.to_i : nil
+        activity['prioritization'] = @p.first.name == 'prioritization' ? (JSON::parse(@p.shift.value) rescue @p.shift.value.gsub(/[\[\]()<>"']/,'').split(/\s*[,;]\s*/)) : []
         activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
         activity['restrictions'] = []
         rests = JSON::parse(@p.shift.value) rescue nil
@@ -236,6 +237,7 @@ module CPEE
                   tasks["#{activity['id']}"] = { :all => activity.has_key?('collect') && !activity['collect'].nil?, :uid => @r[-2], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
                   tasks["#{activity['id']}"][:own] = activity['user'].include?(@r[-2])
                   tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
+                  tasks["#{activity['id']}"][:prioritization] = activity['prioritization']&.join(', ') || ''
                 end
               end
             end
@@ -254,7 +256,7 @@ module CPEE
         index = @a[0].activities.index{ |c| c["id"] == @r.last }
         if index
           activity = @a[0].activities[index]
-          activity['user'].push @r[-3]if CPEE::Worklist::User::ok?(@a[0].opts,activity,@r[-3])
+          activity['user'].push @r[-3]if CPEE::Worklist::User::ok?(@a[0].opts,activity,@r[-3]) && !activity['user'].include?(@r[-3])
           info = CPEE::Worklist::User::info(@a[0].opts,activity,@r[-3])
           @a[0].activities.serialize
           @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)

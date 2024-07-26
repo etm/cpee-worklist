@@ -1,0 +1,76 @@
+/*
+  This file is part of CPEE-WORKLIST.
+
+  CPEE-WORKLIST is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the Free
+  Software Foundation, either version 3 of the License, or (at your option) any
+  later version.
+
+  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  CPEE-WORKLIST (file LICENSE in the main directory).  If not, see
+  <http://www.gnu.org/licenses/>.
+*/
+
+:root {
+  --x-ui-border-color: #a1a1a1;
+  --x-ui-outside-color: #ffffff;
+  --x-ui-background-color: #ffffff;
+  --x-ui-light-text-color: #333;
+  --x-ui-light-back-color: #e8e8e8;
+  --x-ui-link-color: #425d73;
+  --x-ui-content-border-color: #ffed00;
+  --x-ui-content-light-background: #f0f0f0;
+  --x-ui-content-hover-background: #99cce660;
+}
+
+body {
+  -webkit-user-select: none;
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  user-select: none;
+  font-family: sans-serif;
+  font-size: 1em;
+  margin: 1em;
+}
+
+input { font-family: sans-serif; font-size: 1em; }
+
+textarea, input, select, button {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 1em;
+  resize: none;
+}
+
+button, select {
+  padding: .1em .2em;
+  border: 1pt solid var(--x-ui-border-color);
+  border-radius: 0.2em;
+  margin: 0;
+  font-size: 0.9em;
+  background: var(--x-ui-light-back-color);
+  background: -webkit-gradient(linear, left top, left bottom, from(white), to(var(--x-ui-light-back-color)));
+  background: -moz-linear-gradient(top, white, var(--x-ui-light-back-color));
+  cursor: pointer;
+}
+button::-moz-focus-inner {
+  border: 0 none;
+  padding: 0;
+  margin: 0;
+}
+button.highlight {
+  background: -webkit-gradient(linear, left top, left bottom, from(white), to(Highlight));
+  background: -moz-linear-gradient(top, white, Highlight);
+}
+
+input { font-family: sans-serif; font-size: 1em; }
+input::-webkit-input-placeholder { color: red; }
+input:-moz-placeholder { color: red; }
+
+a:link    { color:var(--x-ui-link-color); text-decoration:none; }
+a:visited { color:var(--x-ui-link-color); text-decoration:none; }
+a:hover   { color:var(--x-ui-light-text-color); text-decoration:underline; }
+a:active  { color:var(--x-ui-light-text-color); text-decoration:underline; }
