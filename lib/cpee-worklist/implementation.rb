@@ -82,11 +82,17 @@ module CPEE
         activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
         activity['priority'] = @p.first.name == 'priority' ? @p.shift.value.to_i : 1
         activity['collect'] = @p.first.name == 'collect' ? @p.shift.value.to_i : nil
-        activity['prioritization'] = @p.first.name == 'prioritization' ? (JSON::parse(@p.shift.value) rescue @p.shift.value.gsub(/[\[\]()<>"']/,'').split(/\s*[,;]\s*/)) : []
         activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
         activity['restrictions'] = []
         rests = JSON::parse(@p.shift.value) rescue nil
         activity['restrictions'] << rests unless rests.nil?
+        if @p.first.name == 'prioritization'
+          val = @p.shift.value
+          activity['prioritization'] = (JSON::parse(val) rescue val.gsub(/[\[\]()<>"']/,'').split(/\s*[,;]\s*/))
+        else
+          activity['prioritization'] = []
+        end
+        activity['label_extension'] = @p.first.name == 'label' ? @p.shift.value.to_s : nil
         activity['parameters'] = JSON::parse(@p.shift.value) rescue {}
         status, content, headers = Riddl::Client.new(activity['orgmodel']).get
         if status == 200
@@ -238,6 +244,7 @@ module CPEE
                   tasks["#{activity['id']}"][:own] = activity['user'].include?(@r[-2])
                   tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
                   tasks["#{activity['id']}"][:prioritization] = activity['prioritization']&.join(', ') || ''
+                  tasks["#{activity['id']}"][:label_extension] = activity['label_extension'] if activity['label_extension']
                 end
               end
             end
@@ -313,7 +320,7 @@ module CPEE
       end
     end #}}}
 
-    class AssignTask < Riddl::Implementation #{{{
+   class AssignTask < Riddl::Implementation #{{{
       def response
        index = @a[0].activities.index{ |c| c["id"] == @r.last }
         if index
