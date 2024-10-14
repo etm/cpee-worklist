@@ -110,6 +110,15 @@ button.highlight { background-color: #cc0000; }
 #dat_tasks tr:nth-child(odd)       { background-color: ButtonFace; color: ButtonText; }
 #dat_tasks tr:nth-child(odd) input { background-color: ButtonFace; }
 
+#areatasklist .dat_heading {
+  border: 1em solid white;
+  border-bottom: 0;
+}
+#areatasklist .dat_heading span {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
 span.active {
   font-weight: bold;
   color: #cc0000;
@@ -163,19 +172,34 @@ ui-area > form {
   display: block;
 }
 
-#dat_tasks tr.priority_1:nth-child(even)       { background-color: #dc8add30; color: ButtonText; }
-#dat_tasks tr.priority_1:nth-child(even) input { background-color: #dc8add30; }
-#dat_tasks tr.priority_1:nth-child(odd)        { background-color: #dc8add80; color: ButtonText; }
-#dat_tasks tr.priority_1:nth-child(odd) input  { background-color: #dc8add80; }
+#dat_tasks_priority_high.dat_table { margin-left: 1em }
 
-#dat_tasks tr.priority_1 td:first-child::before {
-  content: !
+.dat_table { margin-left: 1.5em; }
+
+.dat_table tr:nth-child(even)       { background-color: #dedddaff; color: ButtonText; }
+.dat_table tr:nth-child(even) input { background-color: #dedddaff; }
+.dat_table tr:nth-child(odd)        { background-color: #f6f5f4ff; color: ButtonText; }
+.dat_table tr:nth-child(odd) input  { background-color: #f6f5f4ff; }
+
+.dat_table tr.priority_1:nth-child(even)       { background-color: #dc8add30; color: ButtonText; }
+.dat_table tr.priority_1:nth-child(even) input { background-color: #dc8add30; }
+.dat_table tr.priority_1:nth-child(odd)        { background-color: #dc8add80; color: ButtonText; }
+.dat_table tr.priority_1:nth-child(odd) input  { background-color: #dc8add80; }
+
+.dat_table tr.priority_42:nth-child(even)       { background-color: #99c1f130; color: ButtonText; }
+.dat_table tr.priority_42:nth-child(even) input { background-color: #99c1f130; }
+.dat_table tr.priority_42:nth-child(odd)        { background-color: #99c1f180; color: ButtonText; }
+.dat_table tr.priority_42:nth-child(odd) input  { background-color: #99c1f180; }
+
+.dat_table tr td.buttons {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+.dat_table tr td.name {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
-#dat_tasks tr.priority_42:nth-child(even)       { background-color: #99c1f130; color: ButtonText; }
-#dat_tasks tr.priority_42:nth-child(even) input { background-color: #99c1f130; }
-#dat_tasks tr.priority_42:nth-child(odd)        { background-color: #99c1f180; color: ButtonText; }
-#dat_tasks tr.priority_42:nth-child(odd) input  { background-color: #99c1f180; }
 
 .pulseit{
 	animation: pulse linear 2s 3;

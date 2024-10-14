@@ -47,32 +47,28 @@
     <link rel="stylesheet" href="/global_ui/uicpee.css" type="text/css"/>
 
     <!-- Flos Stuff -->
-    <script type="text/javascript" src="js/worklist.js"></script>
+    <script type="text/javascript" src="js/structured.js"></script>
   </head>
-  <body data-defaultport="9398" is='x-ui-'>
+  <body data-defaultconfig='structured.json' is='x-ui-'>
     <!-- The following are templates that get used during ui generation, change them carefully -->
-    <template id="dat_template_tasks_single">
-      <tr class="task"> <!--{{{-->
+    <template id="dat_template_tasks_single"><!--{{{-->
+      <tr class="task">
         <td class='name'></td>
-        <td class='sep'>⇒</td>
-        <td class='deadline'><em>No deadline.</em></td>
         <td class='buttons'>
-          <button class='task_take' value=''>Take</button>
-          <button class='task_giveback' value=''>Give Back</button>
+          <button class='task_continue' value=''>Continue ...</button>
           <button class='task_do' value=''>Do it!</button>
+          <button class='task_giveback' value=''>Others should do it!</button>
         </td>
       </tr>
     </template>   <!--}}}-->
     <template id="dat_template_tasks_multi"> <!--{{{-->
       <tr class="task">
         <td class='name'></td>
-        <td class='sep'>⇒</td>
-        <td class='deadline'><em>No Deadline.</em></td>
         <td class='buttons'>
-          <button class='task_take' value='' style="visibility: hidden">Take</button>
-          <button class='task_giveback' value='' style="visibility: hidden">Give Back</button>
+          <button class='task_continue' value=''>Continue ...</button>
           <button class='task_do' value=''>Do it!</button>
         </td>
+        <td class='deadline'><em>(until <span></span></em>)</td>
       </tr>
     </template>   <!--}}}-->
     <template id="dat_template_orgmodels"> <!--{{{-->
@@ -133,8 +129,16 @@
       </ui-tabbar>
       <ui-content>
         <ui-area data-belongs-to-tab="task" id="areatasklist"> <!--{{{-->
-          <div id="dat_message" style="display: none;">Currently no tasks available.</div>
-          <table id="dat_tasks" class="layout"></table>
+          <div   id="dat_tasks_priority_high_head" class="dat_heading hidden"></div>
+          <table id="dat_tasks_priority_high"      class="dat_table"></table>
+          <div   id="dat_tasks_own_head"           class="dat_heading hidden"><span>Tasks I currently work on ...</span></div>
+          <table id="dat_tasks_own"                class="dat_table"></table>
+          <div   id="dat_tasks_priority_head"      class="dat_heading hidden"><span>Tasks initiated by me ...</span></div>
+          <table id="dat_tasks_priority"           class="dat_table"></table>
+          <div   id="dat_tasks_others_head"        class="dat_heading hidden"><span>Tasks initiated by others ... (but I can do them as well)</span></div>
+          <table id="dat_tasks_others"             class="dat_table"></table>
+          <div   id="dat_tasks_others_work_head"   class="dat_heading hidden"><span>Tasks others currently work on ...</span></div>
+          <table id="dat_tasks_others_work"        class="dat_table"></table>
         </ui-area> <!--}}}-->
       </ui-content>
     </ui-rest>
