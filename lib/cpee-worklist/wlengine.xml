@@ -44,6 +44,9 @@
     <optional>
       <parameter name="label" type="string"/>
     </optional>
+    <optional>
+      <parameter name="label_details" type="string"/>
+    </optional>
     <parameter name="data" type="string"/>
   </message> <!--}}}-->
 

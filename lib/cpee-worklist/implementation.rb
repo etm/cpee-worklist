@@ -93,6 +93,7 @@ module CPEE
           activity['prioritization'] = []
         end
         activity['label_extension'] = @p.first.name == 'label' ? @p.shift.value.to_s : nil
+        activity['label_extension_details'] = @p.first.name == 'label_details' ? @p.shift.value.to_s : nil
         activity['parameters'] = JSON::parse(@p.shift.value) rescue {}
         status, content, headers = Riddl::Client.new(activity['orgmodel']).get
         if status == 200
@@ -245,6 +246,7 @@ module CPEE
                   tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
                   tasks["#{activity['id']}"][:prioritization] = activity['prioritization']&.join(', ') || ''
                   tasks["#{activity['id']}"][:label_extension] = activity['label_extension'] if activity['label_extension']
+                  tasks["#{activity['id']}"][:label_extension_details] = activity['label_extension_details'] if activity['label_extension_details']
                 end
               end
             end

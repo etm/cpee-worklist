@@ -135,24 +135,24 @@ function place_worklist_item(node,own) {
 
   let ctv;
   if (prio == 1) {
-    ctv = $("#dat_tasks_priority_high");
+    ctv = $(".dat_tasks_priority_high");
   } else {
     if (own == 'true') {
-      ctv = $("#dat_tasks_own");
+      ctv = $(".dat_tasks_own");
     } else {
       if (prioz == '' || prioz.match($("input[name=user-name]").val())) {
-        ctv = $("#dat_tasks_priority");
+        ctv = $(".dat_tasks_priority");
       } else {
-        ctv = $("#dat_tasks_others");
+        ctv = $(".dat_tasks_others");
       }
     }
   }
   ctv.append(node);
-  if (!$('#dat_tasks_priority_high').is(':empty')) { $('#dat_tasks_priority_high_head').removeClass('hidden'); } else { $('#dat_tasks_priority_high_head').addClass('hidden'); }
-  if (!$('#dat_tasks_priority').is(':empty'))      { $('#dat_tasks_priority_head').removeClass('hidden'); }      else { $('#dat_tasks_priority_head').addClass('hidden'); }
-  if (!$('#dat_tasks_own').is(':empty'))           { $('#dat_tasks_own_head').removeClass('hidden'); }           else { $('#dat_tasks_own_head').addClass('hidden'); }
-  if (!$('#dat_tasks_others').is(':empty'))        { $('#dat_tasks_others_head').removeClass('hidden'); }        else { $('#dat_tasks_others_head').addClass('hidden'); }
-  if (!$('#dat_tasks_others_work').is(':empty'))   { $('#dat_tasks_others_work_head').removeClass('hidden'); }   else { $('#dat_tasks_others_work_head').addClass('hidden'); }
+  if (!$('.dat_tasks_priority_high').is(':empty')) { $('.dat_tasks_priority_high_head').removeClass('hidden'); } else { $('.dat_tasks_priority_high_head').addClass('hidden'); }
+  if (!$('.dat_tasks_priority').is(':empty'))      { $('.dat_tasks_priority_head').removeClass('hidden'); }      else { $('.dat_tasks_priority_head').addClass('hidden'); }
+  if (!$('.dat_tasks_own').is(':empty'))           { $('.dat_tasks_own_head').removeClass('hidden'); }           else { $('.dat_tasks_own_head').addClass('hidden'); }
+  if (!$('.dat_tasks_others').is(':empty'))        { $('.dat_tasks_others_head').removeClass('hidden'); }        else { $('.dat_tasks_others_head').addClass('hidden'); }
+  if (!$('.dat_tasks_others_work').is(':empty'))   { $('.dat_tasks_others_work_head').removeClass('hidden'); }   else { $('.dat_tasks_others_work_head').addClass('hidden'); }
 }
 
 function get_worklist() {// {{{
@@ -188,17 +188,17 @@ function get_worklist() {// {{{
       });
       $("#main").removeClass("hidden");
 
-      $('#dat_tasks_priority_high').empty();
-      $('#dat_tasks_priority').empty();
-      $('#dat_tasks_own').empty();
-      $('#dat_tasks_others').empty();
-      $('#dat_tasks_others_work').empty();
+      $('.dat_tasks_priority_high').empty();
+      $('.dat_tasks_priority').empty();
+      $('.dat_tasks_own').empty();
+      $('.dat_tasks_others').empty();
+      $('.dat_tasks_others_work').empty();
 
-      $('#dat_tasks_priority_high_head').addClass('hidden');
-      $('#dat_tasks_priority_head').addClass('hidden');
-      $('#dat_tasks_own_head').addClass('hidden');
-      $('#dat_tasks_others_head').addClass('hidden');
-      $('#dat_tasks_others_work_head').addClass('hidden');
+      $('.dat_tasks_priority_high_head').addClass('hidden');
+      $('.dat_tasks_priority_head').addClass('hidden');
+      $('.dat_tasks_own_head').addClass('hidden');
+      $('.dat_tasks_others_head').addClass('hidden');
+      $('.dat_tasks_others_work_head').addClass('hidden');
 
       $(res).find('task').each(function(){
         if ($(this).attr('all') == "true") {

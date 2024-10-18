@@ -172,9 +172,10 @@ ui-area > form {
   display: block;
 }
 
-#dat_tasks_priority_high.dat_table { margin-left: 1em }
+.dat_table { margin-left: 1em; margin-top: 1em; }
+.dat_tasks_priority_high.dat_indent_table { margin-left: 1em }
 
-.dat_table { margin-left: 1.5em; }
+.dat_indent_table { margin-left: 1.5em; margin-top: 0; }
 
 .dat_table tr:nth-child(even)       { background-color: #dedddaff; color: ButtonText; }
 .dat_table tr:nth-child(even) input { background-color: #dedddaff; }
@@ -199,7 +200,6 @@ ui-area > form {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
-
 
 .pulseit{
 	animation: pulse linear 2s 3;
