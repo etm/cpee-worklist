@@ -223,8 +223,18 @@ function get_worklist() {// {{{
           $('.name:nth-child(' + i + ')',node).text(e);
           i++;
         });
-        $('.name:nth-child(' + i + ')',node).text($(this).attr('label_extension'));
-
+        let lex = $('.name:nth-child(' + i + ')',node);
+            lex.text($(this).attr('label_extension'));
+            lex.addClass('extension');
+            if ($(this).attr('label_extension_details')) {
+              lex.addClass('clickable');
+              lex.click(()=>{
+                $('#detailcolumn').removeClass('hidden');
+                $('#detailcolumnresizer').removeClass('hidden');
+                $('#detailcolumn iframe').attr('src','');
+                $('#detailcolumn iframe').attr('src',$(this).attr('label_extension_details'));
+              });
+            }
         place_worklist_item(node.find('tr'),$(this).attr('own'));
       });
       toggle_message();

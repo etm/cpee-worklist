@@ -212,4 +212,26 @@ ui-area > form {
 	100%  { background-color: #ebdef0; }
 }
 
+ui-resizehandle {
+  border-left: 1px solid var(--x-ui-border-color);
+}
+#detailcolumn iframe {
+  width: 100%;
+  border: 0 none;
+  height: 100%;
+  border-left: 1em solid white;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: block;
+}
 
+.extension.clickable {
+  cursor: pointer;
+  color:var(--x-ui-link-color);
+  text-decoration:none;
+}
+.extension.clickable:hover {
+  color:var(--x-ui-light-text-color);
+  text-decoration:underline;
+}
