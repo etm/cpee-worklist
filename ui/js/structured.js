@@ -147,7 +147,9 @@ function place_worklist_item(node,own) {
       }
     }
   }
-  ctv.append(node);
+  if (!ctv.is(node.parent())) {
+    ctv.append(node);
+  }
   if (!$('.dat_tasks_priority_high').is(':empty')) { $('.dat_tasks_priority_high_head').removeClass('hidden'); } else { $('.dat_tasks_priority_high_head').addClass('hidden'); }
   if (!$('.dat_tasks_priority').is(':empty'))      { $('.dat_tasks_priority_head').removeClass('hidden'); }      else { $('.dat_tasks_priority_head').addClass('hidden'); }
   if (!$('.dat_tasks_own').is(':empty'))           { $('.dat_tasks_own_head').removeClass('hidden'); }           else { $('.dat_tasks_own_head').addClass('hidden'); }
