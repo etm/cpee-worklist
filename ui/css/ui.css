@@ -221,13 +221,17 @@ ui-resizehandle {
 }
 #detailcolumn iframe {
   width: 100%;
-  border: 0 none;
   height: 100%;
+  border: 0 none;
   border-left: 1em solid white;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   display: block;
+}
+
+body.drag-in-progress #detailcolumn iframe {
+  pointer-events: none;
 }
 
 .extension.clickable {
