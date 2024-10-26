@@ -130,16 +130,38 @@
       </ui-tabbar>
       <ui-content>
         <ui-area data-belongs-to-tab="task" id="areatasklist"> <!--{{{-->
-          <div   class="dat_tasks_priority_high_head dat_heading hidden"></div>
-          <table class="dat_tasks_priority_high      dat_table dat_indent_table"></table>
-          <div   class="dat_tasks_own_head           dat_heading hidden"><span>Tasks I currently work on ...</span></div>
-          <table class="dat_tasks_own                dat_table dat_indent_table"></table>
-          <div   class="dat_tasks_priority_head      dat_heading hidden"><span>Tasks initiated by me ...</span></div>
-          <table class="dat_tasks_priority           dat_table dat_indent_table"></table>
-          <div   class="dat_tasks_others_head        dat_heading hidden"><span>Tasks initiated by others ... (but I can do them as well)</span></div>
-          <table class="dat_tasks_others             dat_table dat_indent_table"></table>
-          <div   class="dat_tasks_others_work_head   dat_heading hidden"><span>Tasks others currently work on ...</span></div>
-          <table class="dat_tasks_others_work        dat_table dat_indent_table"></table>
+          <table class="dat_outer_table">
+            <thead>
+              <tr><td colspan="42">
+                <div   class="dat_tasks_priority_high_head dat_heading permahidden"></div>
+              </td></tr>
+            </thead>
+            <tbody class="dat_tasks_priority_high      dat_table dat_indent_table"></tbody>
+            <thead>
+              <tr><td colspan="42">
+                <div   class="dat_tasks_own_head           dat_heading hidden"><span>Tasks I currently work on ...</span></div>
+              </td></tr>
+            </thead>
+            <tbody class="dat_tasks_own                dat_table dat_indent_table"></tbody>
+            <thead>
+              <tr><td colspan="42">
+                <div   class="dat_tasks_priority_head      dat_heading hidden"><span>Tasks initiated by me ...</span></div>
+              </td></tr>
+            </thead>
+            <tbody class="dat_tasks_priority           dat_table dat_indent_table"></tbody>
+            <thead>
+              <tr><td colspan="42">
+                <div   class="dat_tasks_others_head        dat_heading hidden"><span>Tasks initiated by others ... (but I can do them as well)</span></div>
+              </td></tr>
+            </thead>
+            <tbody class="dat_tasks_others             dat_table dat_indent_table"></tbody>
+            <thead>
+              <tr><td colspan="42">
+                <div   class="dat_tasks_others_work_head   dat_heading hidden"><span>Tasks others currently work on ...</span></div>
+              </td></tr>
+            </thead>
+            <tbody class="dat_tasks_others_work        dat_table dat_indent_table"></tbody>
+          </table>
         </ui-area> <!--}}}-->
         <ui-resizehandle data-belongs-to-tab="task" id="detailcolumnresizer" data-label="drag to resize" class="hidden"></ui-resizehandle>
         <ui-area data-belongs-to-tab="task" id="detailcolumn" class="hidden">
