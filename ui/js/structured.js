@@ -164,6 +164,10 @@ function get_worklist() {// {{{
   // Set url (no more cookie nonsense!)
   history.replaceState({}, '', '?user='+encodeURIComponent($("input[name=user-name]").val()));
 
+  $('#detailcolumn').addClass('hidden');
+  $('#detailcolumnresizer').addClass('hidden');
+  $('#detailcolumn iframe').attr('src','');
+
   $.ajax({
     type: "GET",
     url: url,
@@ -230,7 +234,14 @@ function get_worklist() {// {{{
             lex.addClass('extension');
             if ($(this).attr('label_extension_details')) {
               lex.addClass('clickable');
-              lex.click(()=>{
+              lex.click((ele)=>{
+                let hl = $(this).attr('label_extension_details').match(/highlight=(a\d+,)+([a-z0-9]{6,8})$/);
+                if (hl && hl.length >= 3) {
+                  $('.highlight_active').removeAttr('style');
+                  $('.highlight_active').removeClass('highlight_active');
+                  $(ele.target).parent().css('background-color', '#' + hl.slice(-1)[0]);
+                  $(ele.target).parent().addClass('highlight_active');
+                }
                 $('#detailcolumn').removeClass('hidden');
                 $('#detailcolumnresizer').removeClass('hidden');
                 $('#detailcolumn iframe').attr('src','');
