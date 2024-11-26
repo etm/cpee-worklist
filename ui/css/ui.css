@@ -228,6 +228,7 @@ ui-resizehandle {
 }
 #detailcolumn {
   min-width: 2.5em;
+  padding-left: 0.5em;
 }
 #detailcolumn iframe {
   width: 100%;
