@@ -226,6 +226,9 @@ tbody.dat_table tr td:first-child { border-left: 1em solid transparent; }
 ui-resizehandle {
   border-left: 1px solid var(--x-ui-border-color);
 }
+#detailcolumn {
+  min-width: 2.5em;
+}
 #detailcolumn iframe {
   width: 100%;
   height: 100%;
