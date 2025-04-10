@@ -158,14 +158,15 @@ module CPEE
     class TaskDel < Riddl::Implementation #{{{
       def response
         index = @a[0].activities.index{ |e| e["id"] == @r.last }
+        force = @a[1]
         if index
           activity = @a[0].activities[index]
-          if activity['collected'] && (activity['collected'] + 1) < activity['collect_max']
+          if !force && activity['collected'] && (activity['collected'] + 1) < activity['collect_max']
             activity['collected'] += 1
             activity['restrictions'] << { "restriction" => { "mode" => "prohibit", "id" => @r[-3] } }
             @a[0].activities.serialize
             @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],  :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
-          elsif activity['handling'] == 'always'
+          elsif !force && activity['handling'] == 'always'
             @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],  :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
           else
             activity = @a[0].activities.delete_at(index)
@@ -429,7 +430,7 @@ module CPEE
           on resource 'tasks' do
             on resource do
               run AssignTask,controller if put 'uid'
-              run TaskDel,controller if delete
+              run TaskDel,controller,true if delete
             end
           end
           on resource do

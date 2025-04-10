@@ -69,7 +69,7 @@
   </message>
 
   <message name="tasks">
-    <parameter name="tasks" mimetype="text/xml" handler="http://riddl.org/ns/handlers/relaxng">
+    <parameter name="tasks" mimetype="*/xml" handler="http://riddl.org/ns/handlers/relaxng">
       <element name="tasks" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
         <zeroOrMore>
           <element name="task">
@@ -97,6 +97,9 @@
             <attribute name="orgmodel">
               <data type="string"/>
             </attribute>
+            <element name="process">
+                  <data type="string"/>
+            </element>
             <element name="label">
                   <data type="string"/>
             </element>
@@ -106,7 +109,7 @@
             <element name="unit">
                   <data type="string"/>
             </element>
-            <oneOrMore>
+            <zeroOrMore>
               <element name="user">
                     <attribute name="uid">
                       <data type="string"/>

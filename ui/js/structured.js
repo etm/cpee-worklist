@@ -250,7 +250,7 @@ function get_worklist() {// {{{
                 $('#detailcolumn iframe').attr('src',$(this).attr('label_extension_details'));
               });
             }
-        place_worklist_item(node.find('tr'),$(this).attr('own'));
+        place_worklist_item(node.find('tr'),$(this).attr('own') == 'true' || $(this).attr('always') == 'true' ? 'true' : 'false');
       });
       toggle_message();
     },
