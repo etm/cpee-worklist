@@ -81,6 +81,12 @@ module CPEE
         activity['unit'] = @p.first.name == 'unit' ? @p.shift.value : '*'
         activity['role'] = @p.first.name == 'role' ? @p.shift.value : '*'
         activity['priority'] = @p.first.name == 'priority' ? @p.shift.value.to_i : 1
+        activity['handling'] = @p.first.name == 'handling' ? @p.shift.value : 'single'
+
+        unless %w{single collect always}.include?(activity['handling'])
+          activity['handling'] == 'single'
+        end
+
         activity['collect'] = @p.first.name == 'collect' ? @p.shift.value.to_i : nil
         activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
         activity['restrictions'] = []
@@ -158,12 +164,14 @@ module CPEE
             activity['collected'] += 1
             activity['restrictions'] << { "restriction" => { "mode" => "prohibit", "id" => @r[-3] } }
             @a[0].activities.serialize
-            @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],:instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+            @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],  :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+          elsif activity['handling'] == 'always'
+            @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],  :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
           else
             activity = @a[0].activities.delete_at(index)
             @a[0].activities.serialize
             if @r.length == 3
-              @a[0].notify('task/delete', :callback_id => activity['id'],                                             :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
+              @a[0].notify('task/delete', :callback_id => activity['id'],                                            :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
               Riddl::Client.new(activity['url']).put
             else
               info = CPEE::Worklist::User::info(@a[0].opts,activity,@r[-3])
@@ -237,11 +245,13 @@ module CPEE
                      activity['unit'] == '*' ||
                      activity['unit'].casecmp(rel.attributes['unit']) == 0
                    ) && (
-                     activity['collect'] ||
+                     activity['handling'] == 'collect' ||
+                     activity['handling'] == 'always' ||
                      activity['user'].empty? ||
                      activity['user'].include?(@r[-2])
-                   ) && !restrict
-                  tasks["#{activity['id']}"] = { :all => activity.has_key?('collect') && !activity['collect'].nil?, :uid => @r[-2], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
+                   )
+                   !restrict
+                  tasks["#{activity['id']}"] = { :always => activity['handling'] == 'always', :all => activity.has_key?('collect') && !activity['collect'].nil?, :uid => @r[-2], :priority => activity['priority'], :label => activity['process'] + ': ' + activity['label'] }
                   tasks["#{activity['id']}"][:own] = activity['user'].include?(@r[-2])
                   tasks["#{activity['id']}"][:deadline] = activity['deadline'] if activity['deadline']
                   tasks["#{activity['id']}"][:prioritization] = activity['prioritization']&.join(', ') || ''
@@ -307,7 +317,7 @@ module CPEE
       def response
         index = @a[0].activities.index{ |c| c["id"] == @r.last }
         if index
-          Riddl::Parameter::Complex.new "data","application/json", JSON.generate({:collect => @a[0].activities[index].has_key?('collect') && !@a[0].activities[index]['collect'].nil?, 'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
+          Riddl::Parameter::Complex.new "data","application/json", JSON.generate({:always => @a[0].activities[index]['handling'] == 'always' ? true : false, :collect => @a[0].activities[index].has_key?('collect') && !@a[0].activities[index]['collect'].nil?, 'url' => @a[0].activities[index]['url'], 'form' => @a[0].activities[index]['form'], 'parameters' => @a[0].activities[index]['parameters'], 'label' => @a[0].activities[index]['label']})
         else
           @status = 404
         end

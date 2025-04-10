@@ -28,9 +28,14 @@
         <parameter name="role" type="string"/>
       </group>
     </choice>
-    <optional>
-      <parameter name="priority" type="positiveInteger"/>
-    </optional>
+    <parameter name="priority" type="positiveInteger"/>
+    <parameter name="handling" type="string">
+      <choice>
+        <value>single</value>
+        <value>collect</value>
+        <value>always</value>
+      </choice>
+    </parameter>
     <optional>
       <parameter name="collect" type="nonNegativeInteger"/>
     </optional>

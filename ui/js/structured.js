@@ -210,6 +210,8 @@ function get_worklist() {// {{{
         if ($(this).attr('all') == "true") {
           var node = $($("#dat_template_tasks_multi")[0].content.cloneNode(true));
           $('.deadline span',node).text($(this).attr('deadline'));
+        } else if ($(this).attr('always') == "true") {
+          var node = $($("#dat_template_tasks_always")[0].content.cloneNode(true));
         } else {
           var node = $($("#dat_template_tasks_single")[0].content.cloneNode(true));
         }
@@ -367,12 +369,13 @@ function do_work(taskid,taskidurl) { //{{{
                   var form_data = $(this).serializeArray();
                   var send_data = {};
                   var headers = {};
-                  if (res.collect) { headers['CPEE-UPDATE'] = 'true'; }
+                  console.log(res);
+                  if (res.collect || res.always) { headers['CPEE-UPDATE'] = 'true'; }
                   send_data['user'] = $("input[name=user-name]").val();
                   send_data['raw'] = form_data;
                   send_data['data'] = {};
                   $.map(send_data['raw'], function(n, i){
-                      send_data['data'][n['name']] = n['value'];
+                    send_data['data'][n['name']] = n['value'];
                   });
                   $.ajax({
                     type: "PUT",
