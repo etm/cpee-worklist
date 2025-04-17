@@ -276,7 +276,7 @@ module CPEE
         index = @a[0].activities.index{ |c| c["id"] == @r.last }
         if index
           activity = @a[0].activities[index]
-          activity['user'].push @r[-3]if CPEE::Worklist::User::ok?(@a[0].opts,activity,@r[-3]) && !activity['user'].include?(@r[-3])
+          activity['user'].push @r[-3] if CPEE::Worklist::User::ok?(@a[0].opts,activity,@r[-3]) && !activity['user'].include?(@r[-3])
           info = CPEE::Worklist::User::info(@a[0].opts,activity,@r[-3])
           @a[0].activities.serialize
           @a[0].notify('user/take', :user => @r[-3], :callback_id => activity['id'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'],:instance_uuid => activity['uuid'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'], :organisation => info)

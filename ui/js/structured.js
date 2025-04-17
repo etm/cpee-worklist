@@ -369,7 +369,6 @@ function do_work(taskid,taskidurl) { //{{{
                   var form_data = $(this).serializeArray();
                   var send_data = {};
                   var headers = {};
-                  console.log(res);
                   if (res.collect || res.always) { headers['CPEE-UPDATE'] = 'true'; }
                   send_data['user'] = $("input[name=user-name]").val();
                   send_data['raw'] = form_data;
