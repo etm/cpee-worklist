@@ -58,11 +58,21 @@ ARGV.options { |opt|
   opt.on(wrap("[cpui DIR]        scaffolds a sample html client. New versions might require manual merging if you changed something."))
 	opt.on("")
   opt.on(wrap("[new DIR]         scaffolds a sample instantiation service. Post a testset to a model to keep going in one operation."))
+	opt.on("")
+  opt.on(wrap("[filter URL key]  return all tasks that match a certain filter criterion."))
+	opt.on("")
+  opt.on(wrap("[filter_a URL]    return all tasks that point to abandoned instances."))
+	opt.on("")
+  opt.on(wrap("[delete_a URL]    delete all tasks that point to abandoned instances."))
+	opt.on("")
+  opt.on(wrap("[delete_f URL]    delete all tasks that match a certain filter criterion."))
   opt.parse!
 }
+
 if (ARGV.length <  2) ||
-   (ARGV.length == 2  && !(%w(cpui new).include?(ARGV[0]))) ||
-   (ARGV.length >  2)
+   (ARGV.length == 2  && !(%w(cpui new filter_a delete_a).include?(ARGV[0]))) ||
+   (ARGV.length == 3  && !(%w(filter delete_f).include?(ARGV[0]))) ||
+   (ARGV.length >  3)
   puts ARGV.options
   exit
 end
@@ -77,6 +87,62 @@ if command == 'new'
   else
     FileUtils.cp_r(Dir.glob(File.join(insta,'*')).delete_if{|e| e =~ /\.conf/ },p1,remove_destination: true)
     puts 'Directory already exists, updating ...'
+  end
+elsif command == 'filter'
+  if p1 !~ /^http/ || ARGV[2] !~ /^\w+=/
+    puts ARGV.options
+    exit
+  end
+  res = Typhoeus.get(File.join(p1,'/'))
+  pname, pkey = ARGV[2].split('=',2)
+  if res.success?
+    doc = XML::Smart.string(res.body)
+    doc.find("/tasks/task[@#{pname}=\"#{pkey}\"]").each do |ele|
+      puts "#{ele.attributes['callback_id']}; #{ele.attributes['cpee_label']};  #{ele.attributes['cpee_instance']}"
+    end
+  end
+elsif command == 'filter_a'
+  if p1 !~ /^http/
+    puts ARGV.options
+    exit
+  end
+  res = Typhoeus.get(File.join(p1,'/'))
+  if res.success?
+    doc = XML::Smart.string(res.body)
+    doc.find("/tasks/task").each do |ele|
+      res = Typhoeus.get(File.join(ele.attributes['cpee_base'],ele.attributes['cpee_instance'],'properties','attributes','uuid','/'))
+      if res.success?
+        if res.body != ele.attributes['instance_uuid']
+          puts "#{ele.attributes['callback_id']}; #{ele.attributes['cpee_label']};  #{ele.attributes['cpee_instance']}"
+        else
+          ### TODO check if abandoned or finished to catch the rest of the the mischiefous tasks
+        end
+      else
+        puts "#{ele.attributes['callback_id']}; #{ele.attributes['cpee_label']};  #{ele.attributes['cpee_instance']}"
+      end
+    end
+  end
+elsif command == 'delete_a'
+  if p1 !~ /^http/
+    puts ARGV.options
+    exit
+  end
+  wl = File.join(p1,'/')
+  res = Typhoeus.get(wl)
+  if res.success?
+    doc = XML::Smart.string(res.body)
+    doc.find("/tasks/task").each do |ele|
+      res = Typhoeus.get(File.join(ele.attributes['cpee_base'],ele.attributes['cpee_instance'],'properties','attributes','uuid','/'))
+      if res.success?
+        if res.body != ele.attributes['instance_uuid']
+          Typhoeus.delete File.join(wl,'tasks',ele.attributes['callback_id'])
+        else
+          ### TODO check if abandoned or finished to catch the rest of the the mischiefous tasks
+        end
+      else
+        Typhoeus.delete File.join(wl,'tasks',ele.attributes['callback_id'])
+      end
+    end
   end
 elsif command == 'cpui'
   insta = "#{curpath}/../ui/"
