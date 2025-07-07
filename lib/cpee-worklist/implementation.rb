@@ -238,7 +238,8 @@ module CPEE
               @a[0].activities.each do |activity|
                 restrict = false
                 activity['restrictions'].each do |restriction|
-                  restrict = true if restriction[0]['mode'] == 'prohibit' && restriction[0]['id'] == @r[-2]
+                  restriction = restriction[0] if  restriction.is_a? Array
+                  restrict = true if restriction['mode'] == 'prohibit' && restriction['id'] == @r[-2]
                 end
                 if (
                      activity['role']=='*' ||
