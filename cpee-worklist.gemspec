@@ -22,6 +22,6 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'riddl', '~> 1.0'
   s.add_runtime_dependency 'json', '~> 2.1'
-  s.add_runtime_dependency 'cpee', '~> 2.1', '>= 2.1.56'
+  s.add_runtime_dependency 'cpee', '~> 2.1', '>= 2.1.88'
   s.add_runtime_dependency 'chronic_duration', '~> 0.10', '>= 0.10.6'
 end
