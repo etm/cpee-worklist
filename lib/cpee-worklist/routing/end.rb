@@ -41,7 +41,7 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         _, worker, key = what.split(':',3)
         index = message.index(' ')
-        instance = message[0...index]
+        instance, uuid = message[0...index].split(',')
         opts[:redis].multi do |multi|
           multi.srem("worklist:#{instance}/callbacks",key)
           multi.del("worklist:#{instance}/callback/#{key}/uuid")
