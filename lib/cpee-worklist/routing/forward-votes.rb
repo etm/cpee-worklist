@@ -67,7 +67,7 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         index = message.index(' ')
         mess = message[index+1..-1]
-        instance = message[0...index]
+        instance, uuid = message[0...index].split(',')
         type, worker, event = what.split(':',3)
         topic = ::File::dirname(event)
         name = ::File::basename(event)

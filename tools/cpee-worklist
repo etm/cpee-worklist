@@ -101,6 +101,20 @@ elsif command == 'filter'
       puts "#{ele.attributes['callback_id']}; #{ele.attributes['cpee_label']};  #{ele.attributes['cpee_instance']}"
     end
   end
+elsif command == 'delete_f'
+  if p1 !~ /^http/ || ARGV[2] !~ /^\w+=/
+    puts ARGV.options
+    exit
+  end
+  wl = File.join(p1,'/')
+  res = Typhoeus.get(wl)
+  pname, pkey = ARGV[2].split('=',2)
+  if res.success?
+    doc = XML::Smart.string(res.body)
+    doc.find("/tasks/task[@#{pname}=\"#{pkey}\"]").each do |ele|
+      Typhoeus.delete File.join(wl,'tasks',ele.attributes['callback_id'])
+    end
+  end
 elsif command == 'filter_a'
   if p1 !~ /^http/
     puts ARGV.options

@@ -25,6 +25,7 @@ require 'riddl/utils/fileserve'
 require 'cpee/redis'
 require 'cpee/message'
 require 'cpee/persistence'
+require 'cpee/statemachine'
 require 'cpee/attributes_helper'
 require 'cpee/implementation_notifications'
 require 'cpee/implementation_callbacks'
@@ -91,7 +92,7 @@ module CPEE
         activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
         activity['restrictions'] = []
         rests = JSON::parse(@p.shift.value) rescue nil
-        activity['restrictions'] << rests unless rests.nil?
+        activity['restrictions'] += rests unless rests.nil?
         if @p.first.name == 'prioritization'
           val = @p.shift.value
           activity['prioritization'] = (JSON::parse(val) rescue val.gsub(/[\[\]()<>"']/,'').split(/\s*[,;]\s*/))
@@ -163,7 +164,7 @@ module CPEE
           activity = @a[0].activities[index]
           if !force && activity['collected'] && (activity['collected'] + 1) < activity['collect_max']
             activity['collected'] += 1
-            activity['restrictions'] << { "restriction" => { "mode" => "prohibit", "id" => @r[-3] } }
+            activity['restrictions'] << { "mode" => "prohibit", "id" => @r[-3] }
             @a[0].activities.serialize
             @a[0].notify('user/finish', :callback_id => activity['id'], :user => @r[-3], :role => activity['role'],  :instance_uuid => activity['uuid'], :cpee_callback => activity['url'], :cpee_instance => activity['cpee_instance'], :cpee_base => activity['cpee_base'], :cpee_label => activity['label'], :cpee_activity => activity['cpee_activity_id'], :orgmodel => activity['orgmodel'])
           elsif !force && activity['handling'] == 'always'
@@ -237,7 +238,8 @@ module CPEE
               @a[0].activities.each do |activity|
                 restrict = false
                 activity['restrictions'].each do |restriction|
-                  restrict = true if restriction['restriction']['mode'] == 'prohibit' && restriction['restriction']['id'] == @r[-2]
+                  restriction = restriction[0] if  restriction.is_a? Array
+                  restrict = true if restriction['mode'] == 'prohibit' && restriction['id'] == @r[-2]
                 end
                 if (
                      activity['role']=='*' ||
@@ -380,6 +382,8 @@ module CPEE
 
       opts[:sse_keepalive_frequency]    ||= 10
       opts[:sse_connections]            = {}
+
+      opts[:statemachine]               = CPEE::DummyStateMachine.new
 
       opts[:finalize_frequency]         ||= 10
 
