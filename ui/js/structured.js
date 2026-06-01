@@ -290,7 +290,7 @@ function do_work(taskid,taskidurl) { //{{{
         url: res.form,
         dataType: 'text',
         success: async (iform) => {
-          let end = false;;
+          let end = false;
           let evaltext = '';
           let rel = res.form.match(/.*\//)[0];
 
