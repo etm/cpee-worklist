@@ -36,7 +36,9 @@
         <data type="string"/>
       </element>
     </zeroOrMore>
-    <ref name="permissions"/>
+    <optional>
+      <ref name="permissions"/>
+    </optional>
   </define>
 
   <define name="subjects">
