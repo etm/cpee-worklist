@@ -63,17 +63,31 @@ module CPEE
         controller = @a[0]
 
         activity = {}
-        activity['process'] = @h.keys.include?('CPEE_ATTR_INFO') ? "#{@h['CPEE_ATTR_INFO']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY PROCESS (#{@h['CPEE_INSTANCE'].split('/').last})"
-        activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']}" : 'DUMMY LABEL'
-        activity['user'] = []
-        activity['url'] = @h['CPEE_CALLBACK']
-        activity['id']  = @h['CPEE_CALLBACK_ID']
+        if @h.keys.include?('CPEE_INSTANCE')
+          activity['process'] = @h.keys.include?('CPEE_ATTR_INFO') ? "#{@h['CPEE_ATTR_INFO']} (#{@h['CPEE_INSTANCE'].split('/').last})" : "DUMMY PROCESS (#{@h['CPEE_INSTANCE'].split('/').last})"
+          activity['label'] = @h.keys.include?('CPEE_INSTANCE') ? "#{@h['CPEE_LABEL']}" : 'DUMMY LABEL'
+          activity['user'] = []
+          activity['url'] = @h['CPEE_CALLBACK']
+          activity['id']  = @h['CPEE_CALLBACK_ID']
 
-        activity['cpee_activity_id'] = @h['CPEE_ACTIVITY']
-        activity['cpee_base'] = @h['CPEE_BASE']
-        activity['cpee_instance'] = @h['CPEE_INSTANCE']
+          activity['cpee_activity_id'] = @h['CPEE_ACTIVITY']
+          activity['cpee_base'] = @h['CPEE_BASE']
+          activity['cpee_instance'] = @h['CPEE_INSTANCE']
 
-        activity['uuid'] = @h['CPEE_ATTR_UUID']
+          activity['uuid'] = @h['CPEE_ATTR_UUID']
+        else
+          activity['process'] = @h.keys.include?('P_NAME') ? "#{@h['P_NAME']} (#{@h['P_INSTANCE']})" : "DUMMY PROCESS (#{@h['P_INSTANCE']})"
+          activity['label'] = @h.keys.include?('A_LABEL') ? "#{@h['A_LABEL']}" : 'DUMMY LABEL'
+          activity['user'] = []
+          activity['id']  = @h['A_CALLBACK'] || SecureRandom.uuid
+          activity['url'] = "https://cpee.org/callbacks/#{activity['id']}/"
+
+          activity['cpee_activity_id'] = ''
+          activity['cpee_base'] = ''
+          activity['cpee_instance'] = ''
+
+          activity['uuid'] = @h['P_INSTANCE'] || SecureRandom.uuid
+        end
 
         omo = @p.shift.value
         activity['orgmodel'] = @h[ 'CPEE_ATTR_' + omo.upcase] || omo
@@ -92,7 +106,7 @@ module CPEE
         activity['deadline'] = @p.first.name == 'deadline' ? ((Time.now + ChronicDuration.parse(@p.shift.value)) rescue nil): nil
         activity['restrictions'] = []
         rests = JSON::parse(@p.shift.value) rescue nil
-        activity['restrictions'] += rests unless rests.nil?
+        activity['restrictions'] += rests unless rests.nil? || rests.empty?
         if @p.first.name == 'prioritization'
           val = @p.shift.value
           activity['prioritization'] = (JSON::parse(val) rescue val.gsub(/[\[\]()<>"']/,'').split(/\s*[,;]\s*/))
