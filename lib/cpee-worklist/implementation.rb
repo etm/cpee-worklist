@@ -79,7 +79,8 @@ module CPEE
           activity['process'] = @h.keys.include?('P_NAME') ? "#{@h['P_NAME']} (#{@h['P_INSTANCE']})" : "DUMMY PROCESS (#{@h['P_INSTANCE']})"
           activity['label'] = @h.keys.include?('A_LABEL') ? "#{@h['A_LABEL']}" : 'DUMMY LABEL'
           activity['user'] = []
-          activity['id']  = @h['A_CALLBACK'] || SecureRandom.uuid
+          activity['id']  = @h['A_CALLBACK']
+          activity['id'] = SecureRandom.uuid if @h['A_CALLBACK'].nil? || @h['A_CALLBACK'].strip == ''
           activity['url'] = "https://cpee.org/callbacks/#{activity['id']}/"
 
           activity['cpee_activity_id'] = ''

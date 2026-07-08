@@ -116,7 +116,7 @@
                     </attribute>
                     <data type="string"/>
               </element>
-            </oneOrMore>
+            </zeroOrMore>
           </element>
         </zeroOrMore>
       </element>
