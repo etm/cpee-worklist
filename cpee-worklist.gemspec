@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name             = "cpee-worklist"
-  s.version          = "1.0.22"
+  s.version          = "1.0.23"
   s.platform         = Gem::Platform::RUBY
   s.license          = "GPL-3.0-or-later"
   s.summary          = "Worklist for the cloud process execution engine (cpee.org)"
