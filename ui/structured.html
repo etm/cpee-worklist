@@ -1,16 +1,18 @@
 <!--
   This file is part of CPEE-WORKLIST.
 
-  CPEE-WORKLIST is free software: you can redistribute it and/or modify it under the terms
-  of the GNU General Public License as published by the Free Software Foundation,
-  either version 3 of the License, or (at your option) any later version.
+  CPEE-WORKLIST is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the
+  Free Software Foundation, either version 3 of the License, or (at your
+  option) any later version.
 
-  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  details.
 
-  You should have received a copy of the GNU General Public License along with
-  CPEE-WORKLIST (file LICENSE in the main directory).  If not, see
+  You should have received a copy of the GNU General Public License
+  along with CPEE-WORKLIST (file LICENSE in the main directory). If not, see
   <http://www.gnu.org/licenses/>.
 -->
 
@@ -22,25 +24,10 @@
 
     <!-- libs, do not modify. When local than load local libs. -->
     <script type="text/javascript" src="/js_libs/jquery.min.js"></script>
-    <script type="text/javascript" src="/js_libs/jquery.browser.js"></script>
-    <script type="text/javascript" src="/js_libs/jquery.svg.min.js"></script>
-    <script type="text/javascript" src="/js_libs/jquery.svgdom.min.js"></script>
-    <script type="text/javascript" src="/js_libs/vkbeautify.js"></script>
-    <script type="text/javascript" src="/js_libs/util.js"></script>
-    <script type="text/javascript" src="/js_libs/printf.js"></script>
-    <script type="text/javascript" src="/js_libs/strftime.min.js"></script>
-    <script type="text/javascript" src="/js_libs/parsequery.js"></script>
-    <script type="text/javascript" src="/js_libs/underscore.min.js"></script>
-    <script type="text/javascript" src="/js_libs/jquery.caret.min.js"></script>
-    <script type="text/javascript" src="/js_libs/jquery.cookie.js"></script>
-    <script type="text/javascript" src="/js_libs/marked.min.js"></script>
-
-    <script type="text/javascript" src="/js_libs/relaxngui.js"></script>
+    <script type="text/javascript" src="/js_libs/uidash_util.js"></script>
 
     <script type="text/javascript" src="/js_libs/uidash.js"></script>
     <link   rel="stylesheet"      href="/js_libs/uidash.css" type="text/css"/>
-
-    <link   rel="stylesheet"      href="/js_libs/relaxngui.css" type="text/css"/>
 
     <!-- custom stuff, play arround  -->
     <link rel="stylesheet" href="css/ui.css" type="text/css"/>
@@ -164,12 +151,6 @@
               </td></tr>
             </thead>
             <tbody class="dat_tasks_others             dat_table dat_indent_table"></tbody>
-            <thead>
-              <tr><td colspan="42">
-                <div   class="dat_tasks_others_work_head   dat_heading hidden"><span>Tasks others currently work on ...</span></div>
-              </td></tr>
-            </thead>
-            <tbody class="dat_tasks_others_work        dat_table dat_indent_table"></tbody>
           </table>
         </ui-area> <!--}}}-->
         <ui-resizehandle data-belongs-to-tab="task" id="detailcolumnresizer" data-label="drag to resize" class="hidden"></ui-resizehandle>

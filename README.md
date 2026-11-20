@@ -1,5 +1,5 @@
-All code in this package is provided under the LGPL-3 license.
-Please read the file COPYING.
+All code in this package is provided under the GPL-3 license.
+Please read the file LICENSE.
 
 Tested for MRI > 2.7
 

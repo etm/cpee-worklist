@@ -2,39 +2,19 @@
   This file is part of CPEE-WORKLIST.
 
   CPEE-WORKLIST is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published by the Free
-  Software Foundation, either version 3 of the License, or (at your option) any
-  later version.
+  under the terms of the GNU General Public License as published by the
+  Free Software Foundation, either version 3 of the License, or (at your
+  option) any later version.
 
-  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  CPEE-WORKLIST is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  details.
 
-  You should have received a copy of the GNU General Public License along with
-  CPEE-WORKLIST (file LICENSE in the main directory).  If not, see
+  You should have received a copy of the GNU General Public License
+  along with CPEE-WORKLIST (file LICENSE in the main directory). If not, see
   <http://www.gnu.org/licenses/>.
 */
-
-function toggle_message(message=undefined) { //{{{
-  var url =$("input[name=base-url]").val()+'/'+$("input[name=user-name]").val()+'/';
-  if ($("#dat_tasks tr").length == 0) {
-    if (message != undefined) {
-      $("#dat_message").text(message);
-      $("#dat_message").show();
-    } else {
-      $.ajax({
-        type: "GET",
-        url: url,
-        success: function(res){
-          $("#dat_message").text(res);
-          $("#dat_message").show();
-        }
-      });
-    }
-  } else {
-    $("#dat_message").hide();
-  }
-} //}}}
 
 function config_defaults() { //{{{
   var default_values = {};
@@ -48,7 +28,7 @@ function config_defaults() { //{{{
 } //}}}
 
 $(document).ready(function() {// {{{
-  var q = $.parseQuerySimple();
+  var q = Object.fromEntries(new URLSearchParams(location.search));
   $.ajax({
     url: $('body').attr('data-defaultconfig'),
     success: function(res){
@@ -67,7 +47,7 @@ $(document).ready(function() {// {{{
       }
     },
     error: function(){
-      var res = config_defaults();
+      var res_def = config_defaults();
       $('body').attr('data-names', res_def['names']);
       $('input[name=base-url]').val(res_def['base-url']);
     }
@@ -79,16 +59,7 @@ $(document).ready(function() {// {{{
     uidash_toggle_vis_tab($("#worklist .switch"));
     event.preventDefault();
   });
-  $(document).on('click','.orgmodeltab',function(event){
-    var id = $(this).attr('data-tab');
-    uidash_empty_tab_contents(id);
-    // TODO Hier kommt Raphi
-  });
   $(document).on('click','#orgmodels li a.model',function(event){
-    // var id = $(this).attr('href').hashCode();
-    // if (!uidash_add_tab("#main", "Orgmodel", id, true, 'orgmodeltab')) {
-    //   uidash_empty_tab_contents(id);
-    // }
     // TODO Hier kommt Raphi
     event.preventDefault();
   });
@@ -104,12 +75,6 @@ $(document).ready(function() {// {{{
     var taskid = $(this).parents('tr').attr('data-id');
     var taskidurl = url + '/' + taskid;
     do_work(taskid,taskidurl);
-  });
-  $(document).on('click','.task_take',function(){
-    var url =$("input[name=user-url]").val()+'/tasks';
-    var taskid = $(this).parents('tr').attr('data-id');
-    var taskidurl = url + '/' + taskid;
-    take_work(taskidurl,$(this).parents('tr'),1);
   });
   $(document).on('click','.task_giveback',function(){
     var url =$("input[name=user-url]").val()+'/tasks';
@@ -154,7 +119,6 @@ function place_worklist_item(node,own) {
   if (!$('.dat_tasks_priority').is(':empty'))      { $('.dat_tasks_priority_head').removeClass('hidden'); }      else { $('.dat_tasks_priority_head').addClass('hidden'); }
   if (!$('.dat_tasks_own').is(':empty'))           { $('.dat_tasks_own_head').removeClass('hidden'); }           else { $('.dat_tasks_own_head').addClass('hidden'); }
   if (!$('.dat_tasks_others').is(':empty'))        { $('.dat_tasks_others_head').removeClass('hidden'); }        else { $('.dat_tasks_others_head').addClass('hidden'); }
-  if (!$('.dat_tasks_others_work').is(':empty'))   { $('.dat_tasks_others_work_head').removeClass('hidden'); }   else { $('.dat_tasks_others_work_head').addClass('hidden'); }
 }
 
 function get_worklist() {// {{{
@@ -198,13 +162,11 @@ function get_worklist() {// {{{
       $('.dat_tasks_priority').empty();
       $('.dat_tasks_own').empty();
       $('.dat_tasks_others').empty();
-      $('.dat_tasks_others_work').empty();
 
       $('.dat_tasks_priority_high_head').addClass('hidden');
       $('.dat_tasks_priority_head').addClass('hidden');
       $('.dat_tasks_own_head').addClass('hidden');
       $('.dat_tasks_others_head').addClass('hidden');
-      $('.dat_tasks_others_work_head').addClass('hidden');
 
       $(res).find('task').each(function(){
         if ($(this).attr('all') == "true") {
@@ -252,7 +214,6 @@ function get_worklist() {// {{{
             }
         place_worklist_item(node.find('tr'),$(this).attr('own') == 'true' || $(this).attr('always') == 'true' ? 'true' : 'false');
       });
-      toggle_message();
     },
     error: function(a,b,c) {
       alert("Server not running.");
@@ -448,7 +409,7 @@ function subscribe_worklist(){ //{{{
   $.ajax({
     type: "POST",
     url: url,
-    data: "topic=user&events=status,take,giveback,finish&topic=task&events=add,delete",
+    data: "topic=user&events=take,giveback,finish&topic=task&events=add,delete",
     success: function(ret){
       subscription = ret;
       es = new EventSource(url + subscription + "/sse/");
@@ -464,11 +425,7 @@ function subscribe_worklist(){ //{{{
                 case 'finish':
                   if (data.content.user == $("input[name=user-name]").val()) {
                     tr.remove();
-                    toggle_message();
                   }
-                  break;
-                case 'status':
-                  toggle_message(data.content.status);
                   break;
                 case 'take':
                 case 'giveback':
@@ -490,7 +447,6 @@ function subscribe_worklist(){ //{{{
                   break;
                 case 'delete':
                   tr.remove();
-                  toggle_message();
                   break;
               }
               break;
@@ -504,15 +460,4 @@ function subscribe_worklist(){ //{{{
     }
   });
 } //}}}
-
-String.prototype.hashCode = function() { //{{{
-  var hash = 0, i, chr, len;
-  if (this.length == 0) return hash;
-  for (i = 0, len = this.length; i < len; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-}; //}}}
 
