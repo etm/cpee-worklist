@@ -49,7 +49,7 @@ function config_defaults() { //{{{
 } //}}}
 
 $(document).ready(function() {// {{{
-  var q = $.parseQuerySimple();
+  var q = Object.fromEntries(new URLSearchParams(location.search));
   $.ajax({
     url: $('body').attr('data-defaultconfig'),
     success: function(res){
