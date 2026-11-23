@@ -67,7 +67,7 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         index = message.index(' ')
         mess = message[index+1..-1]
-        instance, uuid = message[0...index].split(',')
+        instance, uuid, seq = message[0...index].split(',')
         type, worker, event = what.split(':',3)
         topic = ::File::dirname(event)
         name = ::File::basename(event)
@@ -81,7 +81,8 @@ Daemonite.new do |opts|
 
             if url.nil? || url == ""
               persist_handler instance, callback_key, m, opts[:redis]
-              opts[:redis].publish("forward:#{instance}/#{subscription_key}",mess)
+              sseq = opts[:redis].incr("worklist:#{instance}/handlers/#{subscription_key}/seq")
+              opts[:redis].publish("forward:#{instance}/#{subscription_key}","#{seq},#{sseq} #{mess}")
             else
               client = Riddl::Client.new(url)
               callback = File.join(m['instance-url'],'/callbacks/',subscription_key,'/')

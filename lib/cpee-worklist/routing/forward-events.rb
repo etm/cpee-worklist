@@ -41,7 +41,7 @@ Daemonite.new do |opts|
       on.pmessage do |pat, what, message|
         index = message.index(' ')
         mess = message[index+1..-1]
-        instance, uuid = message[0...index].split(',')
+        instance, uuid, seq = message[0...index].split(',')
         type, worker, event = what.split(':',3)
         topic = ::File::dirname(event)
         name = ::File::basename(event)
@@ -50,7 +50,8 @@ Daemonite.new do |opts|
           if opts[:redis].smembers("worklist:#{instance}/handlers/#{key}").include? long
             url = opts[:redis].get("worklist:#{instance}/handlers/#{key}/url")
             if url.nil? || url == ""
-              opts[:redis].publish("forward:#{instance}/#{key}",mess)
+              sseq = opts[:redis].incr("worklist:#{instance}/handlers/#{key}/seq")
+              opts[:redis].publish("forward:#{instance}/#{key}","#{seq},#{sseq} #{mess}")
             else
               client = Riddl::Client.new(url)
               client.post [

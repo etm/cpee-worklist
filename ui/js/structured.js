@@ -246,11 +246,13 @@ function do_work(taskid,taskidurl) { //{{{
     url: taskidurl,
     success:function(res) {
       if (!uidash_add_tab("#main", res.label, taskid, true, '')) { return; };
-      $.ajax({
-        type: "GET",
-        url: res.form,
-        dataType: 'text',
-        success: async (iform) => {
+      let form_error = (url) => {
+        let node = $($("#dat_template_form_error")[0].content.cloneNode(true));
+        $('.url',node).text(url);
+        $('.url',node).attr('href',url);
+        return $('<div></div>').append(node).html();
+      };
+      let show_form = async (iform) => {
           let end = false;
           let evaltext = '';
           let rel = res.form.match(/.*\//)[0];
@@ -269,14 +271,17 @@ function do_work(taskid,taskidurl) { //{{{
                 } else {
                   inc = includes[4];
                 }
-                await $.ajax({
-                  type: "GET",
-                  url: inc,
-                  dataType: 'text',
-                  success: function(inctext) {
-                    iform = iform.replace(includes[0],inctext);
-                  }
-                });
+                try {
+                  let inctext = await $.ajax({
+                    type: "GET",
+                    url: inc,
+                    dataType: 'text'
+                  });
+                  iform = iform.replace(includes[0],inctext);
+                } catch (e) {
+                  console.log("Error while getting form include " + inc);
+                  iform = iform.replace(includes[0],form_error(inc));
+                }
               } else {
                 end = true;
               }
@@ -381,20 +386,16 @@ function do_work(taskid,taskidurl) { //{{{
           taskitem.append(iframe);
 
           uidash_activate_tab($('ui-tabbar ui-tab[data-tab=' + taskid + ']'));
-        },
+      };
+      $.ajax({
+        type: "GET",
+        url: res.form,
+        dataType: 'text',
+        success: show_form,
         error: function(a,b,c){
-          $.ajax({
-            type: "DELETE",
-            url: taskidurl,
-            success: function(del){
-              uidash_close_tab('ui-tab[data-tab='+taskid+'] ui-close');
-              get_worklist();
-            },
-            error: function(a,b,c){
-              console.log("Delete failed");
-            }
-          });
+          // e.g. CORS blocked: keep the task, open it with a message instead of the form
           console.log("Error while getting form html");
+          show_form(form_error(res.form));
         }
       });
     },
