@@ -16,9 +16,10 @@
 # along with CPEE-WORKLIST (file LICENSE in the main directory). If not, see
 # <http://www.gnu.org/licenses/>.
 
-require 'rubygems'
-if File.exist? File.join(__dir__,'../lib/cpee-worklist/implementation.rb')
-  require_relative '../lib/cpee-worklist/implementation'
+if File.exist?(File.join(__dir__,'..','lib','cpee-worklist','implementation.rb'))
+  require_relative File.join(__dir__,'..','lib','cpee-worklist','implementation')
+elsif File.exist?(File.join(Dir.home,'Projects','cpee-worklist','lib','cpee-worklist','implementation.rb'))
+  require_relative File.join(Dir.home, 'Projects','cpee-worklist','lib','cpee-worklist','implementation')
 else
   require 'cpee-worklist/implementation'
 end

@@ -375,7 +375,8 @@ module CPEE
       opts[:ORG_SCHEMA] = ::File.join(__dir__, 'organisation.rng')
       opts[:topics] = ::File.join(__dir__, 'topics.xml')
 
-      opts[:top] ||= ::File.join(__dir__, 'data')
+      opts[:top] ||= ::File.join(opts[:basepath], 'data')
+      FileUtils.mkdir_p ::File.join(opts[:top], 'orgmodels')
 
       opts[:watchdog_frequency]         ||= 7
       opts[:watchdog_start_off]         ||= false
